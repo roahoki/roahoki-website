@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "about": "About me",
+    "experience": "Experience",
+    "projects": "Projects"
+  },
+  "about": {
+    "name": "Joaquín Peralta",
+    "p1": "I'm a Software Engineer working as a Trainee at <atipicus>Atipicus</atipicus>. My current focus is on developing AI Agents for the healthcare sector, but my interests span the full development stack, from cloud infrastructure to user interfaces.",
+    "p2": "During my time at university, I had the privilege of working as a teaching assistant and coordinator for several engineering courses, which allowed me to deepen my knowledge and pedagogical skills. I occasionally make videos on YouTube.",
+    "p3": "You can learn more about my background and interests through my <experiences>experiences</experiences>, <projects>projects</projects> and <github>GitHub</github>. Let's connect on <linkedin>LinkedIn</linkedin> or via <whatsapp>WhatsApp</whatsapp>."
+  },
+  "experience": {
+    "title": "Experience",
+    "subtitle": "I specialize in modern Full Stack development, from cloud architecture to scalable user interfaces.",
+    "atipicus": "I currently work as a Software Engineer Trainee at <atipicus>Atipicus</atipicus>. I'm developing an AI agent system focused on the healthcare sector. My main stack includes advanced use of the <googleSDK>Google SDK</googleSDK>, infrastructure on <googleCloud>Google Cloud</googleCloud>, and data management with <mongodb>MongoDB</mongodb>.",
+    "biomechanics": "I'm in charge of the fullstack development of the official site for <biomechanics>Biomechanics</biomechanics>, an artistic-technological project. I make all technical decisions, using <nextjs>Next.js</nextjs>, <supabase>Supabase</supabase>, and <clerk>Clerk</clerk>. I've implemented a scalable back-office architecture and optimized SEO to ensure high production performance.",
+    "freelance": "I participated in the full-stack development of a sports betting platform using <react>React</react> and <nodejs>Node.js</nodejs>. The project included implementing workers, serverless functions, and a CI/CD pipeline. I deployed the infrastructure using <aws>AWS</aws> services such as EC2, CloudFront, and S3.",
+    "mesti": "I served as Mobile Technical Lead for the client <mesti>Mesti</mesti>. I led the development of three mobile applications using <reactNative>React Native</reactNative>, including menu management and bartender tools. I coordinated the development team and managed the full cycle from requirements gathering to deployment.",
+    "puc": "I have a solid academic and teaching background at the Pontificia Universidad Católica de Chile. I was the General Coordinator of the Computer Architecture course and served as a teaching assistant in key subjects such as Web Technologies and Applications, Data Structures, and Advanced Programming."
+  },
+  "projects": {
+    "intro": "I have a couple of YouTube videos teaching about data structures and computer architecture :)"
+  }
+}

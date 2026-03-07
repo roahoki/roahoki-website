@@ -1,7 +1,6 @@
 import { SidebarNav } from "@/components/sidebar-nav"
 import { PageContent } from "@/components/page-content"
 
-
 export default function AboutPage() {
   return (
     <main className="min-h-screen flex flex-col md:flex-row">

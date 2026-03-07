@@ -1,41 +1,46 @@
-import Link from "next/link"
+import { getTranslations } from "next-intl/server"
+import { Link } from "@/i18n/navigation"
 
-export function PageContent() {
+const externalLinkClass = "underline underline-offset-2 hover:text-foreground"
+
+export async function PageContent() {
+  const t = await getTranslations("about")
+
+  const internalLink = (href: string) =>
+    (chunks: React.ReactNode) => (
+      <Link href={href} className={externalLinkClass}>
+        {chunks}
+      </Link>
+    )
+
+  const externalLink = (href: string) =>
+    (chunks: React.ReactNode) => (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={externalLinkClass}>
+        {chunks}
+      </a>
+    )
+
   return (
     <article className="px-6 py-6 md:max-w-xl md:pt-12 md:pl-8 md:pr-0">
-      <h1 className="text-base font-semibold text-foreground mb-6">Joaquín Peralta</h1>
+      <h1 className="text-base font-semibold text-foreground mb-6">{t("name")}</h1>
 
       <div className="space-y-5 text-sm leading-relaxed text-foreground/90">
         <p>
-          Soy un Ingeniero de Software y trabajo como Trainee en{" "}
-          <Link href="https://atipic.us/" className="underline underline-offset-2 hover:text-foreground">
-            Atipicus
-          </Link>
-          . Actualmente mi foco está en el desarrollo de Agentes de IA para el sector de la salud, pero mis intereses abarcan todo el stack de desarrollo, desde la infraestructura en la nube hasta las interfaces de usuario.
+          {t.rich("p1", {
+            atipicus: externalLink("https://atipic.us/"),
+          })}
         </p>
 
-        <p>
-          Durante mi paso por la universidad tuve el privilegio de trabajar como ayudante y coordinador en varios cursos de ingeniería, lo que me permitió profundizar mis conocimientos y habilidades pedagógicas. A veces hago videos en youtube.
-        </p>
+        <p>{t("p2")}</p>
 
         <p>
-          Puedes conocer más sobre mi historial e intereses a través de mis{" "}
-          <Link href="/experience" className="underline underline-offset-2 hover:text-foreground">
-            experiencias
-          </Link>
-          ,{" "}
-          <Link href="/projects" className="underline underline-offset-2 hover:text-foreground">
-            proyectos
-          </Link>
-          y {" "}
-          <Link href="https://github.com/roahoki" className="underline underline-offset-2 hover:text-foreground">
-            GitHub
-          </Link>
-          {" "}. Conversemos por{" "}
-          <Link href="https://www.linkedin.com/in/joaquin-peralta-perez/" className="underline underline-offset-2 hover:text-foreground">
-            LinkedIn
-          </Link>
-          .
+          {t.rich("p3", {
+            experiences: internalLink("/experience"),
+            projects: internalLink("/projects"),
+            github: externalLink("https://github.com/roahoki"),
+            linkedin: externalLink("https://www.linkedin.com/in/joaquin-peralta-perez/"),
+            whatsapp: externalLink("https://wa.link/ht8ioc"),
+          })}
         </p>
       </div>
     </article>

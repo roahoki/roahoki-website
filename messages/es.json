@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "about": "Sobre mí",
+    "experience": "Experiencia",
+    "projects": "Proyectos"
+  },
+  "about": {
+    "name": "Joaquín Peralta",
+    "p1": "Soy un Ingeniero de Software y trabajo como Trainee en <atipicus>Atipicus</atipicus>. Actualmente mi foco está en el desarrollo de Agentes de IA para el sector de la salud, pero mis intereses abarcan todo el stack de desarrollo, desde la infraestructura en la nube hasta las interfaces de usuario.",
+    "p2": "Durante mi paso por la universidad tuve el privilegio de trabajar como ayudante y coordinador en varios cursos de ingeniería, lo que me permitió profundizar mis conocimientos y habilidades pedagógicas. A veces hago videos en youtube.",
+    "p3": "Puedes conocer más sobre mi historial e intereses a través de mis <experiences>experiencias</experiences>, <projects>proyectos</projects> y <github>GitHub</github>. Conversemos por <linkedin>LinkedIn</linkedin> o por <whatsapp>WhatsApp</whatsapp>."
+  },
+  "experience": {
+    "title": "Experiencia",
+    "subtitle": "Me especializo en el desarrollo Full Stack moderno, desde arquitectura en la nube hasta interfaces de usuario escalables.",
+    "atipicus": "Actualmente trabajo como Software Engineer Trainee en <atipicus>Atipicus</atipicus>. Estoy desarrollando un sistema de agente de IA centrado en el sector de la salud. Mi stack principal incluye el uso avanzado del <googleSDK>Google SDK</googleSDK>, infraestructura en <googleCloud>Google Cloud</googleCloud> y gestión de datos con <mongodb>MongoDB</mongodb>.",
+    "biomechanics": "Estoy a cargo del desarrollo fullstack del sitio oficial de <biomechanics>Biomechanics</biomechanics>, un proyecto artístico-tecnológico. Tomo todas las decisiones técnicas, utilizando <nextjs>Next.js</nextjs>, <supabase>Supabase</supabase> y <clerk>Clerk</clerk>. He implementado una arquitectura escalable de back-office y optimizado el SEO para asegurar un alto rendimiento en producción.",
+    "freelance": "Participé en el desarrollo de una plataforma completa de apuestas deportivas utilizando <react>React</react> y <nodejs>Node.js</nodejs>. El proyecto incluyó la implementación de workers, funciones serverless y un pipeline de CI/CD. Desplegué la infraestructura utilizando servicios de <aws>AWS</aws> como EC2, CloudFront y S3.",
+    "mesti": "Me desempeñé como Líder Técnico Mobile para el cliente <mesti>Mesti</mesti>. Dirigí el desarrollo de tres aplicaciones móviles con <reactNative>React Native</reactNative>, incluyendo gestión de menús y herramientas para bartenders. Coordiné al equipo de desarrolladores y gestioné el ciclo completo desde el levantamiento de requerimientos hasta el despliegue.",
+    "puc": "Poseo una sólida trayectoria académica y docente en la Pontificia Universidad Católica de Chile. He sido Coordinador General del curso Arquitectura de Computadores e impartido ayudantías en cátedras clave como Tecnologías y Aplicaciones Web, Estructuras de Datos y Programación Avanzada."
+  },
+  "projects": {
+    "intro": "Tengo un par de videos en youtube enseñando sobre estructura de datos y arquitectura de computadores :)"
+  }
+}

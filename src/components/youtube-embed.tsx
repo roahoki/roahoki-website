@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 
 interface YouTubeEmbedProps {
     videoId: string
@@ -20,10 +21,12 @@ export function YouTubeEmbed({ videoId, title = "YouTube video" }: YouTubeEmbedP
                 className="relative w-full aspect-video bg-muted overflow-hidden group cursor-pointer"
                 aria-label={`Play ${title}`}
             >
-                <img
-                    src={thumbnailUrl || "/placeholder.svg"}
+                <Image
+                    src={thumbnailUrl}
                     alt={title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 576px"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
                     <div className="w-12 h-12 flex items-center justify-center rounded-full bg-foreground/90">
