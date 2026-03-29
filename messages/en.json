@@ -2,7 +2,8 @@
   "nav": {
     "about": "About me",
     "experience": "Experience",
-    "projects": "Projects"
+    "projects": "Projects",
+    "teaching": "Teaching"
   },
   "about": {
     "name": "Joaquín Peralta",
@@ -21,5 +22,21 @@
   },
   "projects": {
     "intro": "I have a couple of YouTube videos teaching about data structures and computer architecture :)"
+  },
+  "teaching": {
+    "title": "Private tutoring",
+    "intro": "I give private tutoring to PUC engineering students. I adapt to your learning style and we go at whatever pace you need. There are no dumb questions and no topics that can't be understood.",
+    "subjects_title": "Subjects",
+    "dsa_title": "Data Structures",
+    "dsa_desc": "Linked lists, stacks, queues, trees, graphs, and sorting and searching algorithms. From the conceptual foundation to implementing what your professor is asking for.",
+    "advanced_title": "Advanced Programming",
+    "advanced_desc": "Programming paradigms, design patterns, memory management, and concurrency. What takes you from code that works to code that's genuinely good.",
+    "background_title": "My teaching background",
+    "background_text": "I was the General Coordinator for Computer Architecture and a TA for Web Technologies, Data Structures, and Advanced Programming at PUC. If I learned anything from all of that, it's that every person has their own way of understanding things — and I love figuring out what yours is.",
+    "cta_title": "Need a class?",
+    "cta_text": "Message me on WhatsApp and we'll sort out timing and pricing based on your situation. No strings attached — first chat is free :)",
+    "cta_button": "Message me on WhatsApp",
+    "testimonials_title": "What my students say",
+    "testimonials_coming": "Coming soon... I'm collecting testimonials from my students ✌️"
   }
 }

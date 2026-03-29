@@ -2,7 +2,8 @@
   "nav": {
     "about": "Sobre mí",
     "experience": "Experiencia",
-    "projects": "Proyectos"
+    "projects": "Proyectos",
+    "teaching": "Clases"
   },
   "about": {
     "name": "Joaquín Peralta",
@@ -21,5 +22,21 @@
   },
   "projects": {
     "intro": "Tengo un par de videos en youtube enseñando sobre estructura de datos y arquitectura de computadores :)"
+  },
+  "teaching": {
+    "title": "Clases particulares",
+    "intro": "Doy clases particulares a estudiantes de ingeniería de la PUC. Me adapto a tu forma de aprender y vamos al ritmo que necesites. No existen preguntas tontas ni temas que no se puedan entender.",
+    "subjects_title": "Materias",
+    "dsa_title": "Estructuras de Datos",
+    "dsa_desc": "Listas enlazadas, pilas, colas, árboles, grafos y algoritmos de búsqueda y ordenamiento. Desde la base conceptual hasta implementar lo que te pide el profe.",
+    "advanced_title": "Programación Avanzada",
+    "advanced_desc": "Paradigmas de programación, patrones de diseño, manejo de memoria y concurrencia. Lo que te hace pasar de código que funciona a código que es realmente bueno.",
+    "background_title": "Mi experiencia docente",
+    "background_text": "Fui Coordinador General del curso Arquitectura de Computadores y ayudante en Tecnologías y Aplicaciones Web, Estructuras de Datos y Programación Avanzada en la PUC. Si algo aprendí es que cada persona tiene su propia forma de entender las cosas, y me encanta encontrar cuál es la tuya.",
+    "cta_title": "¿Necesitas una clase?",
+    "cta_text": "Escríbeme por WhatsApp y coordinamos horario y precio según tu situación. Sin compromiso, la primera conversación es gratis :)",
+    "cta_button": "Escríbeme por WhatsApp",
+    "testimonials_title": "Lo que dicen mis estudiantes",
+    "testimonials_coming": "Pronto estarán acá... estoy juntando los testimonios de mis alumnos ✌️"
   }
 }

@@ -22,23 +22,37 @@ interface ProjectSectionProps {
   icon?: React.ReactNode
   title: string
   children: React.ReactNode
+  delay?: 0 | 1 | 2 | 3
 }
 
-function ProjectSection({ icon, title, children }: ProjectSectionProps) {
+function ProjectSection({ icon, title, children, delay = 0 }: ProjectSectionProps) {
+  const delayClass = delay === 0
+    ? "animate-fade-up"
+    : delay === 1
+    ? "animate-fade-up-delay-1"
+    : delay === 2
+    ? "animate-fade-up-delay-2"
+    : "animate-fade-up-delay-3"
+
   return (
-    <section className="mb-8">
-      <h2 className="text-base font-semibold text-foreground mb-2 flex items-center gap-2">
+    <section className={`mb-8 ${delayClass}`}>
+      <h2 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2.5">
         {icon ? (
-          <span className="w-10 h-10 flex items-center justify-center shrink-0">{icon}</span>
+          <span className="w-8 h-8 flex items-center justify-center shrink-0 rounded-lg overflow-hidden">
+            {icon}
+          </span>
         ) : null}
-        {title}
+        <span className="flex items-center gap-2">
+          {title}
+          <span className="h-px w-6 bg-brand/50 inline-block" />
+        </span>
       </h2>
-      <div className="text-sm leading-relaxed text-foreground/90">{children}</div>
+      <div className="text-sm leading-relaxed text-foreground/85 pl-10">{children}</div>
     </section>
   )
 }
 
-const linkClass = "underline underline-offset-2 hover:text-foreground/70"
+const linkClass = "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors"
 
 const extLink = (href: string) =>
   (chunks: React.ReactNode) => (
@@ -52,11 +66,10 @@ export async function ExperienceContent() {
 
   return (
     <article className="px-6 py-6 md:max-w-xl md:pt-12 md:pl-8 md:pr-8">
-      <h1 className="text-base font-semibold text-foreground mb-4">{t("title")}</h1>
+      <h1 className="text-base font-bold text-foreground mb-2 animate-fade-up">{t("title")}</h1>
+      <p className="text-sm leading-relaxed text-foreground/60 mb-8 animate-fade-up-delay-1">{t("subtitle")}</p>
 
-      <p className="text-sm leading-relaxed text-foreground/90 mb-8">{t("subtitle")}</p>
-
-      <ProjectSection icon={<AtipicusIcon className="w-full h-full" />} title="Atipicus">
+      <ProjectSection icon={<AtipicusIcon className="w-full h-full" />} title="Atipicus" delay={1}>
         <p>
           {t.rich("atipicus", {
             atipicus: extLink("https://atipic.us/"),
@@ -67,7 +80,7 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<BiomechanicsIcon size={40} className="object-contain rounded-full" />} title="Biomechanics.wav">
+      <ProjectSection icon={<BiomechanicsIcon size={32} className="object-contain rounded-lg" />} title="Biomechanics.wav" delay={2}>
         <p>
           {t.rich("biomechanics", {
             biomechanics: extLink("https://www.biomechanics.cl/links"),
@@ -78,7 +91,7 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<FaviconIcon size={40} className="object-contain rounded-full" />} title="Freelance Fullstack">
+      <ProjectSection icon={<FaviconIcon size={32} className="object-contain rounded-lg" />} title="Freelance Fullstack" delay={3}>
         <p>
           {t.rich("freelance", {
             react: extLink("https://react.dev"),
@@ -88,7 +101,7 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<MestiIcon className="w-full h-full" />} title="Mesti">
+      <ProjectSection icon={<MestiIcon className="w-full h-full" />} title="Mesti" delay={3}>
         <p>
           {t.rich("mesti", {
             mesti: extLink("https://mesti.app/"),
@@ -97,7 +110,7 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<UCIcon className="w-full h-full" />} title="PUC Chile">
+      <ProjectSection icon={<UCIcon className="w-full h-full" />} title="PUC Chile" delay={3}>
         <p>{t("puc")}</p>
       </ProjectSection>
     </article>
