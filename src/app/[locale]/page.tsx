@@ -360,7 +360,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-foreground mb-1">Freelance Fullstack</h3>
-                    <p className="text-xs text-muted-foreground mb-2">Full Stack Developer</p>
+                    <p className="text-xs text-muted-foreground mb-2">Full Stack Developer · 2024</p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("freelance", {
                         react: extLink("https://react.dev"),
@@ -382,7 +382,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-foreground mb-1">Mesti</h3>
-                    <p className="text-xs text-muted-foreground mb-2">Mobile Technical Lead</p>
+                    <p className="text-xs text-muted-foreground mb-2">Mobile Technical Lead · 2024</p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("mesti", {
                         mesti: extLink("https://mesti.app/"),
@@ -404,7 +404,7 @@ export default async function HomePage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-foreground mb-1">PUC Chile</h3>
                     <p className="text-xs text-muted-foreground mb-2">
-                      Teaching Assistant &amp; General Coordinator
+                      Teaching Assistant &amp; General Coordinator · 2022 — 2025
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">{tExp("puc")}</p>
                   </div>
