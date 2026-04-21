@@ -171,12 +171,8 @@ export default async function HomePage() {
             {/* Current role */}
             <AnimateIn delay={0} className="col-span-2 md:col-span-2">
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/40 hover:bg-brand-muted transition-colors duration-300">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-5 h-5 shrink-0">
-                    <BukIcon size={20} className="object-contain" />
-                  </div>
-                  <span className="text-xs text-muted-foreground">{tBento("current_role")}</span>
-                </div>
+                <span className="text-xs text-muted-foreground mb-3 block">{tBento("current_role")}</span>
+                <BukIcon size={40} className="object-contain mb-3" />
                 <p className="text-sm font-bold text-foreground mb-1.5">Buk</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {tBento("current_desc")}
