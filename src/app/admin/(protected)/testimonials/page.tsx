@@ -19,6 +19,13 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: "text-red-500 bg-red-500/10 border-red-500/20",
 }
 
+const FILTER_LABELS: Record<Filter, string> = {
+  all: "Todos",
+  pending: "Pendiente",
+  approved: "Aprobado",
+  rejected: "Rechazado",
+}
+
 export default function AdminTestimonialsPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [filter, setFilter] = useState<Filter>("all")
@@ -45,7 +52,7 @@ export default function AdminTestimonialsPage() {
   }
 
   async function deleteTestimonial(id: string) {
-    if (!confirm("¿Eliminar este testimonio?")) return
+    if (!confirm("Eliminar este testimonio?")) return
     await fetch("/api/admin/testimonials", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -69,38 +76,33 @@ export default function AdminTestimonialsPage() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-base font-bold text-foreground">Testimonios</h1>
+    <main className="max-w-2xl mx-auto px-4 py-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 gap-3">
+        <h1 className="text-sm font-bold text-foreground shrink-0">Testimonios</h1>
         <div className="flex items-center gap-4">
-          <a
-            href="/"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Ir al sitio
+          <a href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+            Ir al sitio
           </a>
-          <button
-            onClick={logout}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={logout} className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
             Cerrar sesion
           </button>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      {/* Filters — horizontally scrollable on mobile */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
         {(["all", "pending", "approved", "rejected"] as Filter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors shrink-0 ${
               filter === f
                 ? "bg-brand text-white border-brand"
                 : "border-border text-muted-foreground hover:border-brand/40 hover:text-foreground"
             }`}
           >
-            {f === "all" ? "Todos" : STATUS_LABELS[f]} ({counts[f]})
+            {FILTER_LABELS[f]} ({counts[f]})
           </button>
         ))}
       </div>
@@ -123,7 +125,8 @@ export default function AdminTestimonialsPage() {
             : null
 
           return (
-            <div key={t.id} className="rounded-xl border border-border bg-card p-5">
+            <div key={t.id} className="rounded-xl border border-border bg-card p-4">
+              {/* Identity row */}
               <div className="flex items-start gap-3 mb-3">
                 {t.image_url ? (
                   <Image
@@ -140,18 +143,18 @@ export default function AdminTestimonialsPage() {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <span className="text-sm font-bold text-foreground">{t.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_COLORS[t.status]}`}>
+                    <span className="text-sm font-bold text-foreground truncate">{t.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium shrink-0 ${STATUS_COLORS[t.status]}`}>
                       {STATUS_LABELS[t.status]}
                     </span>
                   </div>
                   {socialLink && (
-                    <a href={socialLink.href} target="_blank" rel="noopener noreferrer" className="text-xs text-brand hover:underline">
+                    <a href={socialLink.href} target="_blank" rel="noopener noreferrer" className="text-xs text-brand hover:underline block truncate">
                       {socialLink.label}
                     </a>
                   )}
                   {!socialLink && t.email && (
-                    <span className="text-xs text-muted-foreground">{t.email}</span>
+                    <span className="text-xs text-muted-foreground block truncate">{t.email}</span>
                   )}
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {new Date(t.created_at).toLocaleDateString("es-CL")}
@@ -161,26 +164,31 @@ export default function AdminTestimonialsPage() {
 
               <p className="text-sm leading-relaxed text-foreground/80 mb-4">{t.message}</p>
 
-              <div className="flex gap-2 flex-wrap">
-                {t.status !== "approved" && (
+              {/* Actions — full width on mobile */}
+              <div className="grid grid-cols-3 gap-2">
+                {t.status !== "approved" ? (
                   <button
                     onClick={() => updateStatus(t.id, "approved")}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                    className="py-2 rounded-lg text-xs font-semibold bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20 transition-colors"
                   >
                     Aprobar
                   </button>
+                ) : (
+                  <div />
                 )}
-                {t.status !== "rejected" && (
+                {t.status !== "rejected" ? (
                   <button
                     onClick={() => updateStatus(t.id, "rejected")}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
+                    className="py-2 rounded-lg text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
                   >
                     Rechazar
                   </button>
+                ) : (
+                  <div />
                 )}
                 <button
                   onClick={() => deleteTestimonial(t.id)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                  className="py-2 rounded-lg text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-colors col-start-3"
                 >
                   Eliminar
                 </button>

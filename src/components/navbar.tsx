@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl"
 import { usePathname, useRouter } from "@/i18n/navigation"
 import { useTheme } from "next-themes"
 import { Sun, Moon } from "lucide-react"
+import { useRef } from "react"
 
 const WHATSAPP = "https://wa.link/ht8ioc"
 
@@ -13,6 +14,26 @@ export function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const didLongPress = useRef(false)
+
+  function startPress() {
+    didLongPress.current = false
+    pressTimer.current = setTimeout(() => {
+      didLongPress.current = true
+      window.location.href = "/admin/login"
+    }, 1500)
+  }
+
+  function cancelPress() {
+    if (pressTimer.current) clearTimeout(pressTimer.current)
+  }
+
+  function handleThemeClick() {
+    if (didLongPress.current) return
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
 
   const toggleLocale = () => {
     router.replace(pathname, { locale: locale === "es" ? "en" : "es" })
@@ -59,7 +80,13 @@ export function Navbar() {
 
           <button
             type="button"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={handleThemeClick}
+            onMouseDown={startPress}
+            onMouseUp={cancelPress}
+            onMouseLeave={cancelPress}
+            onTouchStart={startPress}
+            onTouchEnd={cancelPress}
+            onTouchMove={cancelPress}
             className="p-1 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Toggle theme"
           >
