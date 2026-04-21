@@ -7,6 +7,8 @@ import { AtipicusIcon } from "@/components/icons/atipicus-icon"
 import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon"
 import { MestiIcon } from "@/components/icons/mesti-icon"
 import { UCIcon } from "@/components/icons/uc-icon"
+import { BukIcon } from "@/components/icons/buk-icon"
+import { PlannisthenicsIcon } from "@/components/icons/plannisthenics-icon"
 import { Suspense } from "react"
 import { LandingTestimonials } from "@/components/landing-testimonials"
 
@@ -18,6 +20,8 @@ const stack = [
   "TypeScript",
   "React",
   "Next.js",
+  "Ruby on Rails",
+  "Ruby",
   "Node.js",
   "Python",
   "React Native",
@@ -169,11 +173,11 @@ export default async function HomePage() {
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/40 hover:bg-brand-muted transition-colors duration-300">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-4 h-4 shrink-0">
-                    <AtipicusIcon className="w-full h-full" />
+                    <BukIcon className="w-full h-full" />
                   </div>
                   <span className="text-xs text-muted-foreground">{tBento("current_role")}</span>
                 </div>
-                <p className="text-sm font-bold text-foreground mb-1.5">Atipicus</p>
+                <p className="text-sm font-bold text-foreground mb-1.5">Buk</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {tBento("current_desc")}
                 </p>
@@ -232,7 +236,7 @@ export default async function HomePage() {
               <div className="h-full rounded-2xl border border-border bg-card p-5">
                 <p className="text-xs leading-relaxed text-foreground/80 mb-3">
                   {tAbout.rich("bio", {
-                    atipicus: extLink("https://atipic.us/"),
+                    buk: extLink("https://www.buk.cl/"),
                     puc: extLink("https://www.uc.cl/"),
                   })}
                 </p>
@@ -262,8 +266,33 @@ export default async function HomePage() {
 
           <div className="space-y-3">
 
-            {/* Atipicus */}
+            {/* Buk */}
             <AnimateIn delay={60}>
+              <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                    <BukIcon className="w-7 h-7 text-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="text-sm font-bold text-foreground">Buk</h3>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-brand-muted text-brand font-semibold border border-brand/20">
+                        {tExp("current")}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">Software Engineer · may. 2026 — presente</p>
+                    <p className="text-xs leading-relaxed text-foreground/70">
+                      {tExp.rich("buk", {
+                        buk: extLink("https://www.buk.cl/"),
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </AnimateIn>
+
+            {/* Atipicus */}
+            <AnimateIn delay={110}>
               <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 overflow-hidden">
@@ -273,7 +302,7 @@ export default async function HomePage() {
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <h3 className="text-sm font-bold text-foreground">Atipicus</h3>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">Software Engineer Trainee</p>
+                    <p className="text-xs text-muted-foreground mb-2">Software Engineer Trainee · dic. 2025 — mar. 2026</p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("atipicus", {
                         atipicus: extLink("https://atipic.us/"),
@@ -288,7 +317,7 @@ export default async function HomePage() {
             </AnimateIn>
 
             {/* Biomechanics */}
-            <AnimateIn delay={110}>
+            <AnimateIn delay={160}>
               <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 overflow-hidden">
@@ -296,7 +325,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-foreground mb-1">Biomechanics.wav</h3>
-                    <p className="text-xs text-muted-foreground mb-2">Full Stack Developer</p>
+                    <p className="text-xs text-muted-foreground mb-2">Full Stack Developer · 2024 — 2025</p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("biomechanics", {
                         biomechanics: extLink("https://www.biomechanics.cl/links"),
@@ -311,7 +340,7 @@ export default async function HomePage() {
             </AnimateIn>
 
             {/* Freelance */}
-            <AnimateIn delay={160}>
+            <AnimateIn delay={210}>
               <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 text-muted-foreground">
@@ -345,7 +374,7 @@ export default async function HomePage() {
             </AnimateIn>
 
             {/* Mesti */}
-            <AnimateIn delay={210}>
+            <AnimateIn delay={260}>
               <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 overflow-hidden">
@@ -366,7 +395,7 @@ export default async function HomePage() {
             </AnimateIn>
 
             {/* PUC */}
-            <AnimateIn delay={260}>
+            <AnimateIn delay={310}>
               <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 overflow-hidden">
@@ -439,13 +468,43 @@ export default async function HomePage() {
             </div>
           </AnimateIn>
 
+          {/* Plannisthenics */}
+          <AnimateIn delay={120} className="mb-6">
+            <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                  <PlannisthenicsIcon className="w-8 h-8 text-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-sm font-bold text-foreground">Plannisthenics</h3>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                      {tProj("in_development")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">{tProj("plannisthenics_type")}</p>
+                  <p className="text-xs leading-relaxed text-foreground/70 mb-3">
+                    {tProj("plannisthenics_desc")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Ruby on Rails", "Ruby"].map((tech) => (
+                      <span key={tech} className="px-2.5 py-1 rounded-lg bg-muted text-xs text-foreground/60 font-medium">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </AnimateIn>
+
           {/* YouTube */}
-          <AnimateIn delay={120} className="mb-4">
+          <AnimateIn delay={160} className="mb-4">
             <p className="text-sm text-muted-foreground">{tProj("youtube_intro")}</p>
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {videos.map((v, i) => (
-              <AnimateIn key={v.id} delay={i * 60 + 200}>
+              <AnimateIn key={v.id} delay={i * 60 + 220}>
                 <YouTubeEmbed videoId={v.id} title={v.title} />
               </AnimateIn>
             ))}

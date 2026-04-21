@@ -17,8 +17,8 @@
     "cta_contact": "Let's talk"
   },
   "bento": {
-    "current_role": "Most recently at",
-    "current_desc": "Building AI agents for the healthcare sector.",
+    "current_role": "Currently at",
+    "current_desc": "Cultura team — refactoring the workplace surveys module with Rails.",
     "teaching_stat_label": "years teaching",
     "teaching_at": "as TA and coordinator at PUC Chile",
     "location": "Santiago, Chile",
@@ -30,15 +30,16 @@
     "p1": "I'm a Software Engineer working as a Trainee at <atipicus>Atipicus</atipicus>. My current focus is on developing AI Agents for the healthcare sector, but my interests span the full development stack, from cloud infrastructure to user interfaces.",
     "p2": "During my time at university, I had the privilege of working as a teaching assistant and coordinator for several engineering courses, which allowed me to deepen my knowledge and pedagogical skills. I occasionally make videos on YouTube.",
     "p3": "You can learn more about my background and interests through my <experiences>experiences</experiences>, <projects>projects</projects> and <github>GitHub</github>. Let's connect on <linkedin>LinkedIn</linkedin> or via <whatsapp>WhatsApp</whatsapp>.",
-    "bio": "I'm a Software Engineer working as a Trainee at <atipicus>Atipicus</atipicus>, building AI Agents for healthcare. I care about the full stack — from cloud infrastructure to polished UIs. I've been teaching programming for 4+ years at <puc>PUC Chile</puc>.",
+    "bio": "I'm a Software Engineer at <buk>Buk</buk>, working on the Cultura team to refactor the workplace surveys module. I care about the full stack — from infrastructure to polished UIs. I've been teaching programming for 4+ years at <puc>PUC Chile</puc>.",
     "bio_cta": "Find my work on <github>GitHub</github> or connect on <linkedin>LinkedIn</linkedin> and <whatsapp>WhatsApp</whatsapp>."
   },
   "experience": {
     "title": "Experience",
     "current": "Current",
     "subtitle": "I specialize in modern Full Stack development, from cloud architecture to scalable user interfaces.",
-    "atipicus": "I currently work as a Software Engineer Trainee at <atipicus>Atipicus</atipicus>. I'm developing an AI agent system focused on the healthcare sector. My main stack includes advanced use of the <googleSDK>Google SDK</googleSDK>, infrastructure on <googleCloud>Google Cloud</googleCloud>, and data management with <mongodb>MongoDB</mongodb>.",
-    "biomechanics": "I'm in charge of the fullstack development of the official site for <biomechanics>Biomechanics</biomechanics>, an artistic-technological project. I make all technical decisions, using <nextjs>Next.js</nextjs>, <supabase>Supabase</supabase>, and <clerk>Clerk</clerk>. I've implemented a scalable back-office architecture and optimized SEO to ensure high production performance.",
+    "buk": "I work as a Software Engineer at <buk>Buk</buk> on the Cultura team. My main challenge is refactoring and unifying the workplace surveys module, working with Ruby on Rails and Ruby.",
+    "atipicus": "I worked as a Software Engineer Trainee at <atipicus>Atipicus</atipicus>, developing an AI agent system focused on the healthcare sector. My stack included advanced use of the <googleSDK>Google SDK</googleSDK>, infrastructure on <googleCloud>Google Cloud</googleCloud>, and data management with <mongodb>MongoDB</mongodb>.",
+    "biomechanics": "I was in charge of the fullstack development of the official site for <biomechanics>Biomechanics</biomechanics>, an artistic-technological project. I made all technical decisions, using <nextjs>Next.js</nextjs>, <supabase>Supabase</supabase>, and <clerk>Clerk</clerk>. I implemented a scalable back-office architecture and optimized SEO for high production performance.",
     "freelance": "I participated in the full-stack development of a sports betting platform using <react>React</react> and <nodejs>Node.js</nodejs>. The project included implementing workers, serverless functions, and a CI/CD pipeline. I deployed the infrastructure using <aws>AWS</aws> services such as EC2, CloudFront, and S3.",
     "mesti": "I served as Mobile Technical Lead for the client <mesti>Mesti</mesti>. I led the development of three mobile applications using <reactNative>React Native</reactNative>, including menu management and bartender tools. I coordinated the development team and managed the full cycle from requirements gathering to deployment.",
     "puc": "I have a solid academic and teaching background at the Pontificia Universidad Católica de Chile. I was the General Coordinator of the Computer Architecture course and served as a teaching assistant in key subjects such as Web Technologies and Applications, Data Structures, and Advanced Programming."
@@ -49,7 +50,10 @@
     "biomechanics_type": "Artistic-technological website",
     "biomechanics_desc": "Full-stack development of the official site. Scalable back-office architecture, content management, and SEO optimization for high production performance.",
     "visit": "Visit",
-    "youtube_intro": "YouTube videos teaching data structures and computer architecture."
+    "youtube_intro": "YouTube videos teaching data structures and computer architecture.",
+    "plannisthenics_type": "Calisthenics web app",
+    "plannisthenics_desc": "App to structure and track your calisthenics training. Plan routines, monitor your progress, and organize your workout sessions.",
+    "in_development": "In development"
   },
   "teaching": {
     "title": "Private tutoring",
