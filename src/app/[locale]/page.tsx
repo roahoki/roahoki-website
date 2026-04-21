@@ -446,7 +446,7 @@ export default async function HomePage() {
                     rel="noopener noreferrer"
                     className="px-4 py-2 rounded-xl border border-white/15 text-white text-xs font-semibold hover:bg-white/10 transition-colors duration-150"
                   >
-                    {tProj("visit")} &nearr;
+                    {tProj("visit")} ↗
                   </a>
                 </div>
               </div>
