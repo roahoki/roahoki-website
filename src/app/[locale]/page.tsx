@@ -171,12 +171,15 @@ export default async function HomePage() {
             {/* Current role */}
             <AnimateIn delay={0} className="col-span-2 md:col-span-2">
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/40 hover:bg-brand-muted transition-colors duration-300">
-                <span className="text-xs text-muted-foreground mb-3 block">{tBento("current_role")}</span>
-                <BukIcon size={40} className="object-contain mb-3" />
-                <p className="text-sm font-bold text-foreground mb-1.5">Buk</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {tBento("current_desc")}
-                </p>
+                <div className="flex items-center gap-4 h-full">
+                  <BukIcon size={48} className="object-contain shrink-0" />
+                  <div>
+                    <span className="text-xs text-muted-foreground">{tBento("current_role")} Buk</span>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                      {tBento("current_desc")}
+                    </p>
+                  </div>
+                </div>
               </div>
             </AnimateIn>
 
@@ -200,6 +203,7 @@ export default async function HomePage() {
                   <p className="text-xs font-semibold text-foreground mb-0.5">
                     {tBento("location")}
                   </p>
+                  <p className="text-xs text-muted-foreground">{tBento("hybrid")}</p>
                 </div>
                 <div className="pt-4 border-t border-border mt-4">
                   <p className="text-xs font-semibold text-foreground mb-0.5">Calistenia</p>

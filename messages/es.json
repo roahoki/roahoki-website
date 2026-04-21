@@ -22,6 +22,7 @@
     "teaching_stat_label": "años enseñando",
     "teaching_at": "como ayudante y coordinador en la PUC",
     "location": "Santiago, Chile",
+    "hybrid": "Trabajo híbrido",
     "athlete_desc": "Fuera del código, entreno calistenia",
     "stack_title": "Stack"
   },
@@ -31,7 +32,7 @@
     "p2": "Durante mi paso por la universidad tuve el privilegio de trabajar como ayudante y coordinador en varios cursos de ingeniería, lo que me permitió profundizar mis conocimientos y habilidades pedagógicas. A veces hago videos en youtube.",
     "p3": "Puedes conocer más sobre mi historial e intereses a través de mis <experiences>experiencias</experiences>, <projects>proyectos</projects> y <github>GitHub</github>. Conversemos por <linkedin>LinkedIn</linkedin> o por <whatsapp>WhatsApp</whatsapp>.",
     "bio": "Soy Ingeniero de Software en <buk>Buk</buk>, donde trabajo en el equipo de Cultura refactorizando el módulo de encuestas laborales. Me apasiona todo el stack: desde infraestructura hasta interfaces de usuario. Llevo más de 4 años enseñando programación en la <puc>PUC</puc>.",
-    "bio_cta": "Encuentra mi trabajo en <github>GitHub</github> o conéctate por <linkedin>LinkedIn</linkedin> y <whatsapp>WhatsApp</whatsapp>."
+    "bio_cta": "Encuentra mi trabajo en <github>GitHub</github> o interactuemos por <linkedin>LinkedIn</linkedin> y <whatsapp>WhatsApp</whatsapp>."
   },
   "experience": {
     "title": "Experiencia",
