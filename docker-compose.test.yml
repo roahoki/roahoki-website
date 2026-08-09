@@ -1,0 +1,33 @@
+# Postgres efímero para los tests de integración.
+#
+#   docker compose -f docker-compose.test.yml up -d
+#   npm test
+#   docker compose -f docker-compose.test.yml down -v
+#
+# Mockear Drizzle no sirve de nada: verificaría que el mock devuelve lo que se
+# le dijo, no que la query es correcta. Las queries y las políticas RLS se
+# prueban contra un Postgres de verdad.
+#
+# La misma imagen mayor que usa Supabase, para que el comportamiento de SQL y
+# de RLS coincida con producción.
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: roahoki-postgres-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: roahoki_test
+    ports:
+      # 55432 en el host para no chocar con un Postgres local en el 5432.
+      - "55432:5432"
+    # Los datos viven en tmpfs: la base entera en memoria. Más rápido, y se
+    # destruye sola al bajar el contenedor.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d roahoki_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
