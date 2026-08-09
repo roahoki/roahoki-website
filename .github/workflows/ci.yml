@@ -18,7 +18,7 @@ jobs:
       # Postgres para los tests de integración. Es el mismo servicio que
       # docker-compose.test.yml levanta en local.
       postgres:
-        image: postgres:16-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

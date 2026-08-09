@@ -8,12 +8,12 @@
 # le dijo, no que la query es correcta. Las queries y las políticas RLS se
 # prueban contra un Postgres de verdad.
 #
-# La misma imagen mayor que usa Supabase, para que el comportamiento de SQL y
-# de RLS coincida con producción.
+# La misma versión mayor que corre Supabase (verificado: 17.6), para que el
+# comportamiento de SQL y de RLS coincida con producción.
 
 services:
   postgres-test:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     container_name: roahoki-postgres-test
     environment:
       POSTGRES_USER: postgres
