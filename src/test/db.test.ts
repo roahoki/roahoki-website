@@ -22,10 +22,18 @@ describe.skipIf(!hasTestDatabase)("base de datos de pruebas", () => {
   it("corre una versión de Postgres compatible con Supabase", async () => {
     const sql = connectTestDb();
     try {
-      const [row] = await sql<{ version: string }[]>`show server_version`;
+      // Con alias explícito: `show server_version` nombra la columna
+      // `server_version`, y el tipo genérico de postgres.js no valida nada en
+      // runtime, así que un nombre equivocado se manifiesta como undefined.
+      const [row] = await sql<
+        { version: string }[]
+      >`select current_setting('server_version') as version`;
+
+      const major = Number.parseInt(row.version, 10);
+      expect(major).not.toBeNaN();
       // Supabase corre Postgres 15+; el compose usa 16. Menos que eso no
       // reproduce el comportamiento de producción.
-      expect(Number.parseInt(row.version, 10)).toBeGreaterThanOrEqual(15);
+      expect(major).toBeGreaterThanOrEqual(15);
     } finally {
       await sql.end();
     }
