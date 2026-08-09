@@ -1,12 +1,18 @@
-import Image from "next/image"
-import { getTranslations } from "next-intl/server"
-import type React from "react"
-import { AtipicusIcon } from "@/components/icons/atipicus-icon"
-import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon"
-import { MestiIcon } from "@/components/icons/mesti-icon"
-import { UCIcon } from "@/components/icons/uc-icon"
+import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import type React from "react";
+import { AtipicusIcon } from "@/components/icons/atipicus-icon";
+import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon";
+import { MestiIcon } from "@/components/icons/mesti-icon";
+import { UCIcon } from "@/components/icons/uc-icon";
 
-function FaviconIcon({ size = 20, className }: { size?: number; className?: string }) {
+function FaviconIcon({
+  size = 20,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
     <Image
       src="/favicon.ico"
@@ -15,24 +21,30 @@ function FaviconIcon({ size = 20, className }: { size?: number; className?: stri
       height={size}
       className={className}
     />
-  )
+  );
 }
 
 interface ProjectSectionProps {
-  icon?: React.ReactNode
-  title: string
-  children: React.ReactNode
-  delay?: 0 | 1 | 2 | 3
+  icon?: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+  delay?: 0 | 1 | 2 | 3;
 }
 
-function ProjectSection({ icon, title, children, delay = 0 }: ProjectSectionProps) {
-  const delayClass = delay === 0
-    ? "animate-fade-up"
-    : delay === 1
-    ? "animate-fade-up-delay-1"
-    : delay === 2
-    ? "animate-fade-up-delay-2"
-    : "animate-fade-up-delay-3"
+function ProjectSection({
+  icon,
+  title,
+  children,
+  delay = 0,
+}: ProjectSectionProps) {
+  const delayClass =
+    delay === 0
+      ? "animate-fade-up"
+      : delay === 1
+        ? "animate-fade-up-delay-1"
+        : delay === 2
+          ? "animate-fade-up-delay-2"
+          : "animate-fade-up-delay-3";
 
   return (
     <section className={`mb-8 ${delayClass}`}>
@@ -47,29 +59,44 @@ function ProjectSection({ icon, title, children, delay = 0 }: ProjectSectionProp
           <span className="h-px w-6 bg-brand/50 inline-block" />
         </span>
       </h2>
-      <div className="text-sm leading-relaxed text-foreground/85 pl-10">{children}</div>
+      <div className="text-sm leading-relaxed text-foreground/85 pl-10">
+        {children}
+      </div>
     </section>
-  )
+  );
 }
 
-const linkClass = "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors"
+const linkClass =
+  "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors";
 
-const extLink = (href: string) =>
-  (chunks: React.ReactNode) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-      {chunks}
-    </a>
-  )
+const extLink = (href: string) => (chunks: React.ReactNode) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={linkClass}
+  >
+    {chunks}
+  </a>
+);
 
 export async function ExperienceContent() {
-  const t = await getTranslations("experience")
+  const t = await getTranslations("experience");
 
   return (
     <article className="px-6 py-6 md:max-w-xl md:pt-12 md:pl-8 md:pr-8">
-      <h1 className="text-base font-bold text-foreground mb-2 animate-fade-up">{t("title")}</h1>
-      <p className="text-sm leading-relaxed text-foreground/60 mb-8 animate-fade-up-delay-1">{t("subtitle")}</p>
+      <h1 className="text-base font-bold text-foreground mb-2 animate-fade-up">
+        {t("title")}
+      </h1>
+      <p className="text-sm leading-relaxed text-foreground/60 mb-8 animate-fade-up-delay-1">
+        {t("subtitle")}
+      </p>
 
-      <ProjectSection icon={<AtipicusIcon className="w-full h-full" />} title="Atipicus" delay={1}>
+      <ProjectSection
+        icon={<AtipicusIcon className="w-full h-full" />}
+        title="Atipicus"
+        delay={1}
+      >
         <p>
           {t.rich("atipicus", {
             atipicus: extLink("https://atipic.us/"),
@@ -80,7 +107,13 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<BiomechanicsIcon size={32} className="object-contain rounded-lg" />} title="Biomechanics.wav" delay={2}>
+      <ProjectSection
+        icon={
+          <BiomechanicsIcon size={32} className="object-contain rounded-lg" />
+        }
+        title="Biomechanics.wav"
+        delay={2}
+      >
         <p>
           {t.rich("biomechanics", {
             biomechanics: extLink("https://www.biomechanics.cl/links"),
@@ -91,7 +124,11 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<FaviconIcon size={32} className="object-contain rounded-lg" />} title="Freelance Fullstack" delay={3}>
+      <ProjectSection
+        icon={<FaviconIcon size={32} className="object-contain rounded-lg" />}
+        title="Freelance Fullstack"
+        delay={3}
+      >
         <p>
           {t.rich("freelance", {
             react: extLink("https://react.dev"),
@@ -101,7 +138,11 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<MestiIcon className="w-full h-full" />} title="Mesti" delay={3}>
+      <ProjectSection
+        icon={<MestiIcon className="w-full h-full" />}
+        title="Mesti"
+        delay={3}
+      >
         <p>
           {t.rich("mesti", {
             mesti: extLink("https://mesti.app/"),
@@ -110,9 +151,13 @@ export async function ExperienceContent() {
         </p>
       </ProjectSection>
 
-      <ProjectSection icon={<UCIcon className="w-full h-full" />} title="PUC Chile" delay={3}>
+      <ProjectSection
+        icon={<UCIcon className="w-full h-full" />}
+        title="PUC Chile"
+        delay={3}
+      >
         <p>{t("puc")}</p>
       </ProjectSection>
     </article>
-  )
+  );
 }
