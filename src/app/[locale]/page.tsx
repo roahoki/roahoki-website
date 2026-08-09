@@ -368,6 +368,7 @@ export default async function HomePage() {
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 text-muted-foreground">
                     <svg
+                      aria-hidden="true"
                       className="w-5 h-5"
                       fill="none"
                       stroke="currentColor"
@@ -607,6 +608,7 @@ export default async function HomePage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 active:scale-[0.97] transition-all duration-150"
               >
                 <svg
+                  aria-hidden="true"
                   className="w-4 h-4 shrink-0"
                   fill="currentColor"
                   viewBox="0 0 24 24"

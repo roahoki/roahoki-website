@@ -7,11 +7,14 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import Cropper from "react-easy-crop";
+import { supabaseAnonKey, supabaseUrl } from "@/lib/env";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+// Se crea al momento de subir y no a nivel de módulo: si faltara una variable
+// de entorno, un throw en module scope dejaría la página en blanco en vez de
+// fallar solo la subida.
+function storageClient() {
+  return createClient(supabaseUrl(), supabaseAnonKey());
+}
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -28,7 +31,10 @@ function createImage(url: string): Promise<HTMLImageElement> {
 async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  // Solo devuelve null si el canvas ya tiene otro contexto asignado; acá el
+  // elemento se acaba de crear, así que en la práctica nunca ocurre.
+  if (!ctx) throw new Error("No se pudo obtener el contexto 2D del canvas.");
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
   ctx.drawImage(
@@ -42,9 +48,17 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
     pixelCrop.width,
     pixelCrop.height,
   );
-  return new Promise((resolve) =>
+  return new Promise((resolve, reject) =>
     canvas.toBlob(
-      (blob) => resolve(new File([blob!], "photo.jpg", { type: "image/jpeg" })),
+      (blob) => {
+        // `toBlob` entrega null si la codificación falla. Antes se asumía que
+        // nunca pasaba y `new File([null])` habría generado un archivo corrupto.
+        if (!blob) {
+          reject(new Error("No se pudo codificar la imagen recortada."));
+          return;
+        }
+        resolve(new File([blob], "photo.jpg", { type: "image/jpeg" }));
+      },
       "image/jpeg",
       0.9,
     ),
@@ -130,7 +144,8 @@ export default function NewTestimonialPage() {
     if (imageFile) {
       const ext = imageFile.name.split(".").pop() ?? "jpg";
       const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadError } = await supabase.storage
+      const storage = storageClient().storage;
+      const { error: uploadError } = await storage
         .from("testimonial-images")
         .upload(filename, imageFile);
 
@@ -140,7 +155,7 @@ export default function NewTestimonialPage() {
         return;
       }
 
-      const { data } = supabase.storage
+      const { data } = storage
         .from("testimonial-images")
         .getPublicUrl(filename);
       image_url = data.publicUrl;
@@ -181,6 +196,7 @@ export default function NewTestimonialPage() {
         <div className="max-w-md w-full rounded-2xl border border-brand/30 bg-brand-muted p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-brand/15 border border-brand/25 flex items-center justify-center mx-auto mb-4">
             <svg
+              aria-hidden="true"
               className="w-6 h-6 text-brand"
               fill="none"
               stroke="currentColor"
@@ -269,10 +285,14 @@ export default function NewTestimonialPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              <label
+                htmlFor="testimonial-name"
+                className="block text-xs font-semibold text-foreground mb-1.5"
+              >
                 {t("name_label")} <span className="text-brand">*</span>
               </label>
               <input
+                id="testimonial-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -283,10 +303,14 @@ export default function NewTestimonialPage() {
 
             {/* Message */}
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              <label
+                htmlFor="testimonial-message"
+                className="block text-xs font-semibold text-foreground mb-1.5"
+              >
                 {t("message_label")} <span className="text-brand">*</span>
               </label>
               <textarea
+                id="testimonial-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={t("message_placeholder")}
@@ -300,13 +324,22 @@ export default function NewTestimonialPage() {
 
             {/* Photo */}
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              {/* No es un <label>: rotula el grupo completo (preview + botones),
+                  no un control puntual. El input file va oculto y se dispara
+                  por ref, así que no hay nada a lo que apuntar con htmlFor. */}
+              <span
+                id="testimonial-photo-label"
+                className="block text-xs font-semibold text-foreground mb-1.5"
+              >
                 {t("photo_label")}
-              </label>
+              </span>
               <p className="text-xs text-muted-foreground mb-2">
                 {t("photo_hint")}
               </p>
-              <div className="flex items-center gap-3">
+              <fieldset
+                aria-labelledby="testimonial-photo-label"
+                className="flex items-center gap-3"
+              >
                 {imagePreview ? (
                   <Image
                     src={imagePreview}
@@ -318,6 +351,7 @@ export default function NewTestimonialPage() {
                 ) : (
                   <div className="w-12 h-12 rounded-full border border-dashed border-border/60 flex items-center justify-center shrink-0">
                     <svg
+                      aria-hidden="true"
                       className="w-5 h-5 text-muted-foreground"
                       fill="none"
                       stroke="currentColor"
@@ -360,18 +394,25 @@ export default function NewTestimonialPage() {
                   onChange={handleImageChange}
                   className="hidden"
                 />
-              </div>
+              </fieldset>
             </div>
 
             {/* Social */}
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1">
+              {/* Rotula los tres campos de contacto como grupo, no uno solo. */}
+              <span
+                id="testimonial-social-label"
+                className="block text-xs font-semibold text-foreground mb-1"
+              >
                 {t("social_label")} <span className="text-brand">*</span>
-              </label>
+              </span>
               <p className="text-xs text-muted-foreground mb-2.5">
                 {t("social_hint")}
               </p>
-              <div className="space-y-2.5">
+              <fieldset
+                aria-labelledby="testimonial-social-label"
+                className="space-y-2.5"
+              >
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-16 shrink-0">
                     LinkedIn
@@ -409,7 +450,7 @@ export default function NewTestimonialPage() {
                     className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
                   />
                 </div>
-              </div>
+              </fieldset>
             </div>
 
             {errorMsg && (
