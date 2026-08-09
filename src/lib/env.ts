@@ -52,3 +52,11 @@ export function supabaseServiceRoleKey(): string {
 export function adminPassword(): string {
   return required(process.env.ADMIN_PASSWORD, "ADMIN_PASSWORD");
 }
+
+/**
+ * Conexión que usa la app en runtime: transaction pooler, puerto 6543. No sirve
+ * para migraciones — para eso está `DIRECT_URL`, que solo lee `drizzle.config.ts`.
+ */
+export function databaseUrl(): string {
+  return required(process.env.DATABASE_URL, "DATABASE_URL");
+}
