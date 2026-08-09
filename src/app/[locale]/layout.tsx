@@ -1,11 +1,11 @@
-import React from "react"
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata, Viewport } from "next"
 import { Plus_Jakarta_Sans } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages } from "next-intl/server"
-import { routing } from "@/i18n/routing"
+import type React from "react"
 import { Providers } from "@/components/providers"
+import { routing } from "@/i18n/routing"
 import "../globals.css"
 
 const plusJakartaSans = Plus_Jakarta_Sans({

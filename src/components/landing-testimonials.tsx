@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server"
-import { supabaseAnon } from "@/lib/supabase"
-import { TestimonialCard, type Testimonial } from "@/components/testimonial-card"
+import { type Testimonial, TestimonialCard } from "@/components/testimonial-card"
 import { Link } from "@/i18n/navigation"
+import { supabaseAnon } from "@/lib/supabase"
 
 export async function LandingTestimonials() {
   const tTeach = await getTranslations("teaching")

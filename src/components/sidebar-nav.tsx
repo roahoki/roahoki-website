@@ -1,9 +1,9 @@
 "use client"
 
-import { useTranslations, useLocale } from "next-intl"
-import { Link, usePathname, useRouter } from "@/i18n/navigation"
+import { Moon, Sun } from "lucide-react"
+import { useLocale, useTranslations } from "next-intl"
 import { useTheme } from "next-themes"
-import { Sun, Moon } from "lucide-react"
+import { Link, usePathname, useRouter } from "@/i18n/navigation"
 
 export function SidebarNav() {
   const t = useTranslations("nav")

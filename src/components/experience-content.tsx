@@ -1,6 +1,6 @@
-import React from "react"
 import Image from "next/image"
 import { getTranslations } from "next-intl/server"
+import type React from "react"
 import { AtipicusIcon } from "@/components/icons/atipicus-icon"
 import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon"
 import { MestiIcon } from "@/components/icons/mesti-icon"

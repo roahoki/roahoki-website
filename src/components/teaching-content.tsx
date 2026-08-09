@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server"
+import { type Testimonial, TestimonialCard } from "@/components/testimonial-card"
 import { supabaseAnon } from "@/lib/supabase"
-import { TestimonialCard, type Testimonial } from "@/components/testimonial-card"
 
 function SubjectCard({
   icon,
