@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase"
 
 async function checkAuth() {

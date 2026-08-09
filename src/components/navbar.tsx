@@ -1,10 +1,10 @@
 "use client"
 
+import { Moon, Sun } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
-import { usePathname, useRouter } from "@/i18n/navigation"
 import { useTheme } from "next-themes"
-import { Sun, Moon } from "lucide-react"
 import { useRef } from "react"
+import { usePathname, useRouter } from "@/i18n/navigation"
 
 const WHATSAPP = "https://wa.link/ht8ioc"
 

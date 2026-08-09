@@ -1,6 +1,6 @@
+import { getTranslations } from "next-intl/server"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { YouTubeEmbed } from "@/components/youtube-embed"
-import { getTranslations } from "next-intl/server"
 
 const videos = [
   { id: "OtfZFL0bfXQ", title: "Video 1" },
