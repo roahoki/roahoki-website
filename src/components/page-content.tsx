@@ -1,26 +1,29 @@
-import Image from "next/image"
-import { getTranslations } from "next-intl/server"
-import { Link } from "@/i18n/navigation"
+import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
 const linkClass =
-  "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors"
+  "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors";
 
 export async function PageContent() {
-  const t = await getTranslations("about")
+  const t = await getTranslations("about");
 
-  const internalLink = (href: string) =>
-    (chunks: React.ReactNode) => (
-      <Link href={href} className={linkClass}>
-        {chunks}
-      </Link>
-    )
+  const internalLink = (href: string) => (chunks: React.ReactNode) => (
+    <Link href={href} className={linkClass}>
+      {chunks}
+    </Link>
+  );
 
-  const externalLink = (href: string) =>
-    (chunks: React.ReactNode) => (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-        {chunks}
-      </a>
-    )
+  const externalLink = (href: string) => (chunks: React.ReactNode) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={linkClass}
+    >
+      {chunks}
+    </a>
+  );
 
   return (
     <article className="px-6 py-6 md:max-w-xl md:pt-12 md:pl-8 md:pr-0">
@@ -50,11 +53,13 @@ export async function PageContent() {
             experiences: internalLink("/experience"),
             projects: internalLink("/projects"),
             github: externalLink("https://github.com/roahoki"),
-            linkedin: externalLink("https://www.linkedin.com/in/joaquin-peralta-perez/"),
+            linkedin: externalLink(
+              "https://www.linkedin.com/in/joaquin-peralta-perez/",
+            ),
             whatsapp: externalLink("https://wa.link/ht8ioc"),
           })}
         </p>
       </div>
     </article>
-  )
+  );
 }

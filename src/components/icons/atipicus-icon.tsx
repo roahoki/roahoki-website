@@ -1,4 +1,4 @@
-import type { SVGProps } from "react"
+import type { SVGProps } from "react";
 
 export function AtipicusIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -19,5 +19,5 @@ export function AtipicusIcon(props: SVGProps<SVGSVGElement>) {
         fill="var(--fill-0, currentColor)"
       />
     </svg>
-  )
+  );
 }

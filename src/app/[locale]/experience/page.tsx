@@ -1,5 +1,5 @@
-import { ExperienceContent } from "@/components/experience-content"
-import { SidebarNav } from "@/components/sidebar-nav"
+import { ExperienceContent } from "@/components/experience-content";
+import { SidebarNav } from "@/components/sidebar-nav";
 
 export default function ExperiencePage() {
   return (
@@ -11,5 +11,5 @@ export default function ExperiencePage() {
         <ExperienceContent />
       </div>
     </main>
-  )
+  );
 }

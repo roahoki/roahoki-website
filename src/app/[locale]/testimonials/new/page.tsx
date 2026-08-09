@@ -1,135 +1,149 @@
-"use client"
+"use client";
 
-import { createClient } from "@supabase/supabase-js"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { useTranslations } from "next-intl"
-import { useCallback, useEffect, useRef, useState } from "react"
-import type { Area } from "react-easy-crop"
-import Cropper from "react-easy-crop"
+import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Area } from "react-easy-crop";
+import Cropper from "react-easy-crop";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
 
-type FormState = "idle" | "submitting" | "success" | "error"
+type FormState = "idle" | "submitting" | "success" | "error";
 
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    const img = new window.Image()
-    img.addEventListener("load", () => resolve(img))
-    img.addEventListener("error", reject)
-    img.setAttribute("crossOrigin", "anonymous")
-    img.src = url
-  })
+    const img = new window.Image();
+    img.addEventListener("load", () => resolve(img));
+    img.addEventListener("error", reject);
+    img.setAttribute("crossOrigin", "anonymous");
+    img.src = url;
+  });
 }
 
 async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
-  const image = await createImage(imageSrc)
-  const canvas = document.createElement("canvas")
-  const ctx = canvas.getContext("2d")!
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d")!;
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
   ctx.drawImage(
     image,
-    pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
-    0, 0, pixelCrop.width, pixelCrop.height
-  )
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height,
+  );
   return new Promise((resolve) =>
     canvas.toBlob(
       (blob) => resolve(new File([blob!], "photo.jpg", { type: "image/jpeg" })),
       "image/jpeg",
-      0.9
-    )
-  )
+      0.9,
+    ),
+  );
 }
 
 export default function NewTestimonialPage() {
-  const t = useTranslations("testimonialForm")
-  const router = useRouter()
+  const t = useTranslations("testimonialForm");
+  const router = useRouter();
 
-  const [name, setName] = useState("")
-  const [message, setMessage] = useState("")
-  const [linkedin, setLinkedin] = useState("")
-  const [github, setGithub] = useState("")
-  const [email, setEmail] = useState("")
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [github, setGithub] = useState("");
+  const [email, setEmail] = useState("");
 
-  const [rawImageUrl, setRawImageUrl] = useState<string | null>(null)
-  const [showCrop, setShowCrop] = useState(false)
-  const [crop, setCrop] = useState({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [rawImageUrl, setRawImageUrl] = useState<string | null>(null);
+  const [showCrop, setShowCrop] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const [formState, setFormState] = useState<FormState>("idle")
-  const [errorMsg, setErrorMsg] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [formState, setFormState] = useState<FormState>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
-    setCroppedAreaPixels(croppedPixels)
-  }, [])
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      setErrorMsg(t("photo_too_large"))
-      return
+      setErrorMsg(t("photo_too_large"));
+      return;
     }
-    const url = URL.createObjectURL(file)
-    setRawImageUrl(url)
-    setCrop({ x: 0, y: 0 })
-    setZoom(1)
-    setShowCrop(true)
-    setErrorMsg("")
+    const url = URL.createObjectURL(file);
+    setRawImageUrl(url);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setShowCrop(true);
+    setErrorMsg("");
     // reset so the same file can be re-selected
-    e.target.value = ""
+    e.target.value = "";
   }
 
   async function confirmCrop() {
-    if (!rawImageUrl || !croppedAreaPixels) return
-    const file = await getCroppedImg(rawImageUrl, croppedAreaPixels)
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-    setShowCrop(false)
+    if (!rawImageUrl || !croppedAreaPixels) return;
+    const file = await getCroppedImg(rawImageUrl, croppedAreaPixels);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setShowCrop(false);
   }
 
   function cancelCrop() {
-    setRawImageUrl(null)
-    setShowCrop(false)
+    setRawImageUrl(null);
+    setShowCrop(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setErrorMsg("")
+    e.preventDefault();
+    setErrorMsg("");
 
-    if (name.trim().length < 2) { setErrorMsg(t("validation_name")); return }
-    if (message.trim().length < 20) { setErrorMsg(t("validation_message")); return }
+    if (name.trim().length < 2) {
+      setErrorMsg(t("validation_name"));
+      return;
+    }
+    if (message.trim().length < 20) {
+      setErrorMsg(t("validation_message"));
+      return;
+    }
     if (!linkedin.trim() && !github.trim() && !email.trim()) {
-      setErrorMsg(t("validation_social"))
-      return
+      setErrorMsg(t("validation_social"));
+      return;
     }
 
-    setFormState("submitting")
+    setFormState("submitting");
 
-    let image_url: string | null = null
+    let image_url: string | null = null;
     if (imageFile) {
-      const ext = imageFile.name.split(".").pop() ?? "jpg"
-      const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const ext = imageFile.name.split(".").pop() ?? "jpg";
+      const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("testimonial-images")
-        .upload(filename, imageFile)
+        .upload(filename, imageFile);
 
       if (uploadError) {
-        setErrorMsg(t("error"))
-        setFormState("error")
-        return
+        setErrorMsg(t("error"));
+        setFormState("error");
+        return;
       }
 
-      const { data } = supabase.storage.from("testimonial-images").getPublicUrl(filename)
-      image_url = data.publicUrl
+      const { data } = supabase.storage
+        .from("testimonial-images")
+        .getPublicUrl(filename);
+      image_url = data.publicUrl;
     }
 
     const res = await fetch("/api/testimonials", {
@@ -143,39 +157,53 @@ export default function NewTestimonialPage() {
         github_username: github || null,
         email: email || null,
       }),
-    })
+    });
 
     if (!res.ok) {
-      const data = await res.json()
-      setErrorMsg(data.error || t("error"))
-      setFormState("error")
-      return
+      const data = await res.json();
+      setErrorMsg(data.error || t("error"));
+      setFormState("error");
+      return;
     }
 
-    setFormState("success")
+    setFormState("success");
   }
 
   useEffect(() => {
-    if (formState !== "success") return
-    const timer = setTimeout(() => router.push("/"), 3000)
-    return () => clearTimeout(timer)
-  }, [formState, router])
+    if (formState !== "success") return;
+    const timer = setTimeout(() => router.push("/"), 3000);
+    return () => clearTimeout(timer);
+  }, [formState, router]);
 
   if (formState === "success") {
     return (
       <main className="h-[100dvh] flex items-center justify-center px-4 overflow-hidden">
         <div className="max-w-md w-full rounded-2xl border border-brand/30 bg-brand-muted p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-brand/15 border border-brand/25 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            <svg
+              className="w-6 h-6 text-brand"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4.5 12.75l6 6 9-13.5"
+              />
             </svg>
           </div>
-          <h1 className="text-base font-bold text-foreground mb-2">{t("success_title")}</h1>
+          <h1 className="text-base font-bold text-foreground mb-2">
+            {t("success_title")}
+          </h1>
           <p className="text-sm text-foreground/70">{t("success_message")}</p>
-          <p className="text-xs text-muted-foreground mt-4">{t("success_redirect")}</p>
+          <p className="text-xs text-muted-foreground mt-4">
+            {t("success_redirect")}
+          </p>
         </div>
       </main>
-    )
+    );
   }
 
   return (
@@ -197,7 +225,9 @@ export default function NewTestimonialPage() {
             />
           </div>
           <div className="px-5 pt-4 pb-8 space-y-4 bg-zinc-950 border-t border-white/8">
-            <p className="text-xs text-center text-white/50">{t("crop_hint")}</p>
+            <p className="text-xs text-center text-white/50">
+              {t("crop_hint")}
+            </p>
             <input
               type="range"
               min={1}
@@ -230,7 +260,9 @@ export default function NewTestimonialPage() {
       <main className="py-8 px-4 overflow-x-hidden">
         <div className="max-w-lg mx-auto">
           <div className="mb-8">
-            <h1 className="text-base font-bold text-foreground mb-2">{t("title")}</h1>
+            <h1 className="text-base font-bold text-foreground mb-2">
+              {t("title")}
+            </h1>
             <p className="text-sm text-foreground/65">{t("subtitle")}</p>
           </div>
 
@@ -271,7 +303,9 @@ export default function NewTestimonialPage() {
               <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {t("photo_label")}
               </label>
-              <p className="text-xs text-muted-foreground mb-2">{t("photo_hint")}</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                {t("photo_hint")}
+              </p>
               <div className="flex items-center gap-3">
                 {imagePreview ? (
                   <Image
@@ -283,8 +317,18 @@ export default function NewTestimonialPage() {
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full border border-dashed border-border/60 flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    <svg
+                      className="w-5 h-5 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                      />
                     </svg>
                   </div>
                 )}
@@ -299,7 +343,10 @@ export default function NewTestimonialPage() {
                   {imagePreview && (
                     <button
                       type="button"
-                      onClick={() => { setImageFile(null); setImagePreview(null) }}
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(null);
+                      }}
                       className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-destructive/40 hover:text-destructive transition-all duration-150"
                     >
                       {t("photo_remove")}
@@ -321,10 +368,14 @@ export default function NewTestimonialPage() {
               <label className="block text-xs font-semibold text-foreground mb-1">
                 {t("social_label")} <span className="text-brand">*</span>
               </label>
-              <p className="text-xs text-muted-foreground mb-2.5">{t("social_hint")}</p>
+              <p className="text-xs text-muted-foreground mb-2.5">
+                {t("social_hint")}
+              </p>
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground w-16 shrink-0">LinkedIn</span>
+                  <span className="text-xs text-muted-foreground w-16 shrink-0">
+                    LinkedIn
+                  </span>
                   <input
                     type="url"
                     value={linkedin}
@@ -334,7 +385,9 @@ export default function NewTestimonialPage() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground w-16 shrink-0">GitHub</span>
+                  <span className="text-xs text-muted-foreground w-16 shrink-0">
+                    GitHub
+                  </span>
                   <input
                     type="text"
                     value={github}
@@ -344,7 +397,9 @@ export default function NewTestimonialPage() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground w-16 shrink-0">Email</span>
+                  <span className="text-xs text-muted-foreground w-16 shrink-0">
+                    Email
+                  </span>
                   <input
                     type="text"
                     inputMode="email"
@@ -374,5 +429,5 @@ export default function NewTestimonialPage() {
         </div>
       </main>
     </>
-  )
+  );
 }
