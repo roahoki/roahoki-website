@@ -1,5 +1,11 @@
 import type { SVGProps } from "react";
 
+// Decorativo: el nombre de la institución siempre va en texto al lado, así que
+// `aria-hidden` evita que el lector de pantalla lo anuncie dos veces.
+//
+// El `{...props}` no es cosmético: sin él se descartaba el `className` que le
+// pasan los llamadores, y como el SVG trae `width`/`height` fijos el logo se
+// renderizaba a 209x120 px en vez de al tamaño pedido.
 export function UCIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -7,6 +13,8 @@ export function UCIcon(props: SVGProps<SVGSVGElement>) {
       height="120px"
       viewBox="0 0 209 120"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      {...props}
     >
       <g
         id="Symbols-Mobile"

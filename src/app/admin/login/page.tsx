@@ -41,6 +41,9 @@ export default function AdminLoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
+            // Pantalla de un solo campo cuyo único propósito es escribir la
+            // contraseña: enfocarlo no desorienta ni le roba el foco a nada.
+            // biome-ignore lint/a11y/noAutofocus: justificado arriba
             autoFocus
             className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
           />
