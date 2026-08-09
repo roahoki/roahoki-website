@@ -1,7 +1,8 @@
+/* CSS exige que todos los @import vayan antes que cualquier otra regla. */
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @plugin "tailwindcss-animate";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 

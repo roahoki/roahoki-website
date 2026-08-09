@@ -102,6 +102,7 @@ export default function AdminTestimonialsPage() {
             Ir al sitio
           </a>
           <button
+            type="button"
             onClick={logout}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
           >
@@ -114,6 +115,7 @@ export default function AdminTestimonialsPage() {
       <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
         {(["all", "pending", "approved", "rejected"] as Filter[]).map((f) => (
           <button
+            type="button"
             key={f}
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors shrink-0 ${
@@ -218,6 +220,7 @@ export default function AdminTestimonialsPage() {
               <div className="grid grid-cols-3 gap-2">
                 {t.status !== "approved" ? (
                   <button
+                    type="button"
                     onClick={() => updateStatus(t.id, "approved")}
                     className="py-2 rounded-lg text-xs font-semibold bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20 transition-colors"
                   >
@@ -228,6 +231,7 @@ export default function AdminTestimonialsPage() {
                 )}
                 {t.status !== "rejected" ? (
                   <button
+                    type="button"
                     onClick={() => updateStatus(t.id, "rejected")}
                     className="py-2 rounded-lg text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
                   >
@@ -237,6 +241,7 @@ export default function AdminTestimonialsPage() {
                   <div />
                 )}
                 <button
+                  type="button"
                   onClick={() => deleteTestimonial(t.id)}
                   className="py-2 rounded-lg text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-colors col-start-3"
                 >

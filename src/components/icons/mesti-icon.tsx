@@ -1,8 +1,16 @@
 import type { SVGProps } from "react";
 
+// Decorativo: el nombre de la institución siempre va en texto al lado, así que
+// `aria-hidden` evita que el lector de pantalla lo anuncie dos veces.
 export function MestiIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+    <svg
+      id="Capa_1"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 500 500"
+      aria-hidden="true"
+      {...props}
+    >
       <g>
         <path
           fill="currentColor"
