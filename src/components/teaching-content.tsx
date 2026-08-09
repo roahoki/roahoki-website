@@ -1,6 +1,9 @@
-import { getTranslations } from "next-intl/server"
-import { type Testimonial, TestimonialCard } from "@/components/testimonial-card"
-import { supabaseAnon } from "@/lib/supabase"
+import { getTranslations } from "next-intl/server";
+import {
+  type Testimonial,
+  TestimonialCard,
+} from "@/components/testimonial-card";
+import { supabaseAnon } from "@/lib/supabase";
 
 function SubjectCard({
   icon,
@@ -8,10 +11,10 @@ function SubjectCard({
   description,
   delay,
 }: {
-  icon: React.ReactNode
-  title: string
-  description: string
-  delay: string
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  delay: string;
 }) {
   return (
     <div
@@ -21,27 +24,29 @@ function SubjectCard({
         <span className="text-brand mt-0.5 shrink-0">{icon}</span>
         <div>
           <h3 className="text-sm font-bold text-foreground mb-1.5">{title}</h3>
-          <p className="text-sm leading-relaxed text-foreground/75">{description}</p>
+          <p className="text-sm leading-relaxed text-foreground/75">
+            {description}
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-const WHATSAPP_URL = "https://wa.link/ht8ioc"
+const WHATSAPP_URL = "https://wa.link/ht8ioc";
 
 export async function TeachingContent() {
-  const t = await getTranslations("teaching")
-  const tForm = await getTranslations("testimonialForm")
+  const t = await getTranslations("teaching");
+  const tForm = await getTranslations("testimonialForm");
 
-  let approved: Testimonial[] = []
+  let approved: Testimonial[] = [];
   try {
     const { data } = await supabaseAnon()
       .from("testimonials")
       .select("*")
       .eq("status", "approved")
-      .order("created_at", { ascending: false })
-    approved = (data ?? []) as Testimonial[]
+      .order("created_at", { ascending: false });
+    approved = (data ?? []) as Testimonial[];
   } catch {
     // silently fail — show empty state if Supabase is unreachable
   }
@@ -65,8 +70,18 @@ export async function TeachingContent() {
           <SubjectCard
             delay="animate-fade-up-delay-2"
             icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h8M4 18h6" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 10h16M4 14h8M4 18h6"
+                />
               </svg>
             }
             title={t("dsa_title")}
@@ -75,8 +90,18 @@ export async function TeachingContent() {
           <SubjectCard
             delay="animate-fade-up-delay-3"
             icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                />
               </svg>
             }
             title={t("advanced_title")}
@@ -97,8 +122,12 @@ export async function TeachingContent() {
 
       {/* CTA */}
       <section className="mb-8 animate-fade-up-delay-3 rounded-xl border border-brand/25 bg-brand-muted p-5">
-        <h2 className="text-sm font-bold text-foreground mb-1.5">{t("cta_title")}</h2>
-        <p className="text-sm leading-relaxed text-foreground/75 mb-4">{t("cta_text")}</p>
+        <h2 className="text-sm font-bold text-foreground mb-1.5">
+          {t("cta_title")}
+        </h2>
+        <p className="text-sm leading-relaxed text-foreground/75 mb-4">
+          {t("cta_text")}
+        </p>
         <a
           href={WHATSAPP_URL}
           target="_blank"
@@ -128,7 +157,9 @@ export async function TeachingContent() {
 
         {approved.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border/60 p-5 text-center">
-            <p className="text-sm text-muted-foreground mb-2">{t("testimonials_coming")}</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              {t("testimonials_coming")}
+            </p>
             <a
               href="testimonials/new"
               className="text-xs text-brand hover:underline"
@@ -145,5 +176,5 @@ export async function TeachingContent() {
         )}
       </section>
     </article>
-  )
+  );
 }

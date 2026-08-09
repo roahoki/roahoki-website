@@ -1,16 +1,16 @@
-import Image from "next/image"
+import Image from "next/image";
 
 export type Testimonial = {
-  id: string
-  name: string
-  message: string
-  status: "pending" | "approved" | "rejected"
-  image_url: string | null
-  linkedin_url: string | null
-  github_username: string | null
-  email: string | null
-  created_at: string
-}
+  id: string;
+  name: string;
+  message: string;
+  status: "pending" | "approved" | "rejected";
+  image_url: string | null;
+  linkedin_url: string | null;
+  github_username: string | null;
+  email: string | null;
+  created_at: string;
+};
 
 export function TestimonialCard({ t }: { t: Testimonial }) {
   const initials = t.name
@@ -18,13 +18,16 @@ export function TestimonialCard({ t }: { t: Testimonial }) {
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 
   const socialLink = t.linkedin_url
     ? { href: t.linkedin_url, label: "LinkedIn" }
     : t.github_username
-    ? { href: `https://github.com/${t.github_username}`, label: `@${t.github_username}` }
-    : null
+      ? {
+          href: `https://github.com/${t.github_username}`,
+          label: `@${t.github_username}`,
+        }
+      : null;
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -60,5 +63,5 @@ export function TestimonialCard({ t }: { t: Testimonial }) {
       </div>
       <p className="text-sm leading-relaxed text-foreground/80">{t.message}</p>
     </div>
-  )
+  );
 }
