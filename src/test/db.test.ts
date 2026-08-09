@@ -31,9 +31,10 @@ describe.skipIf(!hasTestDatabase)("base de datos de pruebas", () => {
 
       const major = Number.parseInt(row.version, 10);
       expect(major).not.toBeNaN();
-      // Supabase corre Postgres 15+; el compose usa 16. Menos que eso no
-      // reproduce el comportamiento de producción.
-      expect(major).toBeGreaterThanOrEqual(15);
+      // El Supabase de producción corre 17.6 (verificado contra el proyecto).
+      // Probar sobre una mayor anterior no reproduce su comportamiento, así
+      // que si este assert falla es señal de que el compose quedó desalineado.
+      expect(major).toBeGreaterThanOrEqual(17);
     } finally {
       await sql.end();
     }
