@@ -3,7 +3,7 @@ import {
   type Testimonial,
   TestimonialCard,
 } from "@/components/testimonial-card";
-import { supabaseAnon } from "@/lib/supabase";
+import { listApprovedTestimonials } from "@/lib/testimonials/queries";
 
 function SubjectCard({
   icon,
@@ -41,14 +41,10 @@ export async function TeachingContent() {
 
   let approved: Testimonial[] = [];
   try {
-    const { data } = await supabaseAnon()
-      .from("testimonials")
-      .select("*")
-      .eq("status", "approved")
-      .order("created_at", { ascending: false });
-    approved = (data ?? []) as Testimonial[];
+    approved = await listApprovedTestimonials();
   } catch {
-    // silently fail — show empty state if Supabase is unreachable
+    // Si la base no responde, se muestra el estado vacío: una sección
+    // secundaria no debería voltear la página entera.
   }
 
   return (

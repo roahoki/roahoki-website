@@ -24,7 +24,13 @@ export const testimonials = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     name: text().notNull(),
     message: text().notNull(),
-    status: text().default("pending").notNull(),
+    // El `enum` es solo a nivel de tipos: la columna sigue siendo `text` y no
+    // genera migración. Quien lo hace cumplir en la base es el check de más
+    // abajo. Sirve para que TypeScript conozca los tres valores en vez de ver
+    // un `string` cualquiera, y para no tener que repetirlos a mano.
+    status: text({ enum: ["pending", "approved", "rejected"] })
+      .default("pending")
+      .notNull(),
     imageUrl: text("image_url"),
     linkedinUrl: text("linkedin_url"),
     githubUsername: text("github_username"),
@@ -84,3 +90,4 @@ export const testimonials = pgTable(
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type NewTestimonial = typeof testimonials.$inferInsert;
+export type TestimonialStatus = Testimonial["status"];

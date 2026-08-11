@@ -1,16 +1,10 @@
 import Image from "next/image";
+import type { Testimonial } from "@/db/schema";
 
-export type Testimonial = {
-  id: string;
-  name: string;
-  message: string;
-  status: "pending" | "approved" | "rejected";
-  image_url: string | null;
-  linkedin_url: string | null;
-  github_username: string | null;
-  email: string | null;
-  created_at: string;
-};
+// El tipo se deriva del esquema, no se escribe a mano: si mañana se agrega una
+// columna o cambia un nullable, esto lo acompaña solo. Se re-exporta porque los
+// componentes que muestran testimonios ya lo importaban desde acá.
+export type { Testimonial };
 
 export function TestimonialCard({ t }: { t: Testimonial }) {
   const initials = t.name
@@ -20,21 +14,21 @@ export function TestimonialCard({ t }: { t: Testimonial }) {
     .slice(0, 2)
     .toUpperCase();
 
-  const socialLink = t.linkedin_url
-    ? { href: t.linkedin_url, label: "LinkedIn" }
-    : t.github_username
+  const socialLink = t.linkedinUrl
+    ? { href: t.linkedinUrl, label: "LinkedIn" }
+    : t.githubUsername
       ? {
-          href: `https://github.com/${t.github_username}`,
-          label: `@${t.github_username}`,
+          href: `https://github.com/${t.githubUsername}`,
+          label: `@${t.githubUsername}`,
         }
       : null;
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-start gap-3 mb-3">
-        {t.image_url ? (
+        {t.imageUrl ? (
           <Image
-            src={t.image_url}
+            src={t.imageUrl}
             alt={t.name}
             width={40}
             height={40}

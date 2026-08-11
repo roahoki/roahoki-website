@@ -1,11 +1,28 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import type { TestimonialStatus } from "@/db/schema";
+import { adminPassword } from "@/lib/env";
+import {
+  deleteTestimonial,
+  listAllTestimonials,
+  updateTestimonialStatus,
+} from "@/lib/testimonials/queries";
 
+const VALID_STATUSES: TestimonialStatus[] = ["pending", "approved", "rejected"];
+
+/**
+ * Antes esto comparaba contra `process.env.ADMIN_PASSWORD` directo, y ahí había
+ * un agujero: sin la variable definida, la cookie ausente también da
+ * `undefined`, y `undefined === undefined` es true. Es decir, un deploy sin
+ * `ADMIN_PASSWORD` dejaba la API de moderación abierta a cualquiera.
+ *
+ * `adminPassword()` revienta si la variable falta, así que el caso degenerado
+ * pasa a ser un 500 ruidoso en vez de un acceso concedido.
+ */
 async function checkAuth() {
   const cookieStore = await cookies();
   const token = cookieStore.get("admin_token")?.value;
-  return token === process.env.ADMIN_PASSWORD;
+  return Boolean(token) && token === adminPassword();
 }
 
 export async function GET() {
@@ -13,17 +30,14 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  const { data, error } = await supabaseAdmin()
-    .from("testimonials")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error)
+  try {
+    return NextResponse.json({ testimonials: await listAllTestimonials() });
+  } catch {
     return NextResponse.json(
       { error: "Error al obtener testimonios." },
       { status: 500 },
     );
-  return NextResponse.json({ testimonials: data });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -32,20 +46,25 @@ export async function PATCH(req: NextRequest) {
   }
 
   const { id, status } = await req.json();
-  if (!id || !["pending", "approved", "rejected"].includes(status)) {
+  if (!id || !VALID_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
   }
 
-  const { error } = await supabaseAdmin()
-    .from("testimonials")
-    .update({ status })
-    .eq("id", id);
-
-  if (error)
+  try {
+    const updated = await updateTestimonialStatus(id, status);
+    if (!updated) {
+      return NextResponse.json(
+        { error: "No existe ese testimonio." },
+        { status: 404 },
+      );
+    }
+  } catch {
     return NextResponse.json(
       { error: "Error al actualizar." },
       { status: 500 },
     );
+  }
+
   return NextResponse.json({ ok: true });
 }
 
@@ -55,15 +74,20 @@ export async function DELETE(req: NextRequest) {
   }
 
   const { id } = await req.json();
-  if (!id)
+  if (!id) {
     return NextResponse.json({ error: "ID requerido." }, { status: 400 });
+  }
 
-  const { error } = await supabaseAdmin()
-    .from("testimonials")
-    .delete()
-    .eq("id", id);
-
-  if (error)
+  try {
+    if (!(await deleteTestimonial(id))) {
+      return NextResponse.json(
+        { error: "No existe ese testimonio." },
+        { status: 404 },
+      );
+    }
+  } catch {
     return NextResponse.json({ error: "Error al eliminar." }, { status: 500 });
+  }
+
   return NextResponse.json({ ok: true });
 }
