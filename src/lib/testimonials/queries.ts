@@ -1,5 +1,5 @@
 import { desc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import {
   type NewTestimonial,
   type Testimonial,
@@ -26,7 +26,7 @@ import {
 export async function listApprovedTestimonials(
   limit?: number,
 ): Promise<Testimonial[]> {
-  const query = db
+  const query = getDb()
     .select()
     .from(testimonials)
     .where(eq(testimonials.status, "approved"))
@@ -37,7 +37,10 @@ export async function listApprovedTestimonials(
 
 /** Todos, sin filtrar por estado. Solo para el panel de moderación. */
 export async function listAllTestimonials(): Promise<Testimonial[]> {
-  return db.select().from(testimonials).orderBy(desc(testimonials.createdAt));
+  return getDb()
+    .select()
+    .from(testimonials)
+    .orderBy(desc(testimonials.createdAt));
 }
 
 /**
@@ -50,7 +53,7 @@ export async function listAllTestimonials(): Promise<Testimonial[]> {
 export async function createTestimonial(
   input: Omit<NewTestimonial, "id" | "status" | "createdAt">,
 ): Promise<Testimonial> {
-  const [created] = await db
+  const [created] = await getDb()
     .insert(testimonials)
     .values({ ...input, status: "pending" })
     .returning();
@@ -63,7 +66,7 @@ export async function updateTestimonialStatus(
   id: string,
   status: TestimonialStatus,
 ): Promise<Testimonial | undefined> {
-  const [updated] = await db
+  const [updated] = await getDb()
     .update(testimonials)
     .set({ status })
     .where(eq(testimonials.id, id))
@@ -74,7 +77,7 @@ export async function updateTestimonialStatus(
 
 /** Borra un testimonio. Devuelve `false` si el id no existía. */
 export async function deleteTestimonial(id: string): Promise<boolean> {
-  const deleted = await db
+  const deleted = await getDb()
     .delete(testimonials)
     .where(eq(testimonials.id, id))
     .returning({ id: testimonials.id });

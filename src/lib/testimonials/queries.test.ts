@@ -18,10 +18,10 @@ import {
  */
 
 type Queries = typeof import("./queries");
-type Db = typeof import("@/db").db;
+type GetDb = typeof import("@/db").getDb;
 
 let queries: Queries;
-let db: Db;
+let getDb: GetDb;
 
 const UUID_INEXISTENTE = "00000000-0000-4000-8000-000000000000";
 
@@ -31,12 +31,12 @@ describe.skipIf(!hasTestDatabase)("queries de testimonials", () => {
     await resetTestDb();
 
     queries = await import("./queries");
-    db = (await import("@/db")).db;
+    getDb = (await import("@/db")).getDb;
   }, 60_000);
 
   afterAll(async () => {
     // Sin cerrar el pool, vitest se queda esperando a que el socket muera.
-    await db.$client.end();
+    await getDb().$client.end();
   });
 
   beforeEach(async () => {
