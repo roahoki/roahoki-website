@@ -1,7 +1,6 @@
-import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import type { z } from "zod";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   deleteTestimonialSchema,
   firstErrorMessage,
@@ -46,19 +45,9 @@ async function parseBody<S extends z.ZodTypeAny>(
   return { data: parsed.data };
 }
 
-/**
- * La cookie lleva un token firmado con HMAC y con expiración; la contraseña ya
- * no viaja en ella. Ver `src/lib/auth/session.ts`.
- */
-async function checkAuth() {
-  const cookieStore = await cookies();
-  return verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
-}
-
 export async function GET() {
-  if (!(await checkAuth())) {
-    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
   try {
     return NextResponse.json({ testimonials: await listAllTestimonials() });
@@ -71,9 +60,8 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!(await checkAuth())) {
-    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
   const parsed = await parseBody(req, moderateTestimonialSchema);
   if ("error" in parsed) return parsed.error;
@@ -98,9 +86,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!(await checkAuth())) {
-    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
   const parsed = await parseBody(req, deleteTestimonialSchema);
   if ("error" in parsed) return parsed.error;
