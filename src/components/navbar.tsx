@@ -1,43 +1,43 @@
-"use client"
+"use client";
 
-import { Moon, Sun } from "lucide-react"
-import { useLocale, useTranslations } from "next-intl"
-import { useTheme } from "next-themes"
-import { useRef } from "react"
-import { usePathname, useRouter } from "@/i18n/navigation"
+import { Moon, Sun } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { useRef } from "react";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
-const WHATSAPP = "https://wa.link/ht8ioc"
+const WHATSAPP = "https://wa.link/ht8ioc";
 
 export function Navbar() {
-  const t = useTranslations("nav")
-  const locale = useLocale()
-  const pathname = usePathname()
-  const router = useRouter()
-  const { theme, setTheme } = useTheme()
+  const t = useTranslations("nav");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
-  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const didLongPress = useRef(false)
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPress = useRef(false);
 
   function startPress() {
-    didLongPress.current = false
+    didLongPress.current = false;
     pressTimer.current = setTimeout(() => {
-      didLongPress.current = true
-      window.location.href = "/admin/login"
-    }, 1500)
+      didLongPress.current = true;
+      window.location.href = "/admin/login";
+    }, 1500);
   }
 
   function cancelPress() {
-    if (pressTimer.current) clearTimeout(pressTimer.current)
+    if (pressTimer.current) clearTimeout(pressTimer.current);
   }
 
   function handleThemeClick() {
-    if (didLongPress.current) return
-    setTheme(theme === "dark" ? "light" : "dark")
+    if (didLongPress.current) return;
+    setTheme(theme === "dark" ? "light" : "dark");
   }
 
   const toggleLocale = () => {
-    router.replace(pathname, { locale: locale === "es" ? "en" : "es" })
-  }
+    router.replace(pathname, { locale: locale === "es" ? "en" : "es" });
+  };
 
   const links = [
     { href: "#about", label: t("about") },
@@ -45,7 +45,7 @@ export function Navbar() {
     { href: "#projects", label: t("projects") },
     { href: "#teaching", label: t("teaching") },
     { href: "#contact", label: t("contact") },
-  ]
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -108,5 +108,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

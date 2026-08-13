@@ -1,44 +1,49 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function AdminLoginPage() {
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
-    })
+    });
 
     if (!res.ok) {
-      setError("Contraseña incorrecta.")
-      setLoading(false)
-      return
+      setError("Contraseña incorrecta.");
+      setLoading(false);
+      return;
     }
 
-    router.push("/admin/testimonials")
+    router.push("/admin/testimonials");
   }
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-sm">
-        <h1 className="text-base font-bold text-foreground mb-6 text-center">Admin</h1>
+        <h1 className="text-base font-bold text-foreground mb-6 text-center">
+          Admin
+        </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
+            // Pantalla de un solo campo cuyo único propósito es escribir la
+            // contraseña: enfocarlo no desorienta ni le roba el foco a nada.
+            // biome-ignore lint/a11y/noAutofocus: justificado arriba
             autoFocus
             className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
           />
@@ -53,5 +58,5 @@ export default function AdminLoginPage() {
         </form>
       </div>
     </main>
-  )
+  );
 }

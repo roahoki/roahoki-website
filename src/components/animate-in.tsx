@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
 
 interface AnimateInProps {
-  children: React.ReactNode
-  className?: string
-  delay?: number
-  from?: "bottom" | "left" | "right"
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  from?: "bottom" | "left" | "right";
 }
 
 export function AnimateIn({
@@ -15,31 +15,31 @@ export function AnimateIn({
   delay = 0,
   from = "bottom",
 }: AnimateInProps) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
+    const el = ref.current;
+    if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
+          setVisible(true);
+          observer.disconnect();
         }
       },
-      { threshold: 0.08 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+      { threshold: 0.08 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const initialTransform =
     from === "bottom"
       ? "translateY(22px)"
       : from === "left"
-      ? "translateX(-22px)"
-      : "translateX(22px)"
+        ? "translateX(-22px)"
+        : "translateX(22px)";
 
   return (
     <div
@@ -54,5 +54,5 @@ export function AnimateIn({
     >
       {children}
     </div>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-import Image from "next/image"
-import { getTranslations } from "next-intl/server"
-import { Suspense } from "react"
-import { AnimateIn } from "@/components/animate-in"
-import { AtipicusIcon } from "@/components/icons/atipicus-icon"
-import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon"
-import { BukIcon } from "@/components/icons/buk-icon"
-import { MestiIcon } from "@/components/icons/mesti-icon"
-import { PlannisthenicsIcon } from "@/components/icons/plannisthenics-icon"
-import { UCIcon } from "@/components/icons/uc-icon"
-import { LandingTestimonials } from "@/components/landing-testimonials"
-import { Navbar } from "@/components/navbar"
-import { YouTubeEmbed } from "@/components/youtube-embed"
+import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import { AnimateIn } from "@/components/animate-in";
+import { AtipicusIcon } from "@/components/icons/atipicus-icon";
+import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon";
+import { BukIcon } from "@/components/icons/buk-icon";
+import { MestiIcon } from "@/components/icons/mesti-icon";
+import { PlannisthenicsIcon } from "@/components/icons/plannisthenics-icon";
+import { UCIcon } from "@/components/icons/uc-icon";
+import { LandingTestimonials } from "@/components/landing-testimonials";
+import { Navbar } from "@/components/navbar";
+import { YouTubeEmbed } from "@/components/youtube-embed";
 
-const WHATSAPP = "https://wa.link/ht8ioc"
-const GITHUB = "https://github.com/roahoki"
-const LINKEDIN = "https://www.linkedin.com/in/joaquin-peralta-perez/"
+const WHATSAPP = "https://wa.link/ht8ioc";
+const GITHUB = "https://github.com/roahoki";
+const LINKEDIN = "https://www.linkedin.com/in/joaquin-peralta-perez/";
 
 const stack = [
   "TypeScript",
@@ -29,40 +29,42 @@ const stack = [
   "Google Cloud",
   "MongoDB",
   "Supabase",
-]
+];
 
 const videos = [
   { id: "OtfZFL0bfXQ", title: "Estructuras de Datos" },
   { id: "PWOx9DPYoWE", title: "Estructuras de Datos" },
   { id: "d40mVuVLqTE", title: "Arquitectura de Computadores" },
-]
+];
 
 export default async function HomePage() {
-  const tHero = await getTranslations("hero")
-  const tBento = await getTranslations("bento")
-  const tAbout = await getTranslations("about")
-  const tExp = await getTranslations("experience")
-  const tProj = await getTranslations("projects")
-  const tTeach = await getTranslations("teaching")
-  const tContact = await getTranslations("contact")
+  const tHero = await getTranslations("hero");
+  const tBento = await getTranslations("bento");
+  const tAbout = await getTranslations("about");
+  const tExp = await getTranslations("experience");
+  const tProj = await getTranslations("projects");
+  const tTeach = await getTranslations("teaching");
+  const tContact = await getTranslations("contact");
 
   const linkClass =
-    "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors"
+    "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors";
 
-  const extLink =
-    (href: string) =>
-    (chunks: React.ReactNode) => (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-        {chunks}
-      </a>
-    )
+  const extLink = (href: string) => (chunks: React.ReactNode) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={linkClass}
+    >
+      {chunks}
+    </a>
+  );
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* ====================================================
             HERO
         ==================================================== */}
@@ -71,7 +73,10 @@ export default async function HomePage() {
           className="relative pt-20 pb-16 md:pt-28 md:pb-24 min-h-[88vh] flex flex-col justify-center overflow-hidden"
         >
           {/* Ambient glow */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10"
+          >
             <div className="absolute top-1/4 -left-16 w-96 h-96 rounded-full bg-brand/6 blur-3xl" />
             <div className="absolute bottom-1/4 -right-16 w-72 h-72 rounded-full bg-brand/4 blur-3xl" />
           </div>
@@ -163,15 +168,18 @@ export default async function HomePage() {
         ==================================================== */}
         <section id="about" className="pb-24">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-
             {/* Current role */}
             <AnimateIn delay={0} className="col-span-2 md:col-span-2">
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/40 hover:bg-brand-muted transition-colors duration-300">
                 <div className="flex items-center gap-4 h-full">
                   <BukIcon size={48} className="object-contain shrink-0" />
                   <div>
-                    <span className="text-xs text-muted-foreground">{tBento("current_role")}</span>
-                    <p className="text-sm font-bold text-foreground mb-1">Buk</p>
+                    <span className="text-xs text-muted-foreground">
+                      {tBento("current_role")}
+                    </span>
+                    <p className="text-sm font-bold text-foreground mb-1">
+                      Buk
+                    </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {tBento("current_desc")}
                     </p>
@@ -183,7 +191,9 @@ export default async function HomePage() {
             {/* Teaching stat */}
             <AnimateIn delay={80} className="col-span-1 md:col-span-2">
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/40 hover:bg-brand-muted transition-colors duration-300">
-                <p className="text-4xl font-extrabold text-brand leading-none mb-2">+4</p>
+                <p className="text-4xl font-extrabold text-brand leading-none mb-2">
+                  +4
+                </p>
                 <p className="text-xs font-bold text-foreground mb-1">
                   {tBento("teaching_stat_label")}
                 </p>
@@ -200,11 +210,17 @@ export default async function HomePage() {
                   <p className="text-xs font-semibold text-foreground mb-0.5">
                     {tBento("location")}
                   </p>
-                  <p className="text-xs text-muted-foreground">{tBento("hybrid")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {tBento("hybrid")}
+                  </p>
                 </div>
                 <div className="pt-4 border-t border-border mt-4">
-                  <p className="text-xs font-semibold text-foreground mb-0.5">Calistenia</p>
-                  <p className="text-xs text-muted-foreground">{tBento("athlete_desc")}</p>
+                  <p className="text-xs font-semibold text-foreground mb-0.5">
+                    Calistenia
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {tBento("athlete_desc")}
+                  </p>
                 </div>
               </div>
             </AnimateIn>
@@ -246,7 +262,6 @@ export default async function HomePage() {
                 </p>
               </div>
             </AnimateIn>
-
           </div>
         </section>
 
@@ -262,7 +277,6 @@ export default async function HomePage() {
           </AnimateIn>
 
           <div className="space-y-3">
-
             {/* Buk */}
             <AnimateIn delay={60}>
               <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-200">
@@ -277,7 +291,9 @@ export default async function HomePage() {
                         {tExp("current")}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">Software Engineer · may. 2026 — presente</p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Software Engineer · may. 2026 — presente
+                    </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("buk", {
                         buk: extLink("https://www.buk.cl/"),
@@ -297,9 +313,13 @@ export default async function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="text-sm font-bold text-foreground">Atipicus</h3>
+                      <h3 className="text-sm font-bold text-foreground">
+                        Atipicus
+                      </h3>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">Software Engineer Trainee · dic. 2025 — mar. 2026</p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Software Engineer Trainee · dic. 2025 — mar. 2026
+                    </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("atipicus", {
                         atipicus: extLink("https://atipic.us/"),
@@ -321,11 +341,17 @@ export default async function HomePage() {
                     <BiomechanicsIcon size={40} className="object-contain" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-foreground mb-1">Biomechanics.wav</h3>
-                    <p className="text-xs text-muted-foreground mb-2">Full Stack Developer · 2024 — 2025</p>
+                    <h3 className="text-sm font-bold text-foreground mb-1">
+                      Biomechanics.wav
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Full Stack Developer · 2024 — 2025
+                    </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("biomechanics", {
-                        biomechanics: extLink("https://www.biomechanics.cl/links"),
+                        biomechanics: extLink(
+                          "https://www.biomechanics.cl/links",
+                        ),
                         nextjs: extLink("https://nextjs.org"),
                         supabase: extLink("https://supabase.com"),
                         clerk: extLink("https://clerk.com"),
@@ -342,6 +368,7 @@ export default async function HomePage() {
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 text-muted-foreground">
                     <svg
+                      aria-hidden="true"
                       className="w-5 h-5"
                       fill="none"
                       stroke="currentColor"
@@ -356,8 +383,12 @@ export default async function HomePage() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-foreground mb-1">Freelance Fullstack</h3>
-                    <p className="text-xs text-muted-foreground mb-2">Full Stack Developer · 2024</p>
+                    <h3 className="text-sm font-bold text-foreground mb-1">
+                      Freelance Fullstack
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Full Stack Developer · 2024
+                    </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("freelance", {
                         react: extLink("https://react.dev"),
@@ -378,8 +409,12 @@ export default async function HomePage() {
                     <MestiIcon className="w-7 h-7" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-foreground mb-1">Mesti</h3>
-                    <p className="text-xs text-muted-foreground mb-2">Mobile Technical Lead · 2024</p>
+                    <h3 className="text-sm font-bold text-foreground mb-1">
+                      Mesti
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Mobile Technical Lead · 2024
+                    </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
                       {tExp.rich("mesti", {
                         mesti: extLink("https://mesti.app/"),
@@ -399,16 +434,19 @@ export default async function HomePage() {
                     <UCIcon className="w-7 h-7" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-foreground mb-1">PUC Chile</h3>
+                    <h3 className="text-sm font-bold text-foreground mb-1">
+                      PUC Chile
+                    </h3>
                     <p className="text-xs text-muted-foreground mb-2">
                       Teaching Assistant &amp; General Coordinator · 2022 — 2025
                     </p>
-                    <p className="text-xs leading-relaxed text-foreground/70">{tExp("puc")}</p>
+                    <p className="text-xs leading-relaxed text-foreground/70">
+                      {tExp("puc")}
+                    </p>
                   </div>
                 </div>
               </div>
             </AnimateIn>
-
           </div>
         </section>
 
@@ -433,8 +471,12 @@ export default async function HomePage() {
                       <BiomechanicsIcon size={48} className="object-contain" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white">Biomechanics.wav</h3>
-                      <p className="text-xs text-white/45">{tProj("biomechanics_type")}</p>
+                      <h3 className="text-base font-bold text-white">
+                        Biomechanics.wav
+                      </h3>
+                      <p className="text-xs text-white/45">
+                        {tProj("biomechanics_type")}
+                      </p>
                     </div>
                   </div>
                   <a
@@ -452,14 +494,16 @@ export default async function HomePage() {
                   {tProj("biomechanics_desc")}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {["Next.js", "TypeScript", "Supabase", "Clerk"].map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-2.5 py-1 rounded-lg bg-muted text-xs text-foreground/60 font-medium"
-                    >
-                      {tech}
-                    </span>
-                  ))}
+                  {["Next.js", "TypeScript", "Supabase", "Clerk"].map(
+                    (tech) => (
+                      <span
+                        key={tech}
+                        className="px-2.5 py-1 rounded-lg bg-muted text-xs text-foreground/60 font-medium"
+                      >
+                        {tech}
+                      </span>
+                    ),
+                  )}
                 </div>
               </div>
             </div>
@@ -474,18 +518,25 @@ export default async function HomePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h3 className="text-sm font-bold text-foreground">Plannisthenics</h3>
+                    <h3 className="text-sm font-bold text-foreground">
+                      Plannisthenics
+                    </h3>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                       {tProj("in_development")}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">{tProj("plannisthenics_type")}</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {tProj("plannisthenics_type")}
+                  </p>
                   <p className="text-xs leading-relaxed text-foreground/70 mb-3">
                     {tProj("plannisthenics_desc")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {["Ruby on Rails", "Ruby"].map((tech) => (
-                      <span key={tech} className="px-2.5 py-1 rounded-lg bg-muted text-xs text-foreground/60 font-medium">
+                      <span
+                        key={tech}
+                        className="px-2.5 py-1 rounded-lg bg-muted text-xs text-foreground/60 font-medium"
+                      >
                         {tech}
                       </span>
                     ))}
@@ -497,7 +548,9 @@ export default async function HomePage() {
 
           {/* YouTube */}
           <AnimateIn delay={160} className="mb-4">
-            <p className="text-sm text-muted-foreground">{tProj("youtube_intro")}</p>
+            <p className="text-sm text-muted-foreground">
+              {tProj("youtube_intro")}
+            </p>
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {videos.map((v, i) => (
@@ -554,7 +607,12 @@ export default async function HomePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 active:scale-[0.97] transition-all duration-150"
               >
-                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
                 {tTeach("cta_button")}
@@ -566,7 +624,9 @@ export default async function HomePage() {
             <Suspense
               fallback={
                 <div className="rounded-2xl border border-dashed border-border/50 p-6 text-center">
-                  <p className="text-sm text-muted-foreground">{tTeach("testimonials_coming")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {tTeach("testimonials_coming")}
+                  </p>
                 </div>
               }
             >
@@ -617,7 +677,6 @@ export default async function HomePage() {
             </div>
           </AnimateIn>
         </section>
-
       </main>
 
       <footer className="border-t border-border">
@@ -627,5 +686,5 @@ export default async function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

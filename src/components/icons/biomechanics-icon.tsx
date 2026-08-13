@@ -1,11 +1,14 @@
-import Image from "next/image"
+import Image from "next/image";
 
 interface BiomechanicsIconProps {
-  size?: number
-  className?: string
+  size?: number;
+  className?: string;
 }
 
-export function BiomechanicsIcon({ size = 20, className }: BiomechanicsIconProps) {
+export function BiomechanicsIcon({
+  size = 20,
+  className,
+}: BiomechanicsIconProps) {
   return (
     <Image
       src="/icons/biomechanics.png"
@@ -14,5 +17,5 @@ export function BiomechanicsIcon({ size = 20, className }: BiomechanicsIconProps
       height={size}
       className={className}
     />
-  )
+  );
 }
