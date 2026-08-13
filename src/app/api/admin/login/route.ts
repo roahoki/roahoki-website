@@ -1,26 +1,19 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { adminPassword } from "@/lib/env";
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
-  const { password } = await req.json();
-  const expected = adminPassword();
+  const { password } = await req.json()
 
-  if (!password || password !== expected) {
-    return NextResponse.json(
-      { error: "Contraseña incorrecta." },
-      { status: 401 },
-    );
+  if (!password || password !== process.env.ADMIN_PASSWORD) {
+    return NextResponse.json({ error: "Contraseña incorrecta." }, { status: 401 })
   }
 
-  const res = NextResponse.json({ ok: true });
-  // TODO: la cookie guarda la password en claro. Se reemplaza por un token
-  // firmado con HMAC en la PR `feat/signed-admin-session`.
-  res.cookies.set("admin_token", expected, {
+  const res = NextResponse.json({ ok: true })
+  res.cookies.set("admin_token", process.env.ADMIN_PASSWORD!, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: "/",
-  });
-  return res;
+  })
+  return res
 }

@@ -1,24 +1,21 @@
-import { getTranslations } from "next-intl/server";
-import {
-  type Testimonial,
-  TestimonialCard,
-} from "@/components/testimonial-card";
-import { Link } from "@/i18n/navigation";
-import { supabaseAnon } from "@/lib/supabase";
+import { getTranslations } from "next-intl/server"
+import { type Testimonial, TestimonialCard } from "@/components/testimonial-card"
+import { Link } from "@/i18n/navigation"
+import { supabaseAnon } from "@/lib/supabase"
 
 export async function LandingTestimonials() {
-  const tTeach = await getTranslations("teaching");
-  const tForm = await getTranslations("testimonialForm");
+  const tTeach = await getTranslations("teaching")
+  const tForm = await getTranslations("testimonialForm")
 
-  let testimonials: Testimonial[] = [];
+  let testimonials: Testimonial[] = []
   try {
     const { data } = await supabaseAnon()
       .from("testimonials")
       .select("*")
       .eq("status", "approved")
       .order("created_at", { ascending: false })
-      .limit(3);
-    testimonials = (data ?? []) as Testimonial[];
+      .limit(3)
+    testimonials = (data ?? []) as Testimonial[]
   } catch {
     // silently fail — show empty state if Supabase is unreachable
   }
@@ -27,9 +24,7 @@ export async function LandingTestimonials() {
     <div>
       {testimonials.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/50 p-6 text-center space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {tTeach("testimonials_coming")}
-          </p>
+          <p className="text-sm text-muted-foreground">{tTeach("testimonials_coming")}</p>
           <Link
             href="/testimonials/new"
             className="inline-flex items-center gap-1.5 text-sm text-brand font-semibold hover:underline"
@@ -55,5 +50,5 @@ export async function LandingTestimonials() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,8 +1,8 @@
-import Image from "next/image";
+import Image from "next/image"
 
 interface BukIconProps {
-  size?: number;
-  className?: string;
+  size?: number
+  className?: string
 }
 
 export function BukIcon({ size = 20, className }: BukIconProps) {
@@ -14,5 +14,5 @@ export function BukIcon({ size = 20, className }: BukIconProps) {
       height={size}
       className={className}
     />
-  );
+  )
 }

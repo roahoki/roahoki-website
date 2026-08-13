@@ -1,6 +1,5 @@
-import type { SVGProps } from "react";
+import type { SVGProps } from "react"
 
-// Decorativo: el nombre siempre va en texto al lado.
 export function AtipicusIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -9,7 +8,6 @@ export function AtipicusIcon(props: SVGProps<SVGSVGElement>) {
       overflow="visible"
       preserveAspectRatio="none"
       viewBox="0 0 50 52"
-      aria-hidden="true"
       {...props}
     >
       <path
@@ -21,5 +19,5 @@ export function AtipicusIcon(props: SVGProps<SVGSVGElement>) {
         fill="var(--fill-0, currentColor)"
       />
     </svg>
-  );
+  )
 }

@@ -1,21 +1,21 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
 export default async function ProtectedAdminLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token")?.value;
+  const cookieStore = await cookies()
+  const token = cookieStore.get("admin_token")?.value
 
   if (token !== process.env.ADMIN_PASSWORD || !process.env.ADMIN_PASSWORD) {
-    redirect("/admin/login");
+    redirect("/admin/login")
   }
 
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
       {children}
     </div>
-  );
+  )
 }

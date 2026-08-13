@@ -1,37 +1,37 @@
-"use client";
+"use client"
 
-import { Moon, Sun } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { Moon, Sun } from "lucide-react"
+import { useLocale, useTranslations } from "next-intl"
+import { useTheme } from "next-themes"
+import { Link, usePathname, useRouter } from "@/i18n/navigation"
 
 export function SidebarNav() {
-  const t = useTranslations("nav");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const t = useTranslations("nav")
+  const locale = useLocale()
+  const pathname = usePathname()
+  const router = useRouter()
+  const { theme, setTheme } = useTheme()
 
   const navItems = [
     { href: "/" as const, label: t("about") },
     { href: "/experience" as const, label: t("experience") },
     { href: "/projects" as const, label: t("projects") },
     { href: "/teaching" as const, label: t("teaching") },
-  ];
+  ]
 
   const toggleLocale = () => {
-    const newLocale = locale === "es" ? "en" : "es";
-    router.replace(pathname, { locale: newLocale });
-  };
+    const newLocale = locale === "es" ? "en" : "es"
+    router.replace(pathname, { locale: newLocale })
+  }
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
 
   return (
     <nav className="flex flex-row flex-wrap gap-x-5 gap-y-2 px-5 py-5 text-sm md:flex-col md:items-end md:gap-1 md:px-0 md:pr-8 md:pt-12">
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href
         return (
           <Link
             key={item.href}
@@ -47,7 +47,7 @@ export function SidebarNav() {
               <span className="absolute -bottom-0.5 left-0 right-0 h-[2px] rounded-full bg-brand" />
             )}
           </Link>
-        );
+        )
       })}
 
       <div className="flex items-center gap-3 mt-1 md:mt-4 md:flex-col md:items-end md:gap-2">
@@ -73,5 +73,5 @@ export function SidebarNav() {
         </button>
       </div>
     </nav>
-  );
+  )
 }

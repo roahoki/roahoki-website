@@ -1,5 +1,5 @@
-import { SidebarNav } from "@/components/sidebar-nav";
-import { TeachingContent } from "@/components/teaching-content";
+import { SidebarNav } from "@/components/sidebar-nav"
+import { TeachingContent } from "@/components/teaching-content"
 
 export default function TeachingPage() {
   return (
@@ -11,5 +11,5 @@ export default function TeachingPage() {
         <TeachingContent />
       </div>
     </main>
-  );
+  )
 }

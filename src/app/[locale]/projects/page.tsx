@@ -1,15 +1,15 @@
-import { getTranslations } from "next-intl/server";
-import { SidebarNav } from "@/components/sidebar-nav";
-import { YouTubeEmbed } from "@/components/youtube-embed";
+import { getTranslations } from "next-intl/server"
+import { SidebarNav } from "@/components/sidebar-nav"
+import { YouTubeEmbed } from "@/components/youtube-embed"
 
 const videos = [
   { id: "OtfZFL0bfXQ", title: "Video 1" },
   { id: "PWOx9DPYoWE", title: "Video 2" },
   { id: "d40mVuVLqTE", title: "Video 3" },
-];
+]
 
 export default async function ProjectsPage() {
-  const t = await getTranslations("projects");
+  const t = await getTranslations("projects")
 
   return (
     <main className="min-h-screen flex flex-col md:flex-row">
@@ -24,15 +24,11 @@ export default async function ProjectsPage() {
 
           <div className="space-y-4 md:space-y-6">
             {videos.map((video) => (
-              <YouTubeEmbed
-                key={video.id}
-                videoId={video.id}
-                title={video.title}
-              />
+              <YouTubeEmbed key={video.id} videoId={video.id} title={video.title} />
             ))}
           </div>
         </article>
       </div>
     </main>
-  );
+  )
 }

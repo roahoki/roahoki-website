@@ -1,14 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
-import {
-  supabaseAnonKey,
-  supabaseServiceRoleKey,
-  supabaseUrl,
-} from "@/lib/env";
+import { createClient } from "@supabase/supabase-js"
+
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export function supabaseAnon() {
-  return createClient(supabaseUrl(), supabaseAnonKey());
+  return createClient(url, anonKey)
 }
 
 export function supabaseAdmin() {
-  return createClient(supabaseUrl(), supabaseServiceRoleKey());
+  return createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
