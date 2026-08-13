@@ -54,6 +54,21 @@ export function adminPassword(): string {
 }
 
 /**
+ * Clave con la que se firman los tokens de sesión del panel.
+ *
+ * Es la única variable opcional del archivo, y por eso no pasa por `required`.
+ * Cuando falta, `src/lib/auth/session.ts` deriva la clave de `ADMIN_PASSWORD`:
+ * así el panel sigue funcionando en un deploy que todavía no la configuró.
+ *
+ * Conviene definirla igual. Con un secreto propio, rotar la contraseña del
+ * panel no cierra las sesiones abiertas, y la clave de firma deja de estar
+ * atada a algo que además se compara en el login.
+ */
+export function adminSessionSecret(): string | null {
+  return process.env.ADMIN_SESSION_SECRET || null;
+}
+
+/**
  * Conexión que usa la app en runtime: transaction pooler, puerto 6543. No sirve
  * para migraciones — para eso está `DIRECT_URL`, que solo lee `drizzle.config.ts`.
  */

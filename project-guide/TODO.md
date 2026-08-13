@@ -12,6 +12,9 @@
       moderación en `/admin`.
 - [x] Dashboard admin mobile-first con acceso oculto por long-press.
 - [x] Documentar variables de entorno en `.env.example`.
+- [x] Endurecer la auth admin. La cookie llevaba el valor de `ADMIN_PASSWORD` en
+      texto plano y no expiraba; ahora lleva un token firmado con HMAC-SHA256
+      con vigencia de una semana.
 
 ## Pendiente
 
@@ -24,8 +27,9 @@
       `components.json` y `tailwind.config.ts` y asumir componentes propios.
       Hoy la config existe pero no se usa.
 - [ ] Podar dependencias `@radix-ui/*` sin uso heredadas del scaffold de v0.
-- [ ] Endurecer la auth admin: la cookie guarda el valor de `ADMIN_PASSWORD` en
-      texto plano; conviene un token derivado o firmado.
+- [ ] Definir `ADMIN_SESSION_SECRET` en Vercel. No bloquea nada: sin ella la
+      clave de firma se deriva de `ADMIN_PASSWORD`. Con un secreto propio,
+      rotar la password no cierra las sesiones abiertas.
 - [ ] Rate limiting en `POST /api/testimonials` — hoy es un endpoint público sin
       límite.
 - [ ] Tests. No hay ninguno todavía.
