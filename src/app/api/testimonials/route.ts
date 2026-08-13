@@ -1,6 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { supabaseAnon } from "@/lib/supabase";
+import { createTestimonial } from "@/lib/testimonials/queries";
 
+/**
+ * Alta pública de un testimonio. Nace siempre en `pending`: el estado lo decide
+ * `createTestimonial`, no el cuerpo del request.
+ *
+ * El formato del cuerpo sigue siendo snake_case porque es el contrato que ya
+ * habla el formulario. La validación a mano de acá abajo se reemplaza por un
+ * esquema zod compartido en `feat/zod-validation`, la PR siguiente.
+ */
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { name, message, image_url, linkedin_url, github_username, email } =
@@ -25,18 +33,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { error } = await supabaseAnon()
-    .from("testimonials")
-    .insert({
+  try {
+    await createTestimonial({
       name: name.trim(),
       message: message.trim(),
-      image_url: image_url || null,
-      linkedin_url: linkedin_url?.trim() || null,
-      github_username: github_username?.trim() || null,
+      imageUrl: image_url || null,
+      linkedinUrl: linkedin_url?.trim() || null,
+      githubUsername: github_username?.trim() || null,
       email: email?.trim() || null,
     });
-
-  if (error) {
+  } catch {
     return NextResponse.json(
       { error: "Error al guardar el testimonio." },
       { status: 500 },

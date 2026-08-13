@@ -15,6 +15,12 @@ import * as schema from "./schema";
  * de la base, así que las políticas no lo filtran. La validación server-side es
  * la barrera; RLS queda como red de seguridad para lo que use la anon key desde
  * el browser.
+ *
+ * **La conexión se abre en la primera query, no al importar el módulo.** Antes
+ * se creaba al evaluarlo, y eso rompía `next build`: el paso de *collect page
+ * data* importa cada route handler, con lo cual el build pasaba a exigir
+ * `DATABASE_URL` — una credencial de runtime que no tiene por qué estar
+ * disponible al compilar. El deploy fallaba entero antes de servir un request.
  */
 
 // En desarrollo, el hot reload de Next re-evalúa los módulos y crearía una
@@ -23,23 +29,39 @@ const globalForDb = globalThis as unknown as {
   connection?: ReturnType<typeof postgres>;
 };
 
-function createConnection() {
-  return postgres(databaseUrl(), {
-    // pgbouncer en modo transaction no soporta prepared statements. Sin este
-    // flag las queries fallan con errores que no dicen que la causa es el pooler.
-    prepare: false,
-    // El pooler ya multiplexa; abrir muchas conexiones desde cada instancia
-    // serverless solo consume su cupo.
-    max: 1,
-  });
+type PostgresDatabase = ReturnType<typeof createDatabase>;
+
+function createDatabase() {
+  const connection =
+    globalForDb.connection ??
+    postgres(databaseUrl(), {
+      // pgbouncer en modo transaction no soporta prepared statements. Sin este
+      // flag las queries fallan con errores que no dicen que la causa es el
+      // pooler.
+      prepare: false,
+      // El pooler ya multiplexa; abrir muchas conexiones desde cada instancia
+      // serverless solo consume su cupo.
+      max: 1,
+    });
+
+  if (process.env.NODE_ENV !== "production") {
+    globalForDb.connection = connection;
+  }
+
+  return drizzle(connection, { schema, casing: "snake_case" });
 }
 
-const connection = globalForDb.connection ?? createConnection();
+/**
+ * Devuelve el cliente, creándolo la primera vez que se lo pide.
+ *
+ * Todo acceso a datos entra por acá; nadie debería importar `postgres` ni
+ * `drizzle` por su cuenta.
+ */
+let cached: PostgresDatabase | undefined;
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.connection = connection;
+export function getDb(): PostgresDatabase {
+  cached ??= createDatabase();
+  return cached;
 }
-
-export const db = drizzle(connection, { schema, casing: "snake_case" });
 
 export { schema };
