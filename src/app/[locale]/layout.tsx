@@ -6,6 +6,7 @@ import { getMessages } from "next-intl/server";
 import type React from "react";
 import { Providers } from "@/components/providers";
 import { routing } from "@/i18n/routing";
+import { siteUrl } from "@/lib/site";
 import "../globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -20,6 +21,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  // Base para resolver URLs relativas (Open Graph, canonicals). Sin esto Next
+  // cae a localhost en dev y avisa en build. El dominio vive en `@/lib/site`.
+  metadataBase: siteUrl,
   title: "Joaquín",
   description: "Software Engineer, Developer, and Tutor.",
   icons: {
