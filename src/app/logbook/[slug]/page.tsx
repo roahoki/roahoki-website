@@ -19,10 +19,22 @@ type Props = { params: Promise<{ slug: string }> };
  * y quedan cacheadas. Sin esto, la primera persona que abra un link recién
  * compartido espera la consulta a la base — y esa primera persona suele ser
  * quien lo compartió, mirando si quedó bien.
+ *
+ * Si la base no responde se devuelve la lista vacía en vez de propagar el error.
+ * El prerender es una optimización: sin él las notas se generan igual, en su
+ * primera visita. Dejar que reviente convierte una optimización en un requisito
+ * y **el build pasa a depender de la base** — una credencial de runtime y un
+ * servicio externo, justo lo que `src/db/index.ts` evita al abrir la conexión
+ * recién en la primera query. Con el error propagándose, una migración sin
+ * aplicar o un pooler caído voltean el deploy entero.
  */
 export async function generateStaticParams() {
-  const slugs = await listPublishedSlugs();
-  return slugs.map((slug) => ({ slug }));
+  try {
+    const slugs = await listPublishedSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

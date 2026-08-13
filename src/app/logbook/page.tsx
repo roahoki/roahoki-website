@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { LogbookEntry } from "@/db/schema";
 import { formatEntryDate } from "@/lib/logbook/format";
 import { listPublishedEntries } from "@/lib/logbook/queries";
 
@@ -26,7 +27,18 @@ export const metadata: Metadata = {
 };
 
 export default async function LogbookPage() {
-  const entries = await listPublishedEntries();
+  let entries: LogbookEntry[] = [];
+  try {
+    entries = await listPublishedEntries();
+  } catch {
+    // Mismo criterio que `generateStaticParams` en `[slug]/page.tsx` y que
+    // `landing-testimonials.tsx`: si la base no responde durante el build se
+    // muestra el estado vacío, en vez de voltear el deploy.
+    //
+    // El costo es que un fallo al buildear deja el listado vacío cacheado hasta
+    // que `revalidate` lo renueve. Es un techo de una hora y se cura solo; que
+    // no se pueda desplegar nada hasta que la base vuelva, no.
+  }
 
   return (
     <main className="max-w-2xl mx-auto px-5 py-12 sm:py-16">
