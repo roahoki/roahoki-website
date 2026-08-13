@@ -8,6 +8,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import Cropper from "react-easy-crop";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/env";
+import {
+  createTestimonialSchema,
+  messageKeyForIssue,
+} from "@/lib/schemas/testimonial";
 
 // Se crea al momento de subir y no a nivel de módulo: si faltara una variable
 // de entorno, un throw en module scope dejaría la página en blanco en vez de
@@ -125,16 +129,21 @@ export default function NewTestimonialPage() {
     e.preventDefault();
     setErrorMsg("");
 
-    if (name.trim().length < 2) {
-      setErrorMsg(t("validation_name"));
-      return;
-    }
-    if (message.trim().length < 20) {
-      setErrorMsg(t("validation_message"));
-      return;
-    }
-    if (!linkedin.trim() && !github.trim() && !email.trim()) {
-      setErrorMsg(t("validation_social"));
+    // Las reglas son las del esquema compartido: acá no se reescriben, solo se
+    // traduce el problema que reporta. La imagen se valida después porque
+    // todavía no está subida y no hay URL que mostrarle al esquema.
+    const check = createTestimonialSchema.safeParse({
+      name,
+      message,
+      linkedin_url: linkedin || null,
+      github_username: github || null,
+      email: email || null,
+    });
+
+    if (!check.success) {
+      const [issue] = check.error.issues;
+      const key = messageKeyForIssue(issue);
+      setErrorMsg(key ? t(key) : t("error"));
       return;
     }
 
