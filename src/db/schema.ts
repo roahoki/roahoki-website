@@ -1,10 +1,12 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  index,
   pgPolicy,
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { anonRole, serviceRole } from "./roles";
@@ -91,3 +93,106 @@ export const testimonials = pgTable(
 export type Testimonial = typeof testimonials.$inferSelect;
 export type NewTestimonial = typeof testimonials.$inferInsert;
 export type TestimonialStatus = Testimonial["status"];
+
+/**
+ * Las notas del logbook.
+ *
+ * El contenido se guarda como **markdown crudo, nunca HTML**. Renderizar es
+ * responsabilidad de la lectura (`src/lib/markdown.tsx`, PR 11): guardar HTML
+ * significaría que la sanitización ocurrió una vez, en la escritura, y que
+ * cualquier error de entonces queda grabado en la base para siempre.
+ *
+ * Las imágenes viven embebidas en el markdown y no en una tabla de adjuntos.
+ * Con un solo autor, una tabla aparte solo agrega un join para resolver algo
+ * que el propio texto ya expresa.
+ */
+export const logbookEntries = pgTable(
+  "logbook_entries",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    // La URL pública. Único porque `/logbook/[slug]` tiene que resolver a una
+    // sola nota; sin la restricción, un duplicado se detectaría recién al leer.
+    slug: text().notNull(),
+    title: text().notNull(),
+    // Sale en el listado y en `og:description`. Opcional: una nota corta puede
+    // no necesitarlo, y forzarlo obligaría a inventar texto.
+    summary: text(),
+    bodyMd: text("body_md").notNull(),
+    coverImageUrl: text("cover_image_url"),
+    // `text[]` con índice GIN en vez de tabla de tags. Con un solo autor,
+    // normalizar es prematuro; migrar después es un `insert … select` y nada
+    // más. Ver la heurística en LOGBOOK-ROADMAP.md.
+    tags: text().array().notNull().default(sql`'{}'::text[]`),
+    // Nace ya con los dos estados aunque no haya UI de borradores. Cuesta cero
+    // ahora, y agregarlo después obligaría a revisar todas las queries públicas
+    // para recordar cuáles tienen que filtrar.
+    status: text({ enum: ["draft", "published"] })
+      .default("published")
+      .notNull(),
+    // Separada de `created_at` a propósito: permite fechar una nota en el día
+    // que ocurrió lo que cuenta, no en el día que se escribió.
+    publishedAt: timestamp("published_at", {
+      withTimezone: true,
+      mode: "string",
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("logbook_entries_slug_key").on(table.slug),
+
+    check(
+      "logbook_entries_status_check",
+      sql`status = ANY (ARRAY['draft'::text, 'published'::text])`,
+    ),
+
+    // Un slug vacío produciría `/logbook/`, que es el listado. La validación de
+    // zod es la barrera principal, pero esto lo hace imposible incluso desde
+    // psql.
+    check("logbook_entries_slug_not_empty", sql`length(slug) > 0`),
+
+    // GIN es el índice que sirve para `tags @> ARRAY['x']`, que es como
+    // consulta `arrayContains` de Drizzle. Un B-tree sobre un array indexa el
+    // array entero como valor y no responde "cuáles contienen este tag".
+    index("logbook_entries_tags_idx").using("gin", table.tags),
+
+    // El listado público ordena por `published_at desc` filtrando por estado.
+    // El índice compuesto cubre las dos cosas en una sola pasada.
+    index("logbook_entries_status_published_at_idx").on(
+      table.status,
+      table.publishedAt.desc(),
+    ),
+
+    // RLS en la misma migración que crea la tabla, como exige CLAUDE.md. Sin
+    // políticas la tabla queda cerrada; sin RLS queda abierta a internet.
+    // Ninguna de las dos es lo correcto por defecto.
+    pgPolicy("public can read published logbook entries", {
+      as: "permissive",
+      for: "select",
+      to: anonRole,
+      using: sql`status = 'published'`,
+    }),
+
+    // No hay política de insert/update/delete para `anon`: escribir en el
+    // logbook pasa solo por el panel, que va por Drizzle con la conexión
+    // dueña de la base. A diferencia de `testimonials`, acá no hay alta
+    // pública que habilitar.
+    pgPolicy("service role full access to logbook entries", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type LogbookEntry = typeof logbookEntries.$inferSelect;
+export type NewLogbookEntry = typeof logbookEntries.$inferInsert;
+export type LogbookStatus = LogbookEntry["status"];
