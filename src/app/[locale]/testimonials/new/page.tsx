@@ -1,24 +1,22 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import Cropper from "react-easy-crop";
-import { supabaseAnonKey, supabaseUrl } from "@/lib/env";
 import {
   createTestimonialSchema,
   messageKeyForIssue,
 } from "@/lib/schemas/testimonial";
-
-// Se crea al momento de subir y no a nivel de módulo: si faltara una variable
-// de entorno, un throw en module scope dejaría la página en blanco en vez de
-// fallar solo la subida.
-function storageClient() {
-  return createClient(supabaseUrl(), supabaseAnonKey());
-}
+import {
+  BUCKETS,
+  contentTypeFor,
+  extensionOf,
+  objectPath,
+} from "@/lib/storage";
+import { createBrowserStorage } from "@/lib/storage/supabase-storage";
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -151,23 +149,30 @@ export default function NewTestimonialPage() {
 
     let image_url: string | null = null;
     if (imageFile) {
-      const ext = imageFile.name.split(".").pop() ?? "jpg";
-      const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const storage = storageClient().storage;
-      const { error: uploadError } = await storage
-        .from("testimonial-images")
-        .upload(filename, imageFile);
+      // El recorte siempre entrega un JPEG, pero derivarlo del archivo evita
+      // que cambiar `getCroppedImg` deje la extensión mintiendo en silencio.
+      const extension = extensionOf(imageFile.name) ?? "jpg";
+      const contentType = contentTypeFor(extension);
 
-      if (uploadError) {
+      if (!contentType) {
         setErrorMsg(t("error"));
         setFormState("error");
         return;
       }
 
-      const { data } = storage
-        .from("testimonial-images")
-        .getPublicUrl(filename);
-      image_url = data.publicUrl;
+      try {
+        const { url } = await createBrowserStorage().upload({
+          bucket: BUCKETS.testimonialImages,
+          path: objectPath(extension),
+          body: imageFile,
+          contentType,
+        });
+        image_url = url;
+      } catch {
+        setErrorMsg(t("error"));
+        setFormState("error");
+        return;
+      }
     }
 
     const res = await fetch("/api/testimonials", {
