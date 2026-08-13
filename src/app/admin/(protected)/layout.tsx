@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 
 export default async function ProtectedAdminLayout({
   children,
@@ -7,9 +8,12 @@ export default async function ProtectedAdminLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token")?.value;
 
-  if (token !== process.env.ADMIN_PASSWORD || !process.env.ADMIN_PASSWORD) {
+  // Antes esto comparaba la cookie contra `process.env.ADMIN_PASSWORD` directo,
+  // y sin la variable definida los dos lados daban `undefined`: el panel
+  // quedaba abierto. `verifySessionToken` no tiene ese caso degenerado — sin
+  // clave de firma no hay token que verifique.
+  if (!(await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value))) {
     redirect("/admin/login");
   }
 

@@ -1,11 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  createSessionToken,
+  SESSION_COOKIE,
+  sessionCookieOptions,
+} from "@/lib/auth/session";
 import { adminPassword } from "@/lib/env";
 
 export async function POST(req: NextRequest) {
-  const { password } = await req.json();
-  const expected = adminPassword();
+  let password: unknown;
+  try {
+    password = (await req.json()).password;
+  } catch {
+    return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
+  }
 
-  if (!password || password !== expected) {
+  if (typeof password !== "string" || password !== adminPassword()) {
     return NextResponse.json(
       { error: "Contraseña incorrecta." },
       { status: 401 },
@@ -13,14 +22,12 @@ export async function POST(req: NextRequest) {
   }
 
   const res = NextResponse.json({ ok: true });
-  // TODO: la cookie guarda la password en claro. Se reemplaza por un token
-  // firmado con HMAC en la PR `feat/signed-admin-session`.
-  res.cookies.set("admin_token", expected, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    path: "/",
-  });
+  // La cookie lleva un token firmado, no la contraseña: verificarlo no exige
+  // volver a tener el secreto a mano en cada request, solo la clave de firma.
+  res.cookies.set(
+    SESSION_COOKIE,
+    await createSessionToken(),
+    sessionCookieOptions(),
+  );
   return res;
 }

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import type { z } from "zod";
-import { adminPassword } from "@/lib/env";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 import {
   deleteTestimonialSchema,
   firstErrorMessage,
@@ -47,18 +47,12 @@ async function parseBody<S extends z.ZodTypeAny>(
 }
 
 /**
- * Antes esto comparaba contra `process.env.ADMIN_PASSWORD` directo, y ahí había
- * un agujero: sin la variable definida, la cookie ausente también da
- * `undefined`, y `undefined === undefined` es true. Es decir, un deploy sin
- * `ADMIN_PASSWORD` dejaba la API de moderación abierta a cualquiera.
- *
- * `adminPassword()` revienta si la variable falta, así que el caso degenerado
- * pasa a ser un 500 ruidoso en vez de un acceso concedido.
+ * La cookie lleva un token firmado con HMAC y con expiración; la contraseña ya
+ * no viaja en ella. Ver `src/lib/auth/session.ts`.
  */
 async function checkAuth() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token")?.value;
-  return Boolean(token) && token === adminPassword();
+  return verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
 }
 
 export async function GET() {
