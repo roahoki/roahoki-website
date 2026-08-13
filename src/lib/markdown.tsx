@@ -58,9 +58,21 @@ export function safeUrl(url: string): string {
  *
  * Los enlaces externos llevan `rel="noopener noreferrer"`: sin `noopener`, la
  * página destino puede manipular la pestaña de origen vía `window.opener`.
+ *
+ * Todos descartan `node` antes de esparcir el resto de las props.
+ * `react-markdown` pasa el nodo del AST con ese nombre, y si se propaga al
+ * elemento termina en el HTML como `node="[object Object]"`: un atributo
+ * inválido en cada enlace, imagen y tabla de cada nota.
  */
+type WithNode = { node?: unknown };
+
 const components = {
-  a({ href, children, ...props }: React.ComponentProps<"a">) {
+  a({
+    href,
+    children,
+    node: _node,
+    ...props
+  }: React.ComponentProps<"a"> & WithNode) {
     const safe = safeUrl(href ?? "");
     // Un enlace cuya URL se descartó se degrada a texto plano en vez de
     // desaparecer: el contenido de la nota se sigue leyendo entero.
@@ -80,7 +92,12 @@ const components = {
     );
   },
 
-  img({ src, alt, ...props }: React.ComponentProps<"img">) {
+  img({
+    src,
+    alt,
+    node: _node,
+    ...props
+  }: React.ComponentProps<"img"> & WithNode) {
     const safe = safeUrl(typeof src === "string" ? src : "");
     if (safe === "") return null;
 
@@ -90,6 +107,21 @@ const components = {
     // resuelve el caso sin agregar una fricción por cada host nuevo.
     // biome-ignore lint/performance/noImgElement: ver comentario
     return <img src={safe} alt={alt ?? ""} loading="lazy" {...props} />;
+  },
+
+  // Una tabla de tres columnas no entra en 390px de ancho y se cortaba por la
+  // derecha, sin forma de llegar al resto. El contenedor le da scroll propio
+  // en vez de desbordar la página entera.
+  table({
+    children,
+    node: _node,
+    ...props
+  }: React.ComponentProps<"table"> & WithNode) {
+    return (
+      <div className="overflow-x-auto">
+        <table {...props}>{children}</table>
+      </div>
+    );
   },
 } as const;
 
