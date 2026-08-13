@@ -1,47 +1,39 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  createTestimonialSchema,
+  firstErrorMessage,
+} from "@/lib/schemas/testimonial";
 import { createTestimonial } from "@/lib/testimonials/queries";
 
 /**
  * Alta pública de un testimonio. Nace siempre en `pending`: el estado lo decide
  * `createTestimonial`, no el cuerpo del request.
  *
- * El formato del cuerpo sigue siendo snake_case porque es el contrato que ya
- * habla el formulario. La validación a mano de acá abajo se reemplaza por un
- * esquema zod compartido en `feat/zod-validation`, la PR siguiente.
+ * La validación vive en `@/lib/schemas/testimonial`, compartida con el
+ * formulario. El esquema además normaliza —recorta, pasa los vacíos a `null`,
+ * completa el esquema de las URLs— y entrega la fila ya en camelCase, así que
+ * acá no queda ninguna transformación a mano.
  */
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { name, message, image_url, linkedin_url, github_username, email } =
-    body;
+  // `req.json()` tira si el cuerpo no es JSON válido, y sin este try el
+  // resultado era un 500 por un error del cliente.
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
+  }
 
-  if (!name || name.trim().length < 2) {
+  const parsed = createTestimonialSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "El nombre debe tener al menos 2 caracteres." },
-      { status: 400 },
-    );
-  }
-  if (!message || message.trim().length < 20) {
-    return NextResponse.json(
-      { error: "El mensaje debe tener al menos 20 caracteres." },
-      { status: 400 },
-    );
-  }
-  if (!linkedin_url && !github_username && !email) {
-    return NextResponse.json(
-      { error: "Debes ingresar al menos un medio de contacto." },
+      { error: firstErrorMessage(parsed.error) },
       { status: 400 },
     );
   }
 
   try {
-    await createTestimonial({
-      name: name.trim(),
-      message: message.trim(),
-      imageUrl: image_url || null,
-      linkedinUrl: linkedin_url?.trim() || null,
-      githubUsername: github_username?.trim() || null,
-      email: email?.trim() || null,
-    });
+    await createTestimonial(parsed.data);
   } catch {
     return NextResponse.json(
       { error: "Error al guardar el testimonio." },

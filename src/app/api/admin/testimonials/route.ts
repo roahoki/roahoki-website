@@ -1,14 +1,50 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import type { TestimonialStatus } from "@/db/schema";
+import type { z } from "zod";
 import { adminPassword } from "@/lib/env";
+import {
+  deleteTestimonialSchema,
+  firstErrorMessage,
+  moderateTestimonialSchema,
+} from "@/lib/schemas/testimonial";
 import {
   deleteTestimonial,
   listAllTestimonials,
   updateTestimonialStatus,
 } from "@/lib/testimonials/queries";
 
-const VALID_STATUSES: TestimonialStatus[] = ["pending", "approved", "rejected"];
+/**
+ * Lee y valida el cuerpo con el esquema dado.
+ *
+ * Devuelve la respuesta de error ya armada en vez de tirar, para que cada
+ * handler decida con un `if` y no con un try/catch. Un cuerpo que no es JSON y
+ * uno que no cumple el esquema son ambos culpa del cliente: los dos dan 400.
+ */
+async function parseBody<S extends z.ZodTypeAny>(
+  req: NextRequest,
+  schema: S,
+): Promise<{ data: z.infer<S> } | { error: NextResponse }> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return {
+      error: NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 }),
+    };
+  }
+
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      error: NextResponse.json(
+        { error: firstErrorMessage(parsed.error) },
+        { status: 400 },
+      ),
+    };
+  }
+
+  return { data: parsed.data };
+}
 
 /**
  * Antes esto comparaba contra `process.env.ADMIN_PASSWORD` directo, y ahí había
@@ -45,10 +81,9 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  const { id, status } = await req.json();
-  if (!id || !VALID_STATUSES.includes(status)) {
-    return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
-  }
+  const parsed = await parseBody(req, moderateTestimonialSchema);
+  if ("error" in parsed) return parsed.error;
+  const { id, status } = parsed.data;
 
   try {
     const updated = await updateTestimonialStatus(id, status);
@@ -73,10 +108,9 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  const { id } = await req.json();
-  if (!id) {
-    return NextResponse.json({ error: "ID requerido." }, { status: 400 });
-  }
+  const parsed = await parseBody(req, deleteTestimonialSchema);
+  if ("error" in parsed) return parsed.error;
+  const { id } = parsed.data;
 
   try {
     if (!(await deleteTestimonial(id))) {
