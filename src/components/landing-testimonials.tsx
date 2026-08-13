@@ -4,7 +4,7 @@ import {
   TestimonialCard,
 } from "@/components/testimonial-card";
 import { Link } from "@/i18n/navigation";
-import { supabaseAnon } from "@/lib/supabase";
+import { listApprovedTestimonials } from "@/lib/testimonials/queries";
 
 export async function LandingTestimonials() {
   const tTeach = await getTranslations("teaching");
@@ -12,15 +12,10 @@ export async function LandingTestimonials() {
 
   let testimonials: Testimonial[] = [];
   try {
-    const { data } = await supabaseAnon()
-      .from("testimonials")
-      .select("*")
-      .eq("status", "approved")
-      .order("created_at", { ascending: false })
-      .limit(3);
-    testimonials = (data ?? []) as Testimonial[];
+    testimonials = await listApprovedTestimonials(3);
   } catch {
-    // silently fail — show empty state if Supabase is unreachable
+    // Si la base no responde, se muestra el estado vacío: una sección
+    // secundaria no debería voltear la landing entera.
   }
 
   return (

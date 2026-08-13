@@ -149,12 +149,12 @@ export default function AdminTestimonialsPage() {
             .join("")
             .slice(0, 2)
             .toUpperCase();
-          const socialLink = t.linkedin_url
-            ? { href: t.linkedin_url, label: "LinkedIn" }
-            : t.github_username
+          const socialLink = t.linkedinUrl
+            ? { href: t.linkedinUrl, label: "LinkedIn" }
+            : t.githubUsername
               ? {
-                  href: `https://github.com/${t.github_username}`,
-                  label: `@${t.github_username}`,
+                  href: `https://github.com/${t.githubUsername}`,
+                  label: `@${t.githubUsername}`,
                 }
               : null;
 
@@ -165,9 +165,9 @@ export default function AdminTestimonialsPage() {
             >
               {/* Identity row */}
               <div className="flex items-start gap-3 mb-3">
-                {t.image_url ? (
+                {t.imageUrl ? (
                   <Image
-                    src={t.image_url}
+                    src={t.imageUrl}
                     alt={t.name}
                     width={40}
                     height={40}
@@ -207,7 +207,7 @@ export default function AdminTestimonialsPage() {
                     </span>
                   )}
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(t.created_at).toLocaleDateString("es-CL")}
+                    {new Date(t.createdAt).toLocaleDateString("es-CL")}
                   </p>
                 </div>
               </div>
