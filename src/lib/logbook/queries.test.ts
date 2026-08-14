@@ -242,15 +242,17 @@ describe.skipIf(!hasTestDatabase)("queries del logbook", () => {
   });
 
   describe("deleteEntry", () => {
-    it("borra y devuelve true", async () => {
-      const created = await seed();
+    it("borra y devuelve el slug que dejó de existir", async () => {
+      const created = await seed({ slug: "nota-condenada" });
 
-      expect(await queries.deleteEntry(created.id)).toBe(true);
+      // El slug es lo que necesita quien borra para invalidar el caché de la
+      // página pública que acaba de quedar huérfana.
+      expect(await queries.deleteEntry(created.id)).toBe("nota-condenada");
       expect(await queries.getEntryById(created.id)).toBeUndefined();
     });
 
-    it("devuelve false si el id no existía", async () => {
-      expect(await queries.deleteEntry(UUID_INEXISTENTE)).toBe(false);
+    it("devuelve undefined si el id no existía", async () => {
+      expect(await queries.deleteEntry(UUID_INEXISTENTE)).toBeUndefined();
     });
   });
 

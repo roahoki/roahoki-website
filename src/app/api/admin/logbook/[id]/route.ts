@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { isUniqueViolation } from "@/lib/db-errors";
 import { deleteEntry, getEntryById, updateEntry } from "@/lib/logbook/queries";
+import { revalidateLogbook } from "@/lib/logbook/revalidate";
 import { firstErrorMessage, updateEntrySchema } from "@/lib/schemas/logbook";
 
 /**
@@ -67,6 +68,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   try {
+    // El slug anterior solo se consulta cuando el cuerpo trae uno nuevo, que es
+    // el único caso en que puede cambiar. Se necesita para invalidar también la
+    // URL vieja: esa página se prerenderizó con la nota adentro y, sin
+    // revalidarla, seguiría sirviéndola después del renombre.
+    const previousSlug =
+      parsed.data.slug === undefined
+        ? undefined
+        : (await getEntryById(id))?.slug;
+
     const entry = await updateEntry(id, parsed.data);
     if (!entry) {
       return NextResponse.json(
@@ -74,6 +84,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         { status: 404 },
       );
     }
+
+    revalidateLogbook(entry.slug, previousSlug);
+
     return NextResponse.json({ entry });
   } catch (error) {
     if (isUniqueViolation(error)) {
@@ -99,12 +112,18 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   try {
-    if (!(await deleteEntry(id))) {
+    const deletedSlug = await deleteEntry(id);
+    if (deletedSlug === undefined) {
       return NextResponse.json(
         { error: "No existe esa nota." },
         { status: 404 },
       );
     }
+
+    // Sin esto la nota borrada sigue viéndose en su URL hasta que venza la hora
+    // de ISR, que es la peor versión del problema: se borra algo y sigue
+    // público.
+    revalidateLogbook(deletedSlug);
   } catch {
     return NextResponse.json(
       { error: "Error al eliminar la nota." },
