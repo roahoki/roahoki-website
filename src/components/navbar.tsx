@@ -1,6 +1,10 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+// `next/link` y **no** el `Link` de `@/i18n/navigation`: ese le antepone el
+// locale y mandaría a `/es/logbook`, que no existe. El logbook nace fuera de
+// `[locale]` y su ruta es literal.
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useRef } from "react";
@@ -70,6 +74,23 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3 ml-auto">
+          {/*
+            Fuera del `<nav>` de arriba, que es `hidden md:flex`: ahí el link
+            sería invisible en móvil, que es justo el dispositivo desde el que
+            llega quien abre el sitio desde una historia de Instagram.
+
+            Tampoco va entre los otros links por una razón de fondo: esos son
+            anclas dentro de la landing (`#about`, `#projects`) y este navega a
+            otra página. Mezclarlos haría que el único item que cambia de
+            página se vea igual que los que hacen scroll.
+          */}
+          <Link
+            href="/logbook"
+            className="text-xs font-medium text-foreground hover:text-brand transition-colors duration-150"
+          >
+            Logbook
+          </Link>
+
           <button
             type="button"
             onClick={toggleLocale}
