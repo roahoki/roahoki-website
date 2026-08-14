@@ -70,10 +70,33 @@ describe("MarkdownContent — render", () => {
   });
 
   it("renderiza tablas, que son de GFM y no de markdown base", () => {
-    const html = renderMarkdown("| a | b |\n| - | - |\n| 1 | 2 |");
+    const dom = renderDom("| a | b |\n| - | - |\n| 1 | 2 |");
 
-    expect(html).toContain("<table>");
-    expect(html).toContain("<td>1</td>");
+    expect(dom.querySelector("table")).not.toBeNull();
+    expect(dom.querySelector("td")?.textContent).toBe("1");
+  });
+
+  /**
+   * `react-markdown` pasa el nodo del AST como prop `node`. Al esparcir el
+   * resto de las props en el elemento, terminaba en el HTML como
+   * `node="[object Object]"`, en cada enlace, imagen y tabla de cada nota.
+   */
+  it("no filtra la prop `node` al DOM", () => {
+    const dom = renderDom(
+      "| a |\n| - |\n| 1 |\n\n[link](https://x.test)\n\n![alt](https://x.test/a.png)",
+    );
+
+    expect(dom.querySelector("[node]")).toBeNull();
+    expect(dom.innerHTML).not.toContain("[object Object]");
+  });
+
+  // Una tabla ancha se cortaba por la derecha en 390px, sin forma de ver el
+  // resto. El contenedor le da scroll propio.
+  it("envuelve las tablas en un contenedor con scroll horizontal", () => {
+    const dom = renderDom("| a | b |\n| - | - |\n| 1 | 2 |");
+    const table = dom.querySelector("table");
+
+    expect(table?.parentElement).toHaveClass("overflow-x-auto");
   });
 
   it("renderiza bloques de código sin ejecutarlos", () => {
