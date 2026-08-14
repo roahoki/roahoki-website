@@ -134,14 +134,22 @@ export async function updateEntry(
   return updated;
 }
 
-/** Borra una nota. `false` si el id no existía. */
-export async function deleteEntry(id: string): Promise<boolean> {
-  const deleted = await getDb()
+/**
+ * Borra una nota y devuelve su slug. `undefined` si el id no existía.
+ *
+ * Devuelve el slug y no un booleano porque quien borra necesita saber **qué
+ * ruta pública dejó de existir**, para invalidarle el caché. Leerlo antes con
+ * un `select` aparte sería una query de más y una carrera: entre esa lectura y
+ * el borrado el slug puede cambiar. El `returning` lo trae del mismo statement
+ * que borra, así que es el valor que efectivamente se fue.
+ */
+export async function deleteEntry(id: string): Promise<string | undefined> {
+  const [deleted] = await getDb()
     .delete(logbookEntries)
     .where(eq(logbookEntries.id, id))
-    .returning({ id: logbookEntries.id });
+    .returning({ slug: logbookEntries.slug });
 
-  return deleted.length > 0;
+  return deleted?.slug;
 }
 
 /** Los slugs de todas las notas publicadas. Para el sitemap y el feed. */

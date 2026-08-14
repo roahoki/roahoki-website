@@ -6,6 +6,7 @@ import {
   createEntry,
   listAllEntries,
 } from "@/lib/logbook/queries";
+import { revalidateLogbook } from "@/lib/logbook/revalidate";
 import { createEntrySchema, firstErrorMessage } from "@/lib/schemas/logbook";
 
 /** Listado del panel: todas las notas, borradores incluidos. */
@@ -57,6 +58,11 @@ export async function POST(req: NextRequest) {
     }
 
     const entry = await createEntry({ ...fields, slug: finalSlug });
+
+    // Después del insert y antes de responder: si se revalidara antes, se
+    // invalidaría el caché por una nota que todavía puede fallar al guardarse.
+    revalidateLogbook(entry.slug);
+
     return NextResponse.json({ entry }, { status: 201 });
   } catch (error) {
     // El índice único de `slug` es la última barrera contra un duplicado, y
