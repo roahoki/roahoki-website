@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 
@@ -14,7 +14,9 @@ export default async function ProtectedAdminLayout({
   // quedaba abierto. `verifySessionToken` no tiene ese caso degenerado — sin
   // clave de firma no hay token que verifique.
   if (!(await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value))) {
-    redirect("/admin/login");
+    const headerStore = await headers();
+    const pathname = headerStore.get("x-pathname") ?? "/admin";
+    redirect(`/admin/login?next=${encodeURIComponent(pathname)}`);
   }
 
   return (

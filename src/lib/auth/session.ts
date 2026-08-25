@@ -24,8 +24,8 @@ import { adminPassword, adminSessionSecret } from "@/lib/env";
 /** Nombre de la cookie. Se exporta para que login, logout y layout coincidan. */
 export const SESSION_COOKIE = "admin_session";
 
-/** Una semana, el mismo horizonte que tenía la cookie anterior. */
-export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** 30 días — es un sitio de uso propio, un mes sin re-autenticar es razonable. */
+export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const encoder = new TextEncoder();
 
