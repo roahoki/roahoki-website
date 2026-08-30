@@ -32,6 +32,12 @@ export default async function AdminLogbookPage() {
         <h1 className="text-sm font-bold text-foreground shrink-0">Logbook</h1>
         <div className="flex items-center gap-4">
           <Link
+            href="/admin/stats"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+          >
+            Stats
+          </Link>
+          <Link
             href="/admin/testimonials"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
           >

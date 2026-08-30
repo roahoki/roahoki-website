@@ -96,6 +96,12 @@ export default function AdminTestimonialsPage() {
         </h1>
         <div className="flex items-center gap-4">
           <a
+            href="/admin/stats"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+          >
+            Stats
+          </a>
+          <a
             href="/admin/logbook"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
           >
