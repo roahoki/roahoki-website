@@ -5,31 +5,17 @@ import { Navbar } from "./navbar";
 /**
  * El navbar es la única puerta de entrada al logbook desde el sitio.
  *
- * Se sustituyen next-intl, next-themes y el enrutador de i18n: nada de eso
- * funciona fuera de un request de Next, y lo que se prueba acá es el link, no
- * la traducción ni el tema.
+ * Se sustituye next-themes porque no funciona fuera de un request de Next, y lo
+ * que se prueba acá es el link, no el tema.
  */
-vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => key,
-  useLocale: () => "es",
-}));
-
 vi.mock("next-themes", () => ({
   useTheme: () => ({ theme: "dark", setTheme: vi.fn() }),
 }));
 
-vi.mock("@/i18n/navigation", () => ({
-  usePathname: () => "/",
-  useRouter: () => ({ replace: vi.fn() }),
-}));
-
 describe("Navbar — el link al logbook", () => {
-  it("apunta a /logbook, sin prefijo de idioma", () => {
+  it("apunta a /logbook", () => {
     render(<Navbar />);
 
-    // El prefijo es el error fácil: usar el `Link` de `@/i18n/navigation` en vez
-    // del de `next/link` produce `/es/logbook`, que no existe porque el logbook
-    // nace fuera de `[locale]`.
     expect(screen.getByRole("link", { name: "Logbook" })).toHaveAttribute(
       "href",
       "/logbook",

@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import type React from "react";
 import { AtipicusIcon } from "@/components/icons/atipicus-icon";
 import { BiomechanicsIcon } from "@/components/icons/biomechanics-icon";
@@ -69,27 +68,34 @@ function ProjectSection({
 const linkClass =
   "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors";
 
-const extLink = (href: string) => (chunks: React.ReactNode) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={linkClass}
-  >
-    {chunks}
-  </a>
-);
+function ExternalLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={linkClass}
+    >
+      {children}
+    </a>
+  );
+}
 
-export async function ExperienceContent() {
-  const t = await getTranslations("experience");
-
+export function ExperienceContent() {
   return (
     <article className="px-6 py-6 md:max-w-xl md:pt-12 md:pl-8 md:pr-8">
       <h1 className="text-base font-bold text-foreground mb-2 animate-fade-up">
-        {t("title")}
+        Experiencia
       </h1>
       <p className="text-sm leading-relaxed text-foreground/60 mb-8 animate-fade-up-delay-1">
-        {t("subtitle")}
+        Me especializo en el desarrollo Full Stack moderno, desde arquitectura
+        en la nube hasta interfaces de usuario escalables.
       </p>
 
       <ProjectSection
@@ -98,12 +104,19 @@ export async function ExperienceContent() {
         delay={1}
       >
         <p>
-          {t.rich("atipicus", {
-            atipicus: extLink("https://atipic.us/"),
-            googleSDK: extLink("https://cloud.google.com/"),
-            googleCloud: extLink("https://cloud.google.com/"),
-            mongodb: extLink("https://www.mongodb.com/"),
-          })}
+          Trabajé como Software Engineer Trainee en{" "}
+          <ExternalLink href="https://atipic.us/">Atipicus</ExternalLink>,
+          desarrollando un sistema de agente de IA centrado en el sector de la
+          salud. Mi stack incluyó el uso avanzado del{" "}
+          <ExternalLink href="https://cloud.google.com/">
+            Google SDK
+          </ExternalLink>
+          , infraestructura en{" "}
+          <ExternalLink href="https://cloud.google.com/">
+            Google Cloud
+          </ExternalLink>{" "}
+          y gestión de datos con{" "}
+          <ExternalLink href="https://www.mongodb.com/">MongoDB</ExternalLink>.
         </p>
       </ProjectSection>
 
@@ -115,12 +128,17 @@ export async function ExperienceContent() {
         delay={2}
       >
         <p>
-          {t.rich("biomechanics", {
-            biomechanics: extLink("https://www.biomechanics.cl/links"),
-            nextjs: extLink("https://nextjs.org"),
-            supabase: extLink("https://supabase.com"),
-            clerk: extLink("https://clerk.com"),
-          })}
+          Estuve a cargo del desarrollo fullstack del sitio oficial de{" "}
+          <ExternalLink href="https://www.biomechanics.cl/links">
+            Biomechanics
+          </ExternalLink>
+          , un proyecto artístico-tecnológico. Tomé todas las decisiones
+          técnicas, utilizando{" "}
+          <ExternalLink href="https://nextjs.org">Next.js</ExternalLink>,{" "}
+          <ExternalLink href="https://supabase.com">Supabase</ExternalLink> y{" "}
+          <ExternalLink href="https://clerk.com">Clerk</ExternalLink>.
+          Implementé una arquitectura escalable de back-office y optimicé el SEO
+          para asegurar un alto rendimiento en producción.
         </p>
       </ProjectSection>
 
@@ -130,11 +148,15 @@ export async function ExperienceContent() {
         delay={3}
       >
         <p>
-          {t.rich("freelance", {
-            react: extLink("https://react.dev"),
-            nodejs: extLink("https://nodejs.org"),
-            aws: extLink("https://aws.amazon.com"),
-          })}
+          Participé en el desarrollo de una plataforma completa de apuestas
+          deportivas utilizando{" "}
+          <ExternalLink href="https://react.dev">React</ExternalLink> y{" "}
+          <ExternalLink href="https://nodejs.org">Node.js</ExternalLink>. El
+          proyecto incluyó la implementación de workers, funciones serverless y
+          un pipeline de CI/CD. Desplegué la infraestructura utilizando
+          servicios de{" "}
+          <ExternalLink href="https://aws.amazon.com">AWS</ExternalLink> como
+          EC2, CloudFront y S3.
         </p>
       </ProjectSection>
 
@@ -144,10 +166,15 @@ export async function ExperienceContent() {
         delay={3}
       >
         <p>
-          {t.rich("mesti", {
-            mesti: extLink("https://mesti.app/"),
-            reactNative: extLink("https://reactnative.dev"),
-          })}
+          Me desempeñé como Líder Técnico Mobile para el cliente{" "}
+          <ExternalLink href="https://mesti.app/">Mesti</ExternalLink>. Dirigí
+          el desarrollo de tres aplicaciones móviles con{" "}
+          <ExternalLink href="https://reactnative.dev">
+            React Native
+          </ExternalLink>
+          , incluyendo gestión de menús y herramientas para bartenders. Coordiné
+          al equipo de desarrolladores y gestioné el ciclo completo desde el
+          levantamiento de requerimientos hasta el despliegue.
         </p>
       </ProjectSection>
 
@@ -156,7 +183,13 @@ export async function ExperienceContent() {
         title="PUC Chile"
         delay={3}
       >
-        <p>{t("puc")}</p>
+        <p>
+          Poseo una sólida trayectoria académica y docente en la Pontificia
+          Universidad Católica de Chile. He sido Coordinador General del curso
+          Arquitectura de Computadores e impartido ayudantías en cátedras clave
+          como Tecnologías y Aplicaciones Web, Estructuras de Datos y
+          Programación Avanzada.
+        </p>
       </ProjectSection>
     </article>
   );

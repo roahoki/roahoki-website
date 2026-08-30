@@ -1,15 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import {
   type Testimonial,
   TestimonialCard,
 } from "@/components/testimonial-card";
-import { Link } from "@/i18n/navigation";
 import { listApprovedTestimonials } from "@/lib/testimonials/queries";
 
 export async function LandingTestimonials() {
-  const tTeach = await getTranslations("teaching");
-  const tForm = await getTranslations("testimonialForm");
-
   let testimonials: Testimonial[] = [];
   try {
     testimonials = await listApprovedTestimonials(3);
@@ -23,13 +19,13 @@ export async function LandingTestimonials() {
       {testimonials.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/50 p-6 text-center space-y-3">
           <p className="text-sm text-muted-foreground">
-            {tTeach("testimonials_coming")}
+            Pronto estarán acá... estoy juntando los testimonios de mis alumnos.
           </p>
           <Link
             href="/testimonials/new"
             className="inline-flex items-center gap-1.5 text-sm text-brand font-semibold hover:underline"
           >
-            {tTeach("testimonials_leave_cta")} &rarr;
+            Tomaste clases conmigo? Deja el tuyo &rarr;
           </Link>
         </div>
       ) : (
@@ -44,7 +40,7 @@ export async function LandingTestimonials() {
               href="/testimonials/new"
               className="text-sm text-brand font-semibold hover:underline"
             >
-              {tForm("cta_leave")} &rarr;
+              Deja el tuyo &rarr;
             </Link>
           </div>
         </div>
