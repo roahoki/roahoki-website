@@ -1,0 +1,352 @@
+{
+  "id": "323d254d-ccf3-4d8c-96cc-809241c5163a",
+  "prevId": "36c6bc50-5487-4853-9aed-2c8ce5279eb0",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.exercise_counter_events": {
+      "name": "exercise_counter_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "exercise": {
+          "name": "exercise",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delta": {
+          "name": "delta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "exercise_counter_events_created_at_idx": {
+          "name": "exercise_counter_events_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "service role full access to exercise counter events": {
+          "name": "service role full access to exercise counter events",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "exercise_counter_events_exercise_check": {
+          "name": "exercise_counter_events_exercise_check",
+          "value": "exercise = ANY (ARRAY['pull_ups'::text, 'push_ups'::text, 'squats'::text, 'dips'::text, 'handstand_seconds'::text, 'pistol_squats'::text])"
+        },
+        "exercise_counter_events_delta_check": {
+          "name": "exercise_counter_events_delta_check",
+          "value": "delta <> 0 AND abs(delta) <= 1000"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.logbook_entries": {
+      "name": "logbook_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "body_md": {
+          "name": "body_md",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cover_image_url": {
+          "name": "cover_image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'published'"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "logbook_entries_slug_key": {
+          "name": "logbook_entries_slug_key",
+          "columns": [
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "logbook_entries_tags_idx": {
+          "name": "logbook_entries_tags_idx",
+          "columns": [
+            {
+              "expression": "tags",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "logbook_entries_status_published_at_idx": {
+          "name": "logbook_entries_status_published_at_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "published_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "public can read published logbook entries": {
+          "name": "public can read published logbook entries",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["anon"],
+          "using": "status = 'published'"
+        },
+        "service role full access to logbook entries": {
+          "name": "service role full access to logbook entries",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "logbook_entries_status_check": {
+          "name": "logbook_entries_status_check",
+          "value": "status = ANY (ARRAY['draft'::text, 'published'::text])"
+        },
+        "logbook_entries_slug_not_empty": {
+          "name": "logbook_entries_slug_not_empty",
+          "value": "length(slug) > 0"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.testimonials": {
+      "name": "testimonials",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "linkedin_url": {
+          "name": "linkedin_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "github_username": {
+          "name": "github_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "public can read approved": {
+          "name": "public can read approved",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["anon"],
+          "using": "status = 'approved'"
+        },
+        "public can insert": {
+          "name": "public can insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": ["anon"],
+          "withCheck": "true"
+        },
+        "service role full access": {
+          "name": "service role full access",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "testimonials_status_check": {
+          "name": "testimonials_status_check",
+          "value": "status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])"
+        }
+      },
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
