@@ -23,29 +23,38 @@ vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ replace: vi.fn() }),
 }));
 
-describe("Navbar — el link al logbook", () => {
-  it("apunta a /logbook, sin prefijo de idioma", () => {
+/**
+ * Los dos links del navbar que navegan a otra página, en vez de hacer scroll
+ * dentro de la landing. Comparten las dos trampas, así que comparten los tests.
+ */
+const LINKS_A_OTRA_PAGINA = [
+  { label: "Logbook", href: "/logbook" },
+  { label: "Stats", href: "/stats" },
+];
+
+describe.each(LINKS_A_OTRA_PAGINA)("Navbar — el link a $label", (link) => {
+  it(`apunta a ${link.href}, sin prefijo de idioma`, () => {
     render(<Navbar />);
 
     // El prefijo es el error fácil: usar el `Link` de `@/i18n/navigation` en vez
-    // del de `next/link` produce `/es/logbook`, que no existe porque el logbook
-    // nace fuera de `[locale]`.
-    expect(screen.getByRole("link", { name: "Logbook" })).toHaveAttribute(
+    // del de `next/link` produce `/es/logbook`, que no existe porque estas
+    // páginas nacen fuera de `[locale]`.
+    expect(screen.getByRole("link", { name: link.label })).toHaveAttribute(
       "href",
-      "/logbook",
+      link.href,
     );
   });
 
   it("no queda dentro de un contenedor que se oculta en móvil", () => {
     render(<Navbar />);
 
-    // Los links de la landing viven en un `<nav>` con `hidden md:flex`. Si el
-    // del logbook terminara ahí, desaparecería justo en el dispositivo desde el
+    // Los links de la landing viven en un `<nav>` con `hidden md:flex`. Si uno
+    // de estos terminara ahí, desaparecería justo en el dispositivo desde el
     // que llega quien abre el sitio desde una historia de Instagram — y el test
     // seguiría pasando si solo mirara el `href`.
     for (
       let node: HTMLElement | null = screen.getByRole("link", {
-        name: "Logbook",
+        name: link.label,
       });
       node !== null;
       node = node.parentElement
