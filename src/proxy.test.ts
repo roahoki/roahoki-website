@@ -36,11 +36,23 @@ describe("matcher de src/proxy.ts", () => {
       "/stats",
       "/logbook",
       "/logbook/una-nota",
-      "/admin",
-      "/admin/stats",
       "/api/admin/stats",
     ]) {
       expect(atrapa(path)).toBe(false);
+    }
+  });
+
+  it("sigue atrapando /admin, que el middleware maneja por su cuenta", () => {
+    // `admin` **no** está en la lista de exclusión, y es a propósito: el
+    // middleware necesita correr para inyectarle el `x-pathname` al layout
+    // protegido, y corta antes de llegar a next-intl. Excluirlo acá lo dejaría
+    // sin ese header y rompería el `?next=` del redirect al login.
+    //
+    // `stats` sí se excluye porque no necesita nada del middleware. Son dos
+    // formas distintas de quedar fuera de next-intl, y confundirlas es el error
+    // que este test hace visible.
+    for (const path of ["/admin", "/admin/stats", "/admin/logbook/nueva"]) {
+      expect(atrapa(path)).toBe(true);
     }
   });
 
