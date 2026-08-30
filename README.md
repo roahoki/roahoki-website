@@ -50,6 +50,7 @@ src/
 │   │   ├── teaching/
 │   │   └── testimonials/new/   Formulario público de testimonios
 │   ├── logbook/           Notas públicas, con ISR
+│   ├── stats/             Contadores de la semana, con ISR
 │   ├── admin/             Panel privado
 │   │   ├── login/
 │   │   └── (protected)/    Dashboard y moderación de testimonios
@@ -65,13 +66,17 @@ project-guide/             Notas de trabajo: PROJECT, TODO, BACKLOG
 
 ### Notas de arquitectura
 
-**Un solo idioma, sin middleware.** El sitio se sirve en español y las rutas no
-llevan prefijo. No hay archivo de mensajes ni `proxy.ts`: el texto vive en el
-JSX. Las URLs viejas con prefijo (`/es/...`, `/en/...`) se redirigen con 301
-desde `next.config.ts`.
+**Un solo idioma.** El sitio se sirve en español y las rutas no llevan prefijo.
+No hay archivo de mensajes: el texto vive en el JSX. Las URLs viejas con prefijo
+(`/es/...`, `/en/...`) se redirigen con 301 desde `next.config.ts`.
 
-**Tres layouts raíz.** `(site)`, `admin` y `logbook` traen cada uno su `<html>`:
-el panel va fijo en oscuro y las páginas públicas respetan el tema del
+**Middleware.** En Next.js 16 el archivo pasó a llamarse `proxy.ts`. Su matcher
+es `/admin/:path*` y nada más: le inyecta el `x-pathname` al request para que el
+layout protegido pueda armar el `?next=` del redirect al login. Las rutas
+públicas no pasan por él.
+
+**Cuatro layouts raíz.** `(site)`, `admin`, `logbook` y `stats` traen cada uno su
+`<html>`: el panel va fijo en oscuro y las páginas públicas respetan el tema del
 visitante.
 
 **Rutas públicas vs. privadas.** El panel cuelga de `/admin`.

@@ -23,19 +23,22 @@ no todas están en uso.
 `httpOnly` validada en el layout del route group `(protected)`. Es deliberadamente
 mínimo: un solo usuario, sin tabla de sesiones.
 
-**Sin middleware.** `src/proxy.ts` —el middleware, renombrado así en Next 16—
-existía solo para el routing de next-intl. Al dejar el sitio en un solo idioma
-no queda nada que resolver antes del request, así que el archivo se eliminó en
-vez de dejarlo pasando todo de largo.
+**Middleware = `proxy.ts`, solo para `/admin`.** Renombrado así en Next 16.
+Atrapaba todo el sitio para resolver el prefijo de idioma, y cada ruta pública
+nueva había que acordarse de excluirla del matcher —un fallo silencioso caro—.
+Al quitar next-intl le queda un solo trabajo: inyectar el `x-pathname` que el
+layout protegido lee para armar el `?next=` del redirect al login. El matcher
+pasó de lista de exclusiones a `/admin/:path*`.
 
 **Un idioma, sin prefijo de ruta.** El sitio se sirve solo en español: no hay
 `[locale]`, ni archivos de mensajes, ni selector de idioma. El texto vive en el
 JSX de cada componente. Las URLs viejas (`/es/...`, `/en/...`) se redirigen con
 301 desde `next.config.ts`.
 
-**Tres layouts raíz.** El sitio público vive en el route group `(site)`; `admin`
-y `logbook` traen el suyo. Son tres `<html>` distintos a propósito: el panel va
-fijo en oscuro y las páginas públicas respetan el tema del visitante.
+**Cuatro layouts raíz.** El sitio público vive en el route group `(site)`;
+`admin`, `logbook` y `stats` traen el suyo. Son cuatro `<html>` distintos a
+propósito: el panel va fijo en oscuro y las páginas públicas respetan el tema
+del visitante.
 
 ## Entorno
 

@@ -15,6 +15,13 @@
       "when": 1786595051709,
       "tag": "0001_logbook_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788052988689,
+      "tag": "0002_exercise_counter_events",
+      "breakpoints": true
     }
   ]
 }

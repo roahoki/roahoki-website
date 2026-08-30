@@ -103,10 +103,11 @@ excepción.
 - **El sitio es solo en español y sin prefijo de idioma.** Las rutas son
   literales (`/projects`, `/logbook`). No se reintroduce i18n.
 - **Cada raíz del árbol trae su propio layout**: `(site)` para el sitio público,
-  `admin` para el panel y `logbook` para las notas. No hay `src/app/layout.tsx`
+  y `admin`, `logbook` y `stats` para lo suyo. No hay `src/app/layout.tsx`
   porque el panel va fijo en oscuro y lo público sigue el tema del visitante.
-- **No hay middleware.** `src/proxy.ts` existía solo para el routing de idiomas.
-  El panel se protege en su layout, no en un matcher.
+- **El middleware (`src/proxy.ts`) solo atiende `/admin`.** Está ahí para
+  inyectar el `x-pathname` que el layout protegido necesita para armar el
+  `?next=`. Una ruta pública nueva no tiene que tocarlo.
 
 ## Seguridad
 

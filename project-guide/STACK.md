@@ -188,22 +188,27 @@ Esto no tiene equivalente en Rails y es una de las ventajas reales de Next.
 
 ### 2.4 El middleware se llama `proxy.ts`
 
-En Next.js 16 el archivo de middleware pasó a llamarse `proxy.ts`. Acá aplica el
-routing de idiomas:
+En Next.js 16 el archivo de middleware pasó a llamarse `proxy.ts`. Corre antes
+de cada request que cae en su `matcher`, y acá atiende una sola cosa:
 
 ```ts
 // src/proxy.ts
 export const config = {
-  matcher: ["/((?!api|admin|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/admin/:path*"],
 }
 ```
 
-Ese regex es una lista de exclusiones: no se aplica a `/api`, ni a `/admin`, ni a
-los internos de Next, ni a nada con extensión (`.*\..*`, que cubre
-`favicon.ico`, `feed.xml`, etc.). Por eso el panel no queda bajo prefijo de
-idioma.
+Solo `/admin`, porque es lo único que lo necesita: el middleware le inyecta el
+`x-pathname` al request, y el layout protegido lo lee para armar el `?next=` del
+redirect al login. Una página no puede conocer su propio pathname en el
+servidor, y de ahí el rodeo.
 
-**Toda ruta nueva que no deba tener prefijo de idioma hay que agregarla acá.**
+Vale la pena saber cómo era antes, porque explica la forma del archivo: mientras
+hubo dos idiomas, el matcher era una **lista de exclusiones** —atrapaba todo y
+next-intl mandaba lo atrapado a `/<locale>/...`—. Cada ruta nueva que no debía
+llevar prefijo había que acordarse de excluirla, y olvidarse no rompía ningún
+build: la página quedaba perfecta y en producción respondía un redirect a una
+URL inexistente. Al quitar next-intl esa trampa desapareció.
 
 ---
 
