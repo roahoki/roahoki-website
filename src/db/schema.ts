@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   check,
   index,
+  integer,
   pgPolicy,
   pgTable,
   text,
@@ -9,6 +10,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { EXERCISE_SLUGS } from "@/lib/stats/exercises";
 import { anonRole, serviceRole } from "./roles";
 
 /**
@@ -196,3 +198,86 @@ export const logbookEntries = pgTable(
 export type LogbookEntry = typeof logbookEntries.$inferSelect;
 export type NewLogbookEntry = typeof logbookEntries.$inferInsert;
 export type LogbookStatus = LogbookEntry["status"];
+
+/**
+ * Los contadores de ejercicio, guardados como **log de eventos**: cada tap del
+ * panel inserta una fila con su `delta`, y el número que se muestra es la suma
+ * sobre un rango de fechas.
+ *
+ * La alternativa era una fila por ejercicio con un entero que se incrementa.
+ * Se descartó por dos razones. La primera es que el reinicio semanal dejaría de
+ * ser gratis: habría que poner algo a correr los lunes a las 00:00 que ponga
+ * los contadores en cero, y ese algo puede no correr —o correr dos veces— sin
+ * que nadie se entere hasta que el número esté mal. Con eventos, la semana
+ * nueva empieza en cero porque la ventana de la query se movió, y no hay nada
+ * que pueda fallar. La segunda es que un contador mutable **destruye** el dato
+ * en cada reinicio: no quedaría con qué sacar las estadísticas de más adelante.
+ *
+ * El costo es una fila por tap. Con un solo autor son unos pocos miles de filas
+ * al año, que para Postgres no es nada.
+ */
+export const exerciseCounterEvents = pgTable(
+  "exercise_counter_events",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    // Igual que `status` en las otras tablas: el `enum` es solo a nivel de
+    // tipos y quien lo hace cumplir es el check de más abajo. La lista viene de
+    // `EXERCISE_SLUGS` para no escribirla dos veces.
+    exercise: text({ enum: EXERCISE_SLUGS }).notNull(),
+    // Con signo: el botón "−" del panel inserta un evento negativo en vez de
+    // borrar el positivo que lo precede. Borrar dejaría el historial contando
+    // una sesión que no fue, y acá el historial es el punto.
+    //
+    // Es un entero y no un booleano de "suma/resta" para que el paso pueda
+    // cambiar sin tocar la tabla: hoy cada tap vale 1, incluidos los segundos
+    // de handstand.
+    delta: integer().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    check(
+      "exercise_counter_events_exercise_check",
+      sql`exercise = ANY (ARRAY['pull_ups'::text, 'push_ups'::text, 'squats'::text, 'dips'::text, 'handstand_seconds'::text, 'pistol_squats'::text])`,
+    ),
+
+    // Un `delta` de 0 sería una fila que no cambia ningún total: ruido puro en
+    // los datos de los que después hay que sacar estadísticas. La cota superior
+    // es defensiva: zod ya valida el paso, y esto acota el daño de un bug que
+    // mande un número absurdo a un valor del que se puede volver.
+    check(
+      "exercise_counter_events_delta_check",
+      sql`delta <> 0 AND abs(delta) <= 1000`,
+    ),
+
+    // La única query que corre en caliente filtra por rango de fechas y agrupa
+    // por ejercicio. Para que el rango sea indexable, `created_at` tiene que
+    // ser la columna principal. Agregar `exercise` y `delta` al índice lo
+    // volvería covering, pero con este volumen de filas no se nota.
+    index("exercise_counter_events_created_at_idx").on(table.createdAt),
+
+    // RLS en la misma migración que crea la tabla, como exige CLAUDE.md.
+    //
+    // **No hay ninguna política para `anon`, y es deliberado.** La página
+    // pública no lee esta tabla desde el browser: la lee el servidor por
+    // Drizzle, que conecta como dueño de la base y ni siquiera pasa por RLS.
+    // Así que `anon` no necesita leer, y mucho menos escribir.
+    //
+    // Vale la pena mirar el contraste con `testimonials`, que sí tiene un
+    // `public can insert` con `withCheck: true`. Ahí es un agujero conocido
+    // (ver el TODO de esa tabla); en una tabla de contadores sería peor: le
+    // daría a cualquiera con la anon key —que va en el bundle del browser, o
+    // sea, cualquiera— la posibilidad de inflar los números del sitio.
+    pgPolicy("service role full access to exercise counter events", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type ExerciseCounterEvent = typeof exerciseCounterEvents.$inferSelect;
+export type NewExerciseCounterEvent = typeof exerciseCounterEvents.$inferInsert;
