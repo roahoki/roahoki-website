@@ -12,8 +12,8 @@ en [`../CLAUDE.md`](../CLAUDE.md); el stack, en [`STACK.md`](STACK.md).
 **Es:** escribir una nota en markdown desde el celular, subirle imágenes,
 publicarla, y que el link se vea bien al compartirlo.
 
-**No es (todavía):** borradores con UI propia, video alojado, comentarios,
-newsletter, ni quitar next-intl.
+**No es (todavía):** borradores con UI propia, video alojado, comentarios ni
+newsletter.
 
 ## Decisiones tomadas
 
@@ -133,7 +133,8 @@ invertir en pulir la distribución.
 
 ## Fuera de alcance
 
-- Quitar next-intl. El logbook se aísla para que esa tanda no lo toque.
+- ~~Quitar next-intl.~~ Se hizo aparte, en `refactor/eliminar-next-intl`, y
+  salió limpio justamente porque el logbook ya estaba aislado.
 - UI de borradores (la columna ya existe).
 - Video propio.
 - Rate limiting en `POST /api/testimonials` — sigue en `TODO.md`.

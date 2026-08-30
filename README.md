@@ -12,7 +12,6 @@ administración.
 | Lenguaje | TypeScript |
 | Estilos | Tailwind CSS v4 (CSS-first, `@theme`) |
 | UI | Componentes propios sobre Radix UI, con tokens de shadcn/ui |
-| i18n | next-intl (es por defecto, en) |
 | Backend | Supabase (Postgres) |
 | Lint/Format | Biome (sin ESLint, sin Prettier) |
 | Deploy | Vercel |
@@ -44,12 +43,13 @@ privilegiada — solo server-side, nunca con prefijo `NEXT_PUBLIC_`.
 ```
 src/
 ├── app/
-│   ├── [locale]/          Sitio público, rutas por idioma
+│   ├── (site)/            Sitio público
 │   │   ├── page.tsx        Landing (hero, stack, experiencia, testimonios)
 │   │   ├── experience/
 │   │   ├── projects/
 │   │   ├── teaching/
 │   │   └── testimonials/new/   Formulario público de testimonios
+│   ├── logbook/           Notas públicas, con ISR
 │   ├── admin/             Panel privado
 │   │   ├── login/
 │   │   └── (protected)/    Dashboard y moderación de testimonios
@@ -57,23 +57,26 @@ src/
 │       ├── testimonials/           POST público del formulario
 │       └── admin/{login,logout,testimonials}
 ├── components/            UI compartida + icons/ (logos de experiencia)
-├── i18n/                  routing, navigation y request de next-intl
-├── lib/                   supabase.ts (clientes anon y admin), utils.ts
-└── proxy.ts               Middleware de i18n
+├── db/                    Esquema y conexión de Drizzle
+└── lib/                   Queries por dominio, schemas de zod, storage, auth
 
-messages/{es,en}.json      Traducciones
 project-guide/             Notas de trabajo: PROJECT, TODO, BACKLOG
 ```
 
 ### Notas de arquitectura
 
-**Middleware.** En Next.js 16 el archivo pasó a llamarse `proxy.ts`. Aplica el
-routing de next-intl y excluye del matcher `/api`, `/admin` y los estáticos, así
-que el panel no queda bajo prefijo de idioma.
+**Un solo idioma, sin middleware.** El sitio se sirve en español y las rutas no
+llevan prefijo. No hay archivo de mensajes ni `proxy.ts`: el texto vive en el
+JSX. Las URLs viejas con prefijo (`/es/...`, `/en/...`) se redirigen con 301
+desde `next.config.ts`.
 
-**Rutas públicas vs. privadas.** El sitio público vive bajo `[locale]`; el panel
-cuelga de `/admin` sin locale. `admin/(protected)/layout.tsx` es un route group
-que valida la cookie `admin_token` y redirige a `/admin/login` si no coincide.
+**Tres layouts raíz.** `(site)`, `admin` y `logbook` traen cada uno su `<html>`:
+el panel va fijo en oscuro y las páginas públicas respetan el tema del
+visitante.
+
+**Rutas públicas vs. privadas.** El panel cuelga de `/admin`.
+`admin/(protected)/layout.tsx` es un route group que valida la cookie
+`admin_token` y redirige a `/admin/login` si no coincide.
 
 **Supabase.** `supabaseAnon()` se usa en el endpoint público de testimonios y
 queda sujeto a las políticas de RLS. `supabaseAdmin()` usa la service role y

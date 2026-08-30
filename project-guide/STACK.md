@@ -80,15 +80,15 @@ Nombres de archivo reservados:
 
 Y dos convenciones de carpeta que hay que conocer:
 
-**`[param]` — segmento dinámico.** `src/app/[locale]/page.tsx` captura `/es` y
-`/en`. El valor llega como prop:
+**`[param]` — segmento dinámico.** `src/app/logbook/[slug]/page.tsx` captura
+`/logbook/lo-bueno-toma-tiempo`. El valor llega como prop:
 
 ```tsx
-// src/app/[locale]/layout.tsx
-export default async function LocaleLayout({ params }: {
-  params: Promise<{ locale: string }>   // ojo: en Next 15+ params es una Promise
+// src/app/logbook/[slug]/page.tsx
+export default async function EntryPage({ params }: {
+  params: Promise<{ slug: string }>   // ojo: en Next 15+ params es una Promise
 }) {
-  const { locale } = await params
+  const { slug } = await params
 ```
 
 **`(grupo)` — route group.** Los paréntesis agrupan **sin aparecer en la URL**.
@@ -407,7 +407,7 @@ browser → Storage (directo, con anon key o signed URL)
 ```
 
 Esquiva el límite de Vercel. Es lo que hace el formulario público de testimonios
-(`src/app/[locale]/testimonials/new/page.tsx`):
+(`src/app/(site)/testimonials/new/page.tsx`):
 
 ```tsx
 const { error } = await supabase.storage
