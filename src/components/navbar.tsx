@@ -91,6 +91,16 @@ export function Navbar() {
             Logbook
           </Link>
 
+          {/* Junto al del logbook y por los mismos motivos: fuera del `<nav>`
+              que se oculta en móvil, y separado de las anclas de la landing
+              porque este también navega a otra página. */}
+          <Link
+            href="/stats"
+            className="text-xs font-medium text-foreground hover:text-brand transition-colors duration-150"
+          >
+            Stats
+          </Link>
+
           <button
             type="button"
             onClick={toggleLocale}

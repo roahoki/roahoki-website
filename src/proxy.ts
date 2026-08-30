@@ -19,7 +19,10 @@ export default function middleware(req: NextRequest) {
 
 export const config = {
   // `admin` ya no se excluye: el middleware lo maneja explícitamente arriba.
-  // `logbook` se excluye porque next-intl redirige lo que atrapa a
-  // `/<locale>/...`, y `/logbook/*` nace ya en español y sin prefijo.
-  matcher: ["/((?!api|logbook|_next|_vercel|.*\\..*).*)"],
+  // `logbook` y `stats` sí, porque next-intl redirige lo que atrapa a
+  // `/<locale>/...` y esas rutas nacen ya en español y sin prefijo. Excluirlas
+  // acá —en vez de darles una rama en el middleware como a `admin`— es lo
+  // correcto justamente porque no necesitan nada de él: `admin` está arriba
+  // solo para inyectarle el `x-pathname` al layout protegido.
+  matcher: ["/((?!api|logbook|stats|_next|_vercel|.*\\..*).*)"],
 };
