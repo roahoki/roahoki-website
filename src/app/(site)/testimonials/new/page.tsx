@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import Cropper from "react-easy-crop";
 import {
   createTestimonialSchema,
-  messageKeyForIssue,
+  firstErrorMessage,
 } from "@/lib/schemas/testimonial";
 import {
   BUCKETS,
@@ -19,6 +18,9 @@ import {
 import { createBrowserStorage } from "@/lib/storage/supabase-storage";
 
 type FormState = "idle" | "submitting" | "success" | "error";
+
+/** Lo que se muestra cuando el fallo no tiene un mensaje propio que dar. */
+const GENERIC_ERROR = "Algo salio mal. Por favor intenta de nuevo.";
 
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -68,7 +70,6 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
 }
 
 export default function NewTestimonialPage() {
-  const t = useTranslations("testimonialForm");
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -97,7 +98,7 @@ export default function NewTestimonialPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      setErrorMsg(t("photo_too_large"));
+      setErrorMsg("La imagen no puede pesar mas de 2MB.");
       return;
     }
     const url = URL.createObjectURL(file);
@@ -128,7 +129,7 @@ export default function NewTestimonialPage() {
     setErrorMsg("");
 
     // Las reglas son las del esquema compartido: acá no se reescriben, solo se
-    // traduce el problema que reporta. La imagen se valida después porque
+    // muestra el problema que reporta. La imagen se valida después porque
     // todavía no está subida y no hay URL que mostrarle al esquema.
     const check = createTestimonialSchema.safeParse({
       name,
@@ -139,9 +140,7 @@ export default function NewTestimonialPage() {
     });
 
     if (!check.success) {
-      const [issue] = check.error.issues;
-      const key = messageKeyForIssue(issue);
-      setErrorMsg(key ? t(key) : t("error"));
+      setErrorMsg(firstErrorMessage(check.error));
       return;
     }
 
@@ -155,7 +154,7 @@ export default function NewTestimonialPage() {
       const contentType = contentTypeFor(extension);
 
       if (!contentType) {
-        setErrorMsg(t("error"));
+        setErrorMsg(GENERIC_ERROR);
         setFormState("error");
         return;
       }
@@ -169,7 +168,7 @@ export default function NewTestimonialPage() {
         });
         image_url = url;
       } catch {
-        setErrorMsg(t("error"));
+        setErrorMsg(GENERIC_ERROR);
         setFormState("error");
         return;
       }
@@ -190,7 +189,7 @@ export default function NewTestimonialPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setErrorMsg(data.error || t("error"));
+      setErrorMsg(data.error || GENERIC_ERROR);
       setFormState("error");
       return;
     }
@@ -225,11 +224,13 @@ export default function NewTestimonialPage() {
             </svg>
           </div>
           <h1 className="text-base font-bold text-foreground mb-2">
-            {t("success_title")}
+            Testimonio enviado
           </h1>
-          <p className="text-sm text-foreground/70">{t("success_message")}</p>
+          <p className="text-sm text-foreground/70">
+            Lo revisaré pronto y lo dejaré subido, muchas gracias :)
+          </p>
           <p className="text-xs text-muted-foreground mt-4">
-            {t("success_redirect")}
+            Volviendo a la página principal...
           </p>
         </div>
       </main>
@@ -256,7 +257,7 @@ export default function NewTestimonialPage() {
           </div>
           <div className="px-5 pt-4 pb-8 space-y-4 bg-zinc-950 border-t border-white/8">
             <p className="text-xs text-center text-white/50">
-              {t("crop_hint")}
+              Arrastra y usa el slider para encuadrar tu cara
             </p>
             <input
               type="range"
@@ -273,14 +274,14 @@ export default function NewTestimonialPage() {
                 onClick={cancelCrop}
                 className="flex-1 rounded-xl border border-white/10 py-3 text-sm font-semibold text-white/70 hover:bg-white/5 transition-colors"
               >
-                {t("crop_cancel")}
+                Cancelar
               </button>
               <button
                 type="button"
                 onClick={confirmCrop}
                 className="flex-1 rounded-xl bg-brand py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
               >
-                {t("crop_confirm")}
+                Confirmar
               </button>
             </div>
           </div>
@@ -291,9 +292,11 @@ export default function NewTestimonialPage() {
         <div className="max-w-lg mx-auto">
           <div className="mb-8">
             <h1 className="text-base font-bold text-foreground mb-2">
-              {t("title")}
+              Deja tu testimonio
             </h1>
-            <p className="text-sm text-foreground/65">{t("subtitle")}</p>
+            <p className="text-sm text-foreground/65">
+              Tu opinion me ayuda a llegar a mas estudiantes.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -303,14 +306,14 @@ export default function NewTestimonialPage() {
                 htmlFor="testimonial-name"
                 className="block text-xs font-semibold text-foreground mb-1.5"
               >
-                {t("name_label")} <span className="text-brand">*</span>
+                Tu nombre <span className="text-brand">*</span>
               </label>
               <input
                 id="testimonial-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t("name_placeholder")}
+                placeholder="Nombre completo"
                 className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
               />
             </div>
@@ -321,18 +324,18 @@ export default function NewTestimonialPage() {
                 htmlFor="testimonial-message"
                 className="block text-xs font-semibold text-foreground mb-1.5"
               >
-                {t("message_label")} <span className="text-brand">*</span>
+                Tu mensaje <span className="text-brand">*</span>
               </label>
               <textarea
                 id="testimonial-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={t("message_placeholder")}
+                placeholder="Que fue lo mas valioso de las clases?"
                 rows={4}
                 className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors resize-none"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {message.length} / 20 {t("chars_min")}
+                {message.length} / 20 caracteres minimo
               </p>
             </div>
 
@@ -345,10 +348,11 @@ export default function NewTestimonialPage() {
                 id="testimonial-photo-label"
                 className="block text-xs font-semibold text-foreground mb-1.5"
               >
-                {t("photo_label")}
+                Foto de perfil
               </span>
               <p className="text-xs text-muted-foreground mb-2">
-                {t("photo_hint")}
+                Una imagen tuya para que se vea que eres una persona real (jpg,
+                png o webp, max. 2MB).
               </p>
               <fieldset
                 aria-labelledby="testimonial-photo-label"
@@ -386,7 +390,7 @@ export default function NewTestimonialPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:border-brand/40 hover:bg-brand-muted transition-all duration-150"
                   >
-                    {imagePreview ? t("photo_change") : t("photo_button")}
+                    {imagePreview ? "Cambiar foto" : "Subir foto"}
                   </button>
                   {imagePreview && (
                     <button
@@ -397,7 +401,7 @@ export default function NewTestimonialPage() {
                       }}
                       className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-destructive/40 hover:text-destructive transition-all duration-150"
                     >
-                      {t("photo_remove")}
+                      Quitar
                     </button>
                   )}
                 </div>
@@ -418,10 +422,10 @@ export default function NewTestimonialPage() {
                 id="testimonial-social-label"
                 className="block text-xs font-semibold text-foreground mb-1"
               >
-                {t("social_label")} <span className="text-brand">*</span>
+                Contacto <span className="text-brand">*</span>
               </span>
               <p className="text-xs text-muted-foreground mb-2.5">
-                {t("social_hint")}
+                Al menos uno es obligatorio para confirmar que eres real.
               </p>
               <fieldset
                 aria-labelledby="testimonial-social-label"
@@ -435,7 +439,7 @@ export default function NewTestimonialPage() {
                     type="url"
                     value={linkedin}
                     onChange={(e) => setLinkedin(e.target.value)}
-                    placeholder={t("linkedin_placeholder")}
+                    placeholder="https://linkedin.com/in/tu-perfil"
                     className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
                   />
                 </div>
@@ -447,7 +451,7 @@ export default function NewTestimonialPage() {
                     type="text"
                     value={github}
                     onChange={(e) => setGithub(e.target.value)}
-                    placeholder={t("github_placeholder")}
+                    placeholder="tu-usuario-de-github"
                     className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
                   />
                 </div>
@@ -460,7 +464,7 @@ export default function NewTestimonialPage() {
                     inputMode="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("email_placeholder")}
+                    placeholder="tu@email.com"
                     className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
                   />
                 </div>
@@ -478,7 +482,7 @@ export default function NewTestimonialPage() {
               disabled={formState === "submitting"}
               className="w-full rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:opacity-90 active:scale-[0.97] transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {formState === "submitting" ? t("submitting") : t("submit")}
+              {formState === "submitting" ? "Enviando..." : "Enviar testimonio"}
             </button>
           </form>
         </div>

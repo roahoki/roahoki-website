@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { AnimateIn } from "@/components/animate-in";
 import { AtipicusIcon } from "@/components/icons/atipicus-icon";
@@ -37,26 +36,24 @@ const videos = [
   { id: "d40mVuVLqTE", title: "Arquitectura de Computadores" },
 ];
 
-export default async function HomePage() {
-  const tHero = await getTranslations("hero");
-  const tBento = await getTranslations("bento");
-  const tAbout = await getTranslations("about");
-  const tExp = await getTranslations("experience");
-  const tProj = await getTranslations("projects");
-  const tTeach = await getTranslations("teaching");
-  const tContact = await getTranslations("contact");
-
+export default function HomePage() {
   const linkClass =
     "underline underline-offset-2 decoration-brand/50 hover:decoration-brand hover:text-foreground transition-colors";
 
-  const extLink = (href: string) => (chunks: React.ReactNode) => (
+  const ExternalLink = ({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       className={linkClass}
     >
-      {chunks}
+      {children}
     </a>
   );
 
@@ -88,7 +85,7 @@ export default async function HomePage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand/35 bg-brand-muted">
                   <span className="w-1.5 h-1.5 rounded-full bg-brand" />
                   <span className="text-xs text-brand font-semibold">
-                    {tHero("available")}
+                    Disponible para nuevas oportunidades
                   </span>
                 </div>
               </AnimateIn>
@@ -105,9 +102,9 @@ export default async function HomePage() {
               <AnimateIn delay={160}>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    tHero("role_swe"),
-                    tHero("role_designer"),
-                    tHero("role_athlete"),
+                    "Software Engineer",
+                    "Diseñador",
+                    "Atleta de Calistenia",
                   ].map((role) => (
                     <span
                       key={role}
@@ -121,7 +118,8 @@ export default async function HomePage() {
 
               <AnimateIn delay={240}>
                 <p className="text-base md:text-lg text-foreground/60 leading-relaxed max-w-md">
-                  {tHero("tagline")}
+                  Construyo con propósito, diseño experiencias y enseño lo que
+                  aprendo.
                 </p>
               </AnimateIn>
 
@@ -131,7 +129,7 @@ export default async function HomePage() {
                     href="#projects"
                     className="px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
                   >
-                    {tHero("cta_projects")} &darr;
+                    Ver mi trabajo &darr;
                   </a>
                   <a
                     href={WHATSAPP}
@@ -139,7 +137,7 @@ export default async function HomePage() {
                     rel="noopener noreferrer"
                     className="px-5 py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:border-brand/40 hover:bg-brand-muted transition-all duration-150"
                   >
-                    {tHero("cta_contact")} &rarr;
+                    Hablemos &rarr;
                   </a>
                 </div>
               </AnimateIn>
@@ -175,13 +173,14 @@ export default async function HomePage() {
                   <BukIcon size={48} className="object-contain shrink-0" />
                   <div>
                     <span className="text-xs text-muted-foreground">
-                      {tBento("current_role")}
+                      Actualmente en
                     </span>
                     <p className="text-sm font-bold text-foreground mb-1">
                       Buk
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      {tBento("current_desc")}
+                      Equipo de Cultura — refactorizando el módulo de encuestas
+                      laborales con Rails.
                     </p>
                   </div>
                 </div>
@@ -195,10 +194,10 @@ export default async function HomePage() {
                   +4
                 </p>
                 <p className="text-xs font-bold text-foreground mb-1">
-                  {tBento("teaching_stat_label")}
+                  años enseñando
                 </p>
                 <p className="text-xs text-muted-foreground leading-tight">
-                  {tBento("teaching_at")}
+                  como ayudante y coordinador en la PUC
                 </p>
               </div>
             </AnimateIn>
@@ -208,10 +207,10 @@ export default async function HomePage() {
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/40 hover:bg-brand-muted transition-colors duration-300 flex flex-col justify-between">
                 <div>
                   <p className="text-xs font-semibold text-foreground mb-0.5">
-                    {tBento("location")}
+                    Santiago, Chile
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {tBento("hybrid")}
+                    Trabajo híbrido
                   </p>
                 </div>
                 <div className="pt-4 border-t border-border mt-4">
@@ -219,7 +218,7 @@ export default async function HomePage() {
                     Calistenia
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {tBento("athlete_desc")}
+                    Fuera del código, entreno calistenia
                   </p>
                 </div>
               </div>
@@ -229,7 +228,7 @@ export default async function HomePage() {
             <AnimateIn delay={240} className="col-span-2 md:col-span-4">
               <div className="h-full rounded-2xl border border-border bg-card p-5 hover:border-brand/30 transition-colors duration-300">
                 <p className="text-xs font-bold text-brand uppercase tracking-widest mb-3">
-                  {tBento("stack_title")}
+                  Stack
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {stack.map((tech) => (
@@ -248,17 +247,20 @@ export default async function HomePage() {
             <AnimateIn delay={320} className="col-span-2 md:col-span-2">
               <div className="h-full rounded-2xl border border-border bg-card p-5">
                 <p className="text-xs leading-relaxed text-foreground/80 mb-3">
-                  {tAbout.rich("bio", {
-                    buk: extLink("https://www.buk.cl/"),
-                    puc: extLink("https://www.uc.cl/"),
-                  })}
+                  Soy Ingeniero de Software en{" "}
+                  <ExternalLink href="https://www.buk.cl/">Buk</ExternalLink>,
+                  donde trabajo en el equipo de Cultura refactorizando el módulo
+                  de encuestas laborales. Me apasiona todo el stack: desde
+                  infraestructura hasta interfaces de usuario. Llevo más de 4
+                  años enseñando programación en la{" "}
+                  <ExternalLink href="https://www.uc.cl/">PUC</ExternalLink>.
                 </p>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  {tAbout.rich("bio_cta", {
-                    github: extLink(GITHUB),
-                    linkedin: extLink(LINKEDIN),
-                    whatsapp: extLink(WHATSAPP),
-                  })}
+                  Encuentra mi trabajo en{" "}
+                  <ExternalLink href={GITHUB}>GitHub</ExternalLink> o
+                  interactuemos por{" "}
+                  <ExternalLink href={LINKEDIN}>LinkedIn</ExternalLink> y{" "}
+                  <ExternalLink href={WHATSAPP}>WhatsApp</ExternalLink>.
                 </p>
               </div>
             </AnimateIn>
@@ -271,7 +273,7 @@ export default async function HomePage() {
         <section id="experience" className="pb-24">
           <AnimateIn delay={0}>
             <h2 className="text-2xl font-extrabold text-foreground mb-8">
-              {tExp("title")}
+              Experiencia
               <span className="text-brand">.</span>
             </h2>
           </AnimateIn>
@@ -288,16 +290,20 @@ export default async function HomePage() {
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <h3 className="text-sm font-bold text-foreground">Buk</h3>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-brand-muted text-brand font-semibold border border-brand/20">
-                        {tExp("current")}
+                        Actual
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">
                       Software Engineer · may. 2026 — presente
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
-                      {tExp.rich("buk", {
-                        buk: extLink("https://www.buk.cl/"),
-                      })}
+                      Trabajo como Ingeniero de Software en{" "}
+                      <ExternalLink href="https://www.buk.cl/">
+                        Buk
+                      </ExternalLink>{" "}
+                      dentro del equipo de Cultura. Mi principal desafío es
+                      refactorizar y unificar el módulo de encuestas laborales,
+                      trabajando con Ruby on Rails y Ruby.
                     </p>
                   </div>
                 </div>
@@ -321,12 +327,24 @@ export default async function HomePage() {
                       Software Engineer Trainee · dic. 2025 — mar. 2026
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
-                      {tExp.rich("atipicus", {
-                        atipicus: extLink("https://atipic.us/"),
-                        googleSDK: extLink("https://cloud.google.com/"),
-                        googleCloud: extLink("https://cloud.google.com/"),
-                        mongodb: extLink("https://www.mongodb.com/"),
-                      })}
+                      Trabajé como Software Engineer Trainee en{" "}
+                      <ExternalLink href="https://atipic.us/">
+                        Atipicus
+                      </ExternalLink>
+                      , desarrollando un sistema de agente de IA centrado en el
+                      sector de la salud. Mi stack incluyó el uso avanzado del{" "}
+                      <ExternalLink href="https://cloud.google.com/">
+                        Google SDK
+                      </ExternalLink>
+                      , infraestructura en{" "}
+                      <ExternalLink href="https://cloud.google.com/">
+                        Google Cloud
+                      </ExternalLink>{" "}
+                      y gestión de datos con{" "}
+                      <ExternalLink href="https://www.mongodb.com/">
+                        MongoDB
+                      </ExternalLink>
+                      .
                     </p>
                   </div>
                 </div>
@@ -348,14 +366,27 @@ export default async function HomePage() {
                       Full Stack Developer · 2024 — 2025
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
-                      {tExp.rich("biomechanics", {
-                        biomechanics: extLink(
-                          "https://www.biomechanics.cl/links",
-                        ),
-                        nextjs: extLink("https://nextjs.org"),
-                        supabase: extLink("https://supabase.com"),
-                        clerk: extLink("https://clerk.com"),
-                      })}
+                      Estuve a cargo del desarrollo fullstack del sitio oficial
+                      de{" "}
+                      <ExternalLink href="https://www.biomechanics.cl/links">
+                        Biomechanics
+                      </ExternalLink>
+                      , un proyecto artístico-tecnológico. Tomé todas las
+                      decisiones técnicas, utilizando{" "}
+                      <ExternalLink href="https://nextjs.org">
+                        Next.js
+                      </ExternalLink>
+                      ,{" "}
+                      <ExternalLink href="https://supabase.com">
+                        Supabase
+                      </ExternalLink>{" "}
+                      y{" "}
+                      <ExternalLink href="https://clerk.com">
+                        Clerk
+                      </ExternalLink>
+                      . Implementé una arquitectura escalable de back-office y
+                      optimicé el SEO para asegurar un alto rendimiento en
+                      producción.
                     </p>
                   </div>
                 </div>
@@ -390,11 +421,22 @@ export default async function HomePage() {
                       Full Stack Developer · 2024
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
-                      {tExp.rich("freelance", {
-                        react: extLink("https://react.dev"),
-                        nodejs: extLink("https://nodejs.org"),
-                        aws: extLink("https://aws.amazon.com"),
-                      })}
+                      Participé en el desarrollo de una plataforma completa de
+                      apuestas deportivas utilizando{" "}
+                      <ExternalLink href="https://react.dev">
+                        React
+                      </ExternalLink>{" "}
+                      y{" "}
+                      <ExternalLink href="https://nodejs.org">
+                        Node.js
+                      </ExternalLink>
+                      . El proyecto incluyó la implementación de workers,
+                      funciones serverless y un pipeline de CI/CD. Desplegué la
+                      infraestructura utilizando servicios de{" "}
+                      <ExternalLink href="https://aws.amazon.com">
+                        AWS
+                      </ExternalLink>{" "}
+                      como EC2, CloudFront y S3.
                     </p>
                   </div>
                 </div>
@@ -416,10 +458,18 @@ export default async function HomePage() {
                       Mobile Technical Lead · 2024
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
-                      {tExp.rich("mesti", {
-                        mesti: extLink("https://mesti.app/"),
-                        reactNative: extLink("https://reactnative.dev"),
-                      })}
+                      Me desempeñé como Líder Técnico Mobile para el cliente{" "}
+                      <ExternalLink href="https://mesti.app/">
+                        Mesti
+                      </ExternalLink>
+                      . Dirigí el desarrollo de tres aplicaciones móviles con{" "}
+                      <ExternalLink href="https://reactnative.dev">
+                        React Native
+                      </ExternalLink>
+                      , incluyendo gestión de menús y herramientas para
+                      bartenders. Coordiné al equipo de desarrolladores y
+                      gestioné el ciclo completo desde el levantamiento de
+                      requerimientos hasta el despliegue.
                     </p>
                   </div>
                 </div>
@@ -441,7 +491,12 @@ export default async function HomePage() {
                       Teaching Assistant &amp; General Coordinator · 2022 — 2025
                     </p>
                     <p className="text-xs leading-relaxed text-foreground/70">
-                      {tExp("puc")}
+                      Poseo una sólida trayectoria académica y docente en la
+                      Pontificia Universidad Católica de Chile. He sido
+                      Coordinador General del curso Arquitectura de Computadores
+                      e impartido ayudantías en cátedras clave como Tecnologías
+                      y Aplicaciones Web, Estructuras de Datos y Programación
+                      Avanzada.
                     </p>
                   </div>
                 </div>
@@ -456,7 +511,7 @@ export default async function HomePage() {
         <section id="projects" className="pb-24">
           <AnimateIn delay={0}>
             <h2 className="text-2xl font-extrabold text-foreground mb-8">
-              {tProj("section_title")}
+              Proyectos
               <span className="text-brand">.</span>
             </h2>
           </AnimateIn>
@@ -475,7 +530,7 @@ export default async function HomePage() {
                         Biomechanics.wav
                       </h3>
                       <p className="text-xs text-white/45">
-                        {tProj("biomechanics_type")}
+                        Sitio web artístico-tecnológico
                       </p>
                     </div>
                   </div>
@@ -485,13 +540,15 @@ export default async function HomePage() {
                     rel="noopener noreferrer"
                     className="px-4 py-2 rounded-xl border border-white/15 text-white text-xs font-semibold hover:bg-white/10 transition-colors duration-150"
                   >
-                    {tProj("visit")} ↗
+                    Visitar ↗
                   </a>
                 </div>
               </div>
               <div className="bg-card p-5 sm:p-6">
                 <p className="text-sm text-foreground/80 leading-relaxed mb-4">
-                  {tProj("biomechanics_desc")}
+                  Desarrollo fullstack del sitio oficial. Arquitectura escalable
+                  de back-office, gestión de contenido y optimización SEO para
+                  alto rendimiento en producción.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Next.js", "TypeScript", "Supabase", "Clerk"].map(
@@ -522,14 +579,16 @@ export default async function HomePage() {
                       Plannisthenics
                     </h3>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
-                      {tProj("in_development")}
+                      En desarrollo
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">
-                    {tProj("plannisthenics_type")}
+                    App web de calistenia
                   </p>
                   <p className="text-xs leading-relaxed text-foreground/70 mb-3">
-                    {tProj("plannisthenics_desc")}
+                    App para estructurar y registrar tu entrenamiento de
+                    calistenia. Planifica rutinas, controla tu progreso y
+                    organiza tus sesiones de entrenamiento.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {["Ruby on Rails", "Ruby"].map((tech) => (
@@ -549,7 +608,8 @@ export default async function HomePage() {
           {/* YouTube */}
           <AnimateIn delay={160} className="mb-4">
             <p className="text-sm text-muted-foreground">
-              {tProj("youtube_intro")}
+              Videos en YouTube enseñando estructuras de datos y arquitectura de
+              computadores.
             </p>
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -567,7 +627,7 @@ export default async function HomePage() {
         <section id="teaching" className="pb-24">
           <AnimateIn delay={0}>
             <h2 className="text-2xl font-extrabold text-foreground mb-8">
-              {tTeach("title")}
+              Clases particulares
               <span className="text-brand">.</span>
             </h2>
           </AnimateIn>
@@ -575,30 +635,40 @@ export default async function HomePage() {
           <AnimateIn delay={80} className="mb-4">
             <div className="rounded-2xl border border-brand/30 bg-brand-muted p-6 sm:p-8">
               <p className="text-sm leading-relaxed text-foreground/85 mb-6 max-w-xl">
-                {tTeach("intro")}
+                Doy clases particulares a estudiantes de ingeniería de la PUC.
+                Me adapto a tu forma de aprender y vamos al ritmo que necesites.
+                No existen preguntas tontas ni temas que no se puedan entender.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <div className="rounded-xl border border-border bg-background/60 p-4">
                   <h3 className="text-sm font-bold text-foreground mb-2">
-                    {tTeach("dsa_title")}
+                    Estructuras de Datos
                   </h3>
                   <p className="text-xs leading-relaxed text-foreground/70">
-                    {tTeach("dsa_desc")}
+                    Listas enlazadas, pilas, colas, árboles, grafos y algoritmos
+                    de búsqueda y ordenamiento. Desde la base conceptual hasta
+                    implementar lo que te pide el profe.
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-background/60 p-4">
                   <h3 className="text-sm font-bold text-foreground mb-2">
-                    {tTeach("advanced_title")}
+                    Programación Avanzada
                   </h3>
                   <p className="text-xs leading-relaxed text-foreground/70">
-                    {tTeach("advanced_desc")}
+                    Paradigmas de programación, patrones de diseño, manejo de
+                    memoria y concurrencia. Lo que te hace pasar de código que
+                    funciona a código que es realmente bueno.
                   </p>
                 </div>
               </div>
 
               <p className="text-xs text-foreground/55 mb-6 max-w-xl">
-                {tTeach("background_text")}
+                Fui Coordinador General del curso Arquitectura de Computadores y
+                ayudante en Tecnologías y Aplicaciones Web, Estructuras de Datos
+                y Programación Avanzada en la PUC. Si algo aprendí es que cada
+                persona tiene su propia forma de entender las cosas, y me
+                encanta encontrar cuál es la tuya.
               </p>
 
               <a
@@ -615,7 +685,7 @@ export default async function HomePage() {
                 >
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
-                {tTeach("cta_button")}
+                Escríbeme por WhatsApp
               </a>
             </div>
           </AnimateIn>
@@ -625,7 +695,8 @@ export default async function HomePage() {
               fallback={
                 <div className="rounded-2xl border border-dashed border-border/50 p-6 text-center">
                   <p className="text-sm text-muted-foreground">
-                    {tTeach("testimonials_coming")}
+                    Pronto estarán acá... estoy juntando los testimonios de mis
+                    alumnos.
                   </p>
                 </div>
               }
@@ -642,11 +713,12 @@ export default async function HomePage() {
           <AnimateIn delay={0}>
             <div className="rounded-2xl border border-border bg-card p-8 sm:p-14 text-center">
               <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-3">
-                {tContact("title")}
+                Hablemos
                 <span className="text-brand">.</span>
               </h2>
               <p className="text-sm text-muted-foreground mb-10 max-w-xs mx-auto">
-                {tContact("subtitle")}
+                Abierto a roles SWE, freelance y clases particulares.
+                Conversemos.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <a

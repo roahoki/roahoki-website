@@ -1,28 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server";
-import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing";
 
-const intlMiddleware = createMiddleware(routing);
-
+/**
+ * El middleware —renombrado `proxy.ts` en Next 16—.
+ *
+ * Su única razón de ser es inyectar el pathname como request header: el layout
+ * protegido lo lee para armar el `?next=` del redirect al login, y no tiene
+ * otra forma de conocerlo. Hasta que se quitó next-intl también resolvía el
+ * prefijo de idioma de las rutas públicas; ahora el sitio es solo español y
+ * esas rutas no necesitan pasar por acá.
+ */
 export default function middleware(req: NextRequest) {
-  // Las rutas admin no pasan por next-intl, pero necesitamos inyectar el
-  // pathname como request header para que el layout protegido pueda leerlo
-  // y armar el `?next=` del redirect al login.
-  if (req.nextUrl.pathname.startsWith("/admin")) {
-    const requestHeaders = new Headers(req.headers);
-    requestHeaders.set("x-pathname", req.nextUrl.pathname);
-    return NextResponse.next({ request: { headers: requestHeaders } });
-  }
-
-  return intlMiddleware(req);
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
-  // `admin` ya no se excluye: el middleware lo maneja explícitamente arriba.
-  // `logbook` y `stats` sí, porque next-intl redirige lo que atrapa a
-  // `/<locale>/...` y esas rutas nacen ya en español y sin prefijo. Excluirlas
-  // acá —en vez de darles una rama en el middleware como a `admin`— es lo
-  // correcto justamente porque no necesitan nada de él: `admin` está arriba
-  // solo para inyectarle el `x-pathname` al layout protegido.
-  matcher: ["/((?!api|logbook|stats|_next|_vercel|.*\\..*).*)"],
+  // Solo `/admin`: es lo único que necesita el `x-pathname`. Antes el matcher
+  // era al revés —atrapaba todo y excluía lo que no debía llevar prefijo de
+  // idioma—, y cada ruta pública nueva había que acordarse de agregarla a la
+  // lista. Ese fallo silencioso ya no existe.
+  matcher: ["/admin/:path*"],
 };

@@ -7,7 +7,9 @@
 - [x] Setup de `globals.css` con el sistema de diseño de Shadcn (tokens y
       variantes dark en `@theme inline`).
 - [x] Landing con hero, stack, experiencia y testimonios.
-- [x] i18n es/en con next-intl.
+- [x] Quitar next-intl y dejar el sitio solo en español. Estuvo con i18n es/en
+      hasta el 2026-08-30; mantener dos idiomas al día costaba más de lo que
+      aportaba con la audiencia real del sitio.
 - [x] Testimonios: formulario público, persistencia en Supabase y panel de
       moderación en `/admin`.
 - [x] Dashboard admin mobile-first con acceso oculto por long-press.

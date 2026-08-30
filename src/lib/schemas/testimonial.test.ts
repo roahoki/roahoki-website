@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { z } from "zod";
 import {
   CONTACT_ISSUE_PATH,
   createTestimonialSchema,
   deleteTestimonialSchema,
   firstErrorMessage,
-  messageKeyForIssue,
   moderateTestimonialSchema,
 } from "./testimonial";
 
@@ -240,36 +238,6 @@ describe("createTestimonialSchema — bordes", () => {
     );
 
     expect(result.success).toBe(false);
-  });
-});
-
-describe("messageKeyForIssue", () => {
-  function issuesFor(body: Record<string, unknown>): z.ZodIssue[] {
-    const result = createTestimonialSchema.safeParse(body);
-    if (result.success) throw new Error("Se esperaba que fallara.");
-    return result.error.issues;
-  }
-
-  it("mapea el nombre corto a validation_name", () => {
-    const [issue] = issuesFor(validBody({ name: "J" }));
-    expect(messageKeyForIssue(issue)).toBe("validation_name");
-  });
-
-  it("mapea el mensaje corto a validation_message", () => {
-    const [issue] = issuesFor(validBody({ message: "corto" }));
-    expect(messageKeyForIssue(issue)).toBe("validation_message");
-  });
-
-  it("mapea la falta de contacto a validation_social", () => {
-    const [issue] = issuesFor(validBody({ email: null }));
-    expect(messageKeyForIssue(issue)).toBe("validation_social");
-  });
-
-  // Estos no tienen traducción propia: el formulario los previene con
-  // `maxLength` y, si igual llegaran, muestra el error genérico.
-  it("devuelve null para un problema sin clave propia", () => {
-    const [issue] = issuesFor(validBody({ name: "a".repeat(121) }));
-    expect(messageKeyForIssue(issue)).toBeNull();
   });
 });
 

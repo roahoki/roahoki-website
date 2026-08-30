@@ -8,10 +8,6 @@ import { weekRangeAt } from "@/lib/stats/week";
 /**
  * Los contadores, en público.
  *
- * Vive fuera de `[locale]` a propósito: next-intl se va a eliminar y todo lo
- * nuevo nace en español y sin prefijo de idioma. La ruta está excluida del
- * matcher de `src/proxy.ts` para que el middleware no la mande a `/es/stats`.
- *
  * ISR y no render dinámico. El intervalo **no** es el mecanismo por el que
  * aparecen los números nuevos: de eso se encarga el `revalidatePath("/stats")`
  * que dispara cada toque en el panel (PR 2). Acá el intervalo es la red de

@@ -1,22 +1,13 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-// `next/link` y **no** el `Link` de `@/i18n/navigation`: ese le antepone el
-// locale y mandaría a `/es/logbook`, que no existe. El logbook nace fuera de
-// `[locale]` y su ruta es literal.
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useRef } from "react";
-import { usePathname, useRouter } from "@/i18n/navigation";
 
 const WHATSAPP = "https://wa.link/ht8ioc";
 
 export function Navbar() {
-  const t = useTranslations("nav");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -39,16 +30,12 @@ export function Navbar() {
     setTheme(theme === "dark" ? "light" : "dark");
   }
 
-  const toggleLocale = () => {
-    router.replace(pathname, { locale: locale === "es" ? "en" : "es" });
-  };
-
   const links = [
-    { href: "#about", label: t("about") },
-    { href: "#experience", label: t("experience") },
-    { href: "#projects", label: t("projects") },
-    { href: "#teaching", label: t("teaching") },
-    { href: "#contact", label: t("contact") },
+    { href: "#about", label: "Sobre mí" },
+    { href: "#experience", label: "Experiencia" },
+    { href: "#projects", label: "Proyectos" },
+    { href: "#teaching", label: "Clases" },
+    { href: "#contact", label: "Contacto" },
   ];
 
   return (
@@ -103,14 +90,6 @@ export function Navbar() {
 
           <button
             type="button"
-            onClick={toggleLocale}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors font-semibold uppercase tracking-wide"
-          >
-            {locale === "es" ? "EN" : "ES"}
-          </button>
-
-          <button
-            type="button"
             onClick={handleThemeClick}
             onMouseDown={startPress}
             onMouseUp={cancelPress}
@@ -134,7 +113,7 @@ export function Navbar() {
             rel="noopener noreferrer"
             className="hidden sm:block px-3.5 py-1.5 rounded-lg bg-brand text-white text-xs font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
           >
-            {t("cta")} →
+            Hablemos →
           </a>
         </div>
       </div>

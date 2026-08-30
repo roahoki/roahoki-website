@@ -1,4 +1,3 @@
-import { getTranslations } from "next-intl/server";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 
@@ -8,9 +7,7 @@ const videos = [
   { id: "d40mVuVLqTE", title: "Video 3" },
 ];
 
-export default async function ProjectsPage() {
-  const t = await getTranslations("projects");
-
+export default function ProjectsPage() {
   return (
     <main className="min-h-screen flex flex-col md:flex-row">
       <div className="border-b border-border md:border-b-0 md:w-32 md:shrink-0">
@@ -19,7 +16,8 @@ export default async function ProjectsPage() {
       <div className="md:border-l md:border-border flex-1">
         <article className="px-6 py-6 md:max-w-xl md:pt-12 md:pl-8 md:pr-8">
           <p className="text-sm leading-relaxed text-foreground/90 mb-6">
-            {t("intro")}
+            Tengo un par de videos en youtube enseñando sobre estructura de
+            datos y arquitectura de computadores :)
           </p>
 
           <div className="space-y-4 md:space-y-6">

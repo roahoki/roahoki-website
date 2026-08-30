@@ -6,9 +6,8 @@ import "../globals.css";
 /**
  * Layout raíz del logbook.
  *
- * No hay `src/app/layout.tsx`: cada segmento de primer nivel trae el suyo, y
- * `[locale]` y `admin` ya lo hacen así. Como `/logbook` nace fuera de
- * `[locale]` —next-intl se va a eliminar— necesita el propio.
+ * No hay `src/app/layout.tsx`: cada raíz del árbol trae el suyo, igual que
+ * `(site)` y `admin`.
  *
  * Usa `Providers` y no `className="dark"` fijo como el panel: estas páginas son
  * públicas y deben respetar el tema del sitio, no forzar oscuro.

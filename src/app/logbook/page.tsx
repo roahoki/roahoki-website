@@ -7,11 +7,6 @@ import { listPublishedEntries } from "@/lib/logbook/queries";
 /**
  * El listado público del logbook.
  *
- * Vive fuera de `[locale]` a propósito: next-intl se va a eliminar y todo lo
- * nuevo nace en español y sin prefijo de idioma. Eso además da links limpios
- * —`/logbook/una-nota` y no `/es/logbook/una-nota`—, que es de lo que se trata
- * poder compartirlos.
- *
  * ISR y no render dinámico: el contenido cambia cuando se publica una nota, no
  * en cada visita. Una hora es el compromiso entre servir HTML cacheado a quien
  * llega desde una historia de Instagram y no tener que esperar un deploy para

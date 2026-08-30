@@ -1,72 +1,51 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import { config } from "./proxy";
 
 /**
- * `next-intl/middleware` importa `next/server`, que no resuelve fuera del
- * bundler de Next. Se sustituye porque lo que se prueba es el `config` que
- * exporta el módulo, no el middleware que arma.
- */
-vi.mock("next-intl/middleware", () => ({
-  default: () => () => undefined,
-}));
-
-const { config } = await import("./proxy");
-
-/**
- * El matcher decide qué rutas atrapa el middleware de next-intl, y lo que hace
- * con lo que atrapa es redirigirlo a `/<locale>/...`.
+ * El matcher decide qué rutas pasan por el middleware.
  *
- * Es un fallo silencioso de los caros: agregar una ruta fuera de `[locale]` y
- * olvidarse de excluirla acá no rompe ningún build ni ningún test de la página
- * —la página está perfecta—, pero en producción `/stats` responde un redirect a
- * `/es/stats`, que no existe. Y se descubre visitándola.
- *
- * Por eso se prueba la regla, no la página.
+ * Se prueba la regla y no la página porque el fallo es silencioso: si `/admin`
+ * dejara de estar en el matcher, el layout protegido no recibiría el
+ * `x-pathname`, el redirect al login perdería el `?next=` y todo seguiría
+ * compilando y pasando los tests de la página.
  */
 
 /** El matcher, evaluado como lo evaluaría Next: contra el path completo. */
 function atrapa(path: string): boolean {
   return config.matcher.some((pattern) =>
-    new RegExp(`^${pattern}$`).test(path),
+    new RegExp(`^${pattern.replace(/\/:path\*$/, "(?:/.*)?")}$`).test(path),
   );
 }
 
 describe("matcher de src/proxy.ts", () => {
-  it("deja pasar las rutas que nacen fuera de [locale]", () => {
-    for (const path of [
-      "/stats",
-      "/logbook",
-      "/logbook/una-nota",
-      "/api/admin/stats",
-    ]) {
-      expect(atrapa(path)).toBe(false);
-    }
-  });
-
-  it("sigue atrapando /admin, que el middleware maneja por su cuenta", () => {
-    // `admin` **no** está en la lista de exclusión, y es a propósito: el
-    // middleware necesita correr para inyectarle el `x-pathname` al layout
-    // protegido, y corta antes de llegar a next-intl. Excluirlo acá lo dejaría
-    // sin ese header y rompería el `?next=` del redirect al login.
-    //
-    // `stats` sí se excluye porque no necesita nada del middleware. Son dos
-    // formas distintas de quedar fuera de next-intl, y confundirlas es el error
-    // que este test hace visible.
+  it("atrapa /admin y todo lo que cuelga de él", () => {
     for (const path of ["/admin", "/admin/stats", "/admin/logbook/nueva"]) {
       expect(atrapa(path)).toBe(true);
     }
   });
 
-  it("sigue atrapando las páginas que sí llevan prefijo de idioma", () => {
-    // La landing y sus secciones siguen viviendo dentro de `[locale]`: si el
-    // matcher dejara de atraparlas, `/` no redirigiría a `/es` y next-intl no
-    // resolvería ningún locale.
-    for (const path of ["/", "/projects", "/experience", "/testimonials/new"]) {
-      expect(atrapa(path)).toBe(true);
+  it("deja pasar de largo las rutas públicas", () => {
+    // Ninguna necesita nada del middleware: el sitio es de un solo idioma, así
+    // que no hay prefijo que resolver antes del request.
+    for (const path of [
+      "/",
+      "/projects",
+      "/experience",
+      "/testimonials/new",
+      "/logbook",
+      "/logbook/una-nota",
+      "/stats",
+    ]) {
+      expect(atrapa(path)).toBe(false);
     }
   });
 
-  it("no atrapa los archivos ni las rutas internas de Next", () => {
-    for (const path of ["/favicon.ico", "/_next/static/chunk.js", "/_vercel"]) {
+  it("no atrapa la API ni los archivos estáticos", () => {
+    for (const path of [
+      "/api/admin/stats",
+      "/favicon.ico",
+      "/_next/static/chunk.js",
+    ]) {
       expect(atrapa(path)).toBe(false);
     }
   });

@@ -148,42 +148,7 @@ export const createTestimonialSchema = z
 export type CreateTestimonialInput = z.input<typeof createTestimonialSchema>;
 export type CreateTestimonialData = z.output<typeof createTestimonialSchema>;
 
-/** Las claves de `testimonialForm` que corresponden a un error de validación. */
-export type TestimonialMessageKey =
-  | "validation_name"
-  | "validation_message"
-  | "validation_social";
-
-/**
- * Traduce el primer problema a una clave de `messages/*.json`.
- *
- * El formulario vive dentro de `[locale]` y muestra los errores con next-intl,
- * así que no puede usar el texto del esquema —está solo en español—. El esquema
- * define la *regla* y el cliente elige *cómo la dice*: el mensaje en español
- * sirve para lo que responde la API, donde no hay locale.
- *
- * Devuelve `null` cuando el problema no tiene una clave propia (largos máximos,
- * formato de URL): son casos que el formulario previene con `maxLength` y que,
- * si igual llegaran, caen en el mensaje de error genérico.
- */
-export function messageKeyForIssue(
-  issue: z.ZodIssue,
-): TestimonialMessageKey | null {
-  switch (issue.path[0]) {
-    case "name":
-      return issue.code === z.ZodIssueCode.too_small ? "validation_name" : null;
-    case "message":
-      return issue.code === z.ZodIssueCode.too_small
-        ? "validation_message"
-        : null;
-    case CONTACT_ISSUE_PATH:
-      return "validation_social";
-    default:
-      return null;
-  }
-}
-
-/** El primer mensaje de error en español, para las respuestas de la API. */
+/** El primer mensaje de error, para el formulario y las respuestas de la API. */
 export function firstErrorMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Datos inválidos.";
 }

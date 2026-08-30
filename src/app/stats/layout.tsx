@@ -7,9 +7,8 @@ import "../globals.css";
 /**
  * Layout raíz de `/stats`.
  *
- * No hay `src/app/layout.tsx`: cada segmento de primer nivel trae el suyo, y
- * `[locale]`, `admin` y `logbook` ya lo hacen así. Como `/stats` nace fuera de
- * `[locale]` —next-intl se va a eliminar— necesita el propio.
+ * No hay `src/app/layout.tsx`: cada raíz del árbol trae el suyo, igual que
+ * `(site)`, `admin` y `logbook`.
  *
  * Usa `Providers` y no `className="dark"` como el panel: esta página es pública
  * y respeta el tema del sitio en vez de forzar oscuro.

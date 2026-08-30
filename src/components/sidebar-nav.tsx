@@ -1,28 +1,20 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 export function SidebarNav() {
-  const t = useTranslations("nav");
-  const locale = useLocale();
   const pathname = usePathname();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   const navItems = [
-    { href: "/" as const, label: t("about") },
-    { href: "/experience" as const, label: t("experience") },
-    { href: "/projects" as const, label: t("projects") },
-    { href: "/teaching" as const, label: t("teaching") },
+    { href: "/", label: "Sobre mí" },
+    { href: "/experience", label: "Experiencia" },
+    { href: "/projects", label: "Proyectos" },
+    { href: "/teaching", label: "Clases" },
   ];
-
-  const toggleLocale = () => {
-    const newLocale = locale === "es" ? "en" : "es";
-    router.replace(pathname, { locale: newLocale });
-  };
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -51,14 +43,6 @@ export function SidebarNav() {
       })}
 
       <div className="flex items-center gap-3 mt-1 md:mt-4 md:flex-col md:items-end md:gap-2">
-        <button
-          type="button"
-          onClick={toggleLocale}
-          className="text-muted-foreground hover:text-foreground transition-colors text-xs uppercase tracking-wider font-semibold"
-        >
-          {locale === "es" ? "EN" : "ES"}
-        </button>
-
         <button
           type="button"
           onClick={toggleTheme}
