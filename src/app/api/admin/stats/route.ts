@@ -9,7 +9,7 @@ import { currentWeekTotals, recordEvent } from "@/lib/stats/queries";
 import { revalidateStats } from "@/lib/stats/revalidate";
 
 /**
- * Registra un tap del contador.
+ * Registra un movimiento del contador: un tap, o una serie escrita a mano.
  *
  * Responde con el total de la semana ya recalculado, y no solo con el evento
  * guardado. El panel pinta el número de forma optimista apenas se toca el
@@ -36,10 +36,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { exercise, direction } = parsed.data;
+  const { exercise, direction, amount } = parsed.data;
 
   try {
-    const event = await recordEvent(exercise, deltaFor(direction));
+    const event = await recordEvent(exercise, deltaFor(direction, amount));
 
     // `recordEvent` devuelve `undefined` cuando el "−" dejaría la semana en
     // negativo. Es un rechazo con causa, no un error: 409 y un mensaje que

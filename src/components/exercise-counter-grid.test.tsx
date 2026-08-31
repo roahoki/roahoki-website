@@ -20,6 +20,9 @@ vi.mock("next/navigation", () => ({
  * pantalla se sienta rota. Lo que eso obliga a probar es lo que pasa cuando el
  * servidor **no** confirma: si un rechazo dejara el número subido, el panel
  * mostraría un total que la base no tiene, y yo seguiría contando desde ahí.
+ *
+ * Lo mismo vale para la serie escrita a mano, con una vuelta más: ahí el número
+ * que se revierte no es 1 sino la cantidad entera que se escribió.
  */
 
 function totalsFixture(
@@ -215,6 +218,135 @@ describe("ExerciseCounterGrid", () => {
 
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith("/admin/login");
+    });
+  });
+
+  describe("la serie escrita a mano", () => {
+    /** Escribe una cantidad en la tarjeta de un ejercicio. */
+    function escribir(ejercicio: string, valor: string) {
+      fireEvent.change(
+        screen.getByRole("spinbutton", { name: `Cantidad para ${ejercicio}` }),
+        { target: { value: valor } },
+      );
+    }
+
+    function sumar(ejercicio: string) {
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: `Sumar la cantidad escrita en ${ejercicio}`,
+        }),
+      );
+    }
+
+    it("suma la serie entera en un solo request", async () => {
+      // El punto de la feature: sesenta segundos de handstand son un request,
+      // no sesenta taps.
+      fetchMock.mockResolvedValue(okResponse(60));
+
+      render(<ExerciseCounterGrid initialTotals={totalsFixture()} />);
+      escribir("Handstand", "60");
+      sumar("Handstand");
+
+      expect(screen.getByText("60")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalledWith(
+          "/api/admin/stats",
+          expect.objectContaining({
+            body: JSON.stringify({
+              exercise: "handstand_seconds",
+              direction: "up",
+              amount: 60,
+            }),
+          }),
+        );
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("suma sobre lo que ya había", async () => {
+      fetchMock.mockReturnValue(new Promise(() => {}));
+
+      render(
+        <ExerciseCounterGrid initialTotals={totalsFixture({ pull_ups: 8 })} />,
+      );
+      escribir("Dominadas", "12");
+      sumar("Dominadas");
+
+      expect(screen.getByText("20")).toBeInTheDocument();
+    });
+
+    it("vacía el campo, para que la próxima serie no se escriba encima", async () => {
+      fetchMock.mockResolvedValue(okResponse(12));
+
+      render(<ExerciseCounterGrid initialTotals={totalsFixture()} />);
+      escribir("Dominadas", "12");
+      sumar("Dominadas");
+
+      expect(
+        screen.getByRole("spinbutton", { name: "Cantidad para Dominadas" }),
+      ).toHaveValue(null);
+    });
+
+    it("no toca el campo de los otros ejercicios", () => {
+      // Los seis campos comparten un solo estado: si escribir en uno se viera
+      // en los demás, cargar dos ejercicios seguidos sumaría cualquier cosa.
+      fetchMock.mockReturnValue(new Promise(() => {}));
+
+      render(<ExerciseCounterGrid initialTotals={totalsFixture()} />);
+      escribir("Dominadas", "12");
+
+      expect(
+        screen.getByRole("spinbutton", { name: "Cantidad para Flexiones" }),
+      ).toHaveValue(null);
+    });
+
+    it("mantiene el botón apagado hasta que lo escrito sirva", () => {
+      render(<ExerciseCounterGrid initialTotals={totalsFixture()} />);
+      const boton = screen.getByRole("button", {
+        name: "Sumar la cantidad escrita en Dominadas",
+      });
+
+      // Con el campo vacío no hay nada que sumar, y un cero, un negativo o un
+      // número absurdo los rechazaría el servidor: apagar el botón lo dice
+      // antes de gastar el viaje.
+      expect(boton).toBeDisabled();
+
+      for (const valor of ["0", "-3", "501", "1.5"]) {
+        escribir("Dominadas", valor);
+        expect(boton).toBeDisabled();
+      }
+
+      escribir("Dominadas", "12");
+      expect(boton).toBeEnabled();
+    });
+
+    it("no manda nada si el campo está vacío al enviar", () => {
+      // El Enter del teclado del celular envía el form aunque el botón esté
+      // apagado.
+      render(<ExerciseCounterGrid initialTotals={totalsFixture()} />);
+      fireEvent.submit(
+        screen.getByRole("spinbutton", { name: "Cantidad para Dominadas" }),
+      );
+
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(screen.getAllByText("0")).toHaveLength(6);
+    });
+
+    it("devuelve el total entero a donde estaba si el servidor rechaza", async () => {
+      fetchMock.mockResolvedValue(errorResponse(500, "Error al guardar."));
+
+      render(
+        <ExerciseCounterGrid initialTotals={totalsFixture({ pull_ups: 5 })} />,
+      );
+      escribir("Dominadas", "12");
+      sumar("Dominadas");
+
+      // Se revierte la cantidad entera, no un tap: un 6 acá sería peor que el
+      // 17 optimista, porque parece un número plausible.
+      await waitFor(() => {
+        expect(screen.getByText("5")).toBeInTheDocument();
+      });
+      expect(await screen.findByText("Error al guardar.")).toBeInTheDocument();
     });
   });
 
