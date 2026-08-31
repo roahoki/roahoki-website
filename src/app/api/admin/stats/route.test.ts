@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
- * Tests del handler que registra un tap.
+ * Tests del handler que registra un movimiento del contador.
  *
  * Se sustituyen las queries, la autorización y `next/cache`: lo que se verifica
  * es el contrato HTTP —qué código devuelve ante cada situación y qué invalida—,
@@ -80,6 +80,14 @@ describe("POST /api/admin/stats", () => {
     expect(queries.recordEvent).toHaveBeenCalledWith("squats", -1);
   });
 
+  it("suma la cantidad de una serie escrita, en vez del paso de un tap", async () => {
+    await POST(
+      jsonRequest({ exercise: "squats", direction: "up", amount: 12 }),
+    );
+
+    expect(queries.recordEvent).toHaveBeenCalledWith("squats", 12);
+  });
+
   it("invalida la página pública", async () => {
     // Sin esto, `/stats` seguiría sirviendo el HTML viejo y el número público
     // quedaría atrasado respecto del que muestra el panel.
@@ -132,6 +140,20 @@ describe("POST /api/admin/stats", () => {
       );
 
       expect(response.status).toBe(400);
+      expect(queries.recordEvent).not.toHaveBeenCalled();
+    });
+
+    it("rechaza una cantidad fuera de rango, sin tocar la base", async () => {
+      // El `max` del `<input>` es una ayuda visual: un request armado a mano
+      // llega igual, y lo que lo frena es el esquema.
+      for (const amount of [0, -3, 2.5, 9999, "12"]) {
+        const response = await POST(
+          jsonRequest({ exercise: "pull_ups", direction: "up", amount }),
+        );
+
+        expect(response.status).toBe(400);
+      }
+
       expect(queries.recordEvent).not.toHaveBeenCalled();
     });
 
