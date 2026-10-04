@@ -325,7 +325,7 @@ export function LogbookEditor({ entry }: Props) {
                 aria-pressed={status === value}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                   status === value
-                    ? "bg-brand text-white border-brand"
+                    ? "bg-brand text-brand-foreground border-brand"
                     : "border-border text-muted-foreground hover:border-brand/40"
                 }`}
               >
@@ -350,7 +350,7 @@ export function LogbookEditor({ entry }: Props) {
             type="button"
             onClick={save}
             disabled={busy}
-            className="flex-1 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="flex-1 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground disabled:opacity-50"
           >
             {saveState === "saving" ? "Guardando..." : "Guardar"}
           </button>

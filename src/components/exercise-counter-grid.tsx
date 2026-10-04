@@ -149,7 +149,7 @@ export function ExerciseCounterGrid({
                   aria-label={`Sumar en ${exercise.label}`}
                   // `touch-manipulation` desactiva el doble-tap para hacer
                   // zoom, que en móvil le mete ~300 ms de retardo a cada tap.
-                  className="select-none bg-brand py-4 text-lg font-bold text-white transition-colors touch-manipulation active:bg-brand/80"
+                  className="select-none bg-brand py-4 text-lg font-bold text-brand-foreground transition-colors touch-manipulation active:bg-brand/80"
                 >
                   +
                 </button>

@@ -279,7 +279,7 @@ export default function NewTestimonialPage() {
               <button
                 type="button"
                 onClick={confirmCrop}
-                className="flex-1 rounded-xl bg-brand py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                className="flex-1 rounded-xl bg-brand py-3 text-sm font-semibold text-brand-foreground hover:opacity-90 transition-opacity"
               >
                 Confirmar
               </button>
@@ -480,7 +480,7 @@ export default function NewTestimonialPage() {
             <button
               type="submit"
               disabled={formState === "submitting"}
-              className="w-full rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:opacity-90 active:scale-[0.97] transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90 active:scale-[0.97] transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {formState === "submitting" ? "Enviando..." : "Enviar testimonio"}
             </button>

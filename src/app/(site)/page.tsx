@@ -127,7 +127,7 @@ export default function HomePage() {
                 <div className="flex flex-wrap gap-3">
                   <a
                     href="#projects"
-                    className="px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
+                    className="px-5 py-2.5 rounded-xl bg-brand text-brand-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
                   >
                     Ver mi trabajo &darr;
                   </a>
@@ -675,7 +675,7 @@ export default function HomePage() {
                 href={WHATSAPP}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 active:scale-[0.97] transition-all duration-150"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground hover:opacity-90 active:scale-[0.97] transition-all duration-150"
               >
                 <svg
                   aria-hidden="true"
@@ -741,7 +741,7 @@ export default function HomePage() {
                   href={WHATSAPP}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
+                  className="px-5 py-2.5 rounded-xl bg-brand text-brand-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
                 >
                   WhatsApp
                 </a>

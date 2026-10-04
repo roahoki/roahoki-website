@@ -133,7 +133,7 @@ export async function TeachingContent() {
           href={WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:opacity-90 active:scale-95 transition-all duration-150"
+          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:opacity-90 active:scale-95 transition-all duration-150"
         >
           <svg
             className="w-4 h-4"

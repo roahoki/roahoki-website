@@ -132,7 +132,7 @@ export default function AdminTestimonialsPage() {
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors shrink-0 ${
               filter === f
-                ? "bg-brand text-white border-brand"
+                ? "bg-brand text-brand-foreground border-brand"
                 : "border-border text-muted-foreground hover:border-brand/40 hover:text-foreground"
             }`}
           >

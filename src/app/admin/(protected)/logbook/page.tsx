@@ -45,7 +45,7 @@ export default async function AdminLogbookPage() {
           </Link>
           <Link
             href="/admin/logbook/new"
-            className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white whitespace-nowrap"
+            className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground whitespace-nowrap"
           >
             Nueva nota
           </Link>

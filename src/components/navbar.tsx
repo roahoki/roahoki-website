@@ -111,7 +111,7 @@ export function Navbar() {
             href={WHATSAPP}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:block px-3.5 py-1.5 rounded-lg bg-brand text-white text-xs font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
+            className="hidden sm:block px-3.5 py-1.5 rounded-lg bg-brand text-brand-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.97] transition-all duration-150"
           >
             Hablemos →
           </a>

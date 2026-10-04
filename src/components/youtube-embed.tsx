@@ -35,7 +35,7 @@ export function YouTubeEmbed({
           <div className="w-12 h-12 flex items-center justify-center rounded-full bg-brand shadow-lg shadow-brand/30 transition-transform duration-200 group-hover:scale-110">
             <svg
               aria-hidden="true"
-              className="w-5 h-5 text-white ml-0.5"
+              className="w-5 h-5 text-brand-foreground ml-0.5"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
