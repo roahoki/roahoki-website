@@ -104,7 +104,10 @@ excepción.
   literales (`/projects`, `/logbook`). No se reintroduce i18n.
 - **Cada raíz del árbol trae su propio layout**: `(site)` para el sitio público,
   y `admin`, `logbook` y `stats` para lo suyo. No hay `src/app/layout.tsx`
-  porque el panel va fijo en oscuro y lo público sigue el tema del visitante.
+  porque cada raíz resuelve su tema por su cuenta: el logbook va con la marca
+  nueva y **solo en claro** (sin `next-themes`), el panel sigue fijo en oscuro
+  hasta su rediseño, y las páginas anteriores de `(site)` siguen el tema del
+  visitante hasta que se rediseñen.
 - **El middleware (`src/proxy.ts`) solo atiende `/admin`.** Está ahí para
   inyectar el `x-pathname` que el layout protegido necesita para armar el
   `?next=`. Una ruta pública nueva no tiene que tocarlo.

@@ -1,27 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
-import { Providers } from "@/components/providers";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { palette } from "@/lib/brand/palette";
+import { bricolage } from "@/lib/fonts";
 import "../globals.css";
 
 /**
- * Layout raíz del logbook.
+ * Layout raíz del logbook, la primera raíz con la marca nueva: Bricolage,
+ * papel y tinta, header y footer de roahoki.
  *
  * No hay `src/app/layout.tsx`: cada raíz del árbol trae el suyo, igual que
  * `(site)` y `admin`.
  *
- * Usa `Providers` y no `className="dark"` fijo como el panel: estas páginas son
- * públicas y deben respetar el tema del sitio, no forzar oscuro.
+ * Va solo en claro (brand book §5.3: la página es papel y el texto es tinta),
+ * así que no usa `Providers`: sin tema que alternar, `next-themes` sobra.
+ * `colorScheme: "light"` le avisa al navegador para que tampoco oscurezca
+ * por su cuenta los controles nativos.
  */
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800"],
-});
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  colorScheme: "light",
+  themeColor: palette.paper,
 };
 
 export const metadata: Metadata = {
@@ -42,11 +43,11 @@ export default function LogbookRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body
-        className={`${plusJakartaSans.variable} font-sans antialiased bg-background text-foreground`}
-      >
-        <Providers>{children}</Providers>
+    <html lang="es" className={bricolage.variable}>
+      <body className="flex min-h-screen flex-col bg-paper font-brand text-ink antialiased selection:bg-leaf selection:text-paper">
+        <SiteHeader />
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
       </body>
     </html>
   );
