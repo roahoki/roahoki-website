@@ -291,6 +291,45 @@ describe.skipIf(!hasTestDatabase)("queries del logbook", () => {
     });
   });
 
+  describe("getEntryNeighbors", () => {
+    it("devuelve la publicada anterior y la siguiente por número", async () => {
+      await seed({ slug: "uno", title: "Uno" });
+      const two = await seed({ slug: "dos", title: "Dos" });
+      await seed({ slug: "tres", title: "Tres" });
+
+      const { previous, next } = await queries.getEntryNeighbors(two.number);
+
+      expect(previous).toEqual({ number: 1, slug: "uno", title: "Uno" });
+      expect(next).toEqual({ number: 3, slug: "tres", title: "Tres" });
+    });
+
+    // Un borrador tiene número pero no página: enlazarlo sería un 404.
+    it("se saltea los borradores", async () => {
+      await seed({ slug: "uno" });
+      await seed({ slug: "borrador-a", status: "draft" });
+      const three = await seed({ slug: "tres" });
+      await seed({ slug: "borrador-b", status: "draft" });
+      await seed({ slug: "cinco" });
+
+      const { previous, next } = await queries.getEntryNeighbors(three.number);
+
+      expect(previous?.slug).toBe("uno");
+      expect(next?.slug).toBe("cinco");
+    });
+
+    it("no hay anterior para la primera ni siguiente para la más nueva", async () => {
+      const one = await seed({ slug: "uno" });
+      const two = await seed({ slug: "dos" });
+
+      expect(
+        (await queries.getEntryNeighbors(one.number)).previous,
+      ).toBeUndefined();
+      expect(
+        (await queries.getEntryNeighbors(two.number)).next,
+      ).toBeUndefined();
+    });
+  });
+
   describe("listPublishedSlugs", () => {
     it("devuelve solo los publicados, en orden", async () => {
       await seed({ slug: "nueva", publishedAt: "2026-01-01T00:00:00Z" });
