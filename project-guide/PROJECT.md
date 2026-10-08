@@ -14,6 +14,17 @@
 `@theme inline`. `tailwind.config.ts` quedó como stub vacío heredado de v3 y solo
 sigue ahí porque `components.json` lo referencia — no aporta nada.
 
+**Paleta y tipografía de roahoki como tokens.** La marca (brand book §5.3 y
+§5.4) vive en `globals.css`: la paleta en `:root` (`paper`, `ink`, `faded`,
+`rule`, `leaf`, `bottle`, nombres en inglés de fondo, texto, atenuado, borde,
+acento y botella) y los estilos de texto como utilidades `text-*`
+(`text-entry-title`, `text-card-meta`…) que traen tamaño, interlineado, tracking
+y peso juntos. `src/lib/brand/palette.ts` repite los hex porque el CSS no puede
+importar TypeScript; su test compara ambos y verifica la tabla de contrastes del
+brand book. Solo hay paleta clara. Bricolage Grotesque se carga desde
+`src/lib/fonts.ts` con el eje `opsz`, así el tamaño óptico lo pone el navegador.
+Conviven con los tokens de Shadcn mientras existan páginas con el diseño anterior.
+
 **Shadcn sin `components/ui/`.** Se adoptaron los tokens y convenciones, pero los
 componentes se escriben a mano sobre Radix en vez de generarse con el CLI. Muchas
 dependencias `@radix-ui/*` del `package.json` vienen del scaffold original de v0 y
