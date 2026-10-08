@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatEntryDate } from "./format";
+import { formatEntryDate, formatEntryDateShort } from "./format";
 
 describe("formatEntryDate", () => {
   it("formatea en español, con el mes en palabra", () => {
@@ -40,5 +40,20 @@ describe("formatEntryDate", () => {
     expect(formatEntryDate("2020-12-31T00:00:00Z")).toBe(
       "31 de diciembre de 2020",
     );
+  });
+});
+
+describe("formatEntryDateShort", () => {
+  it.each([
+    ["2026-09-24T12:00:00.000Z", "24 sept 2026"],
+    ["2026-08-25T12:00:00.000Z", "25 ago 2026"],
+    ["2026-10-03T12:00:00.000Z", "3 oct 2026"],
+  ])("formatea %s como %s", (iso, expected) => {
+    expect(formatEntryDateShort(iso)).toBe(expected);
+  });
+
+  // Igual que la fecha larga: en UTC, para que servidor y cliente coincidan.
+  it("no corre el día cerca de medianoche", () => {
+    expect(formatEntryDateShort("2026-10-03T23:30:00.000Z")).toBe("3 oct 2026");
   });
 });

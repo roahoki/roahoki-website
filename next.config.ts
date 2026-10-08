@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
     // `permanent` porque el cambio no se va a revertir: le dice a Google que
     // reemplace la URL antigua, no que la siga visitando.
     return [
+      // El logbook es el home: `/logbook` quedó como dirección vieja del
+      // listado. Las entradas siguen en `/logbook/[slug]`.
+      {
+        source: "/logbook",
+        destination: "/",
+        permanent: true,
+      },
       {
         source: "/:locale(es|en)",
         destination: "/",

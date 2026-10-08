@@ -7,7 +7,7 @@ import { absoluteUrl } from "@/lib/site";
 /**
  * El sitemap, en `/sitemap.xml`.
  *
- * Se revalida cada hora, igual que `/logbook`: una nota recién publicada
+ * Se revalida cada hora, igual que el home: una nota recién publicada
  * aparece acá sin esperar un deploy, que es justamente lo que permite que un
  * crawler la encuentre el mismo día.
  *
@@ -39,11 +39,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map((route) => ({
     url: absoluteUrl(route.path),
-    // Solo el listado del logbook sabe de verdad cuándo cambió. El resto de las
+    // Solo el home, que es el listado del logbook, sabe de verdad cuándo cambió. El resto de las
     // páginas es contenido escrito a mano: fechar todas con el día del build
     // sería declarar un cambio en cada deploy, y un `lastmod` que miente es
     // peor que no tenerlo — los crawlers lo terminan ignorando entero.
-    ...(route.path === "/logbook" && lastEntryUpdate !== undefined
+    ...(route.path === "/" && lastEntryUpdate !== undefined
       ? { lastModified: lastEntryUpdate }
       : {}),
   }));

@@ -25,13 +25,13 @@ describe("revalidateLogbook", () => {
   it("siempre invalida el listado", () => {
     revalidateLogbook();
 
-    expect(revalidatedPaths()).toEqual(["/logbook"]);
+    expect(revalidatedPaths()).toEqual(["/"]);
   });
 
   it("invalida el listado y la nota", () => {
     revalidateLogbook("una-nota");
 
-    expect(revalidatedPaths()).toEqual(["/logbook", "/logbook/una-nota"]);
+    expect(revalidatedPaths()).toEqual(["/", "/logbook/una-nota"]);
   });
 
   it("invalida las dos rutas cuando el slug cambió", () => {
@@ -40,7 +40,7 @@ describe("revalidateLogbook", () => {
     // La vieja también: su página se prerenderizó con la nota adentro y sin
     // invalidarla seguiría sirviéndola después del renombre.
     expect(revalidatedPaths()).toEqual([
-      "/logbook",
+      "/",
       "/logbook/slug-nuevo",
       "/logbook/slug-viejo",
     ]);
@@ -49,12 +49,12 @@ describe("revalidateLogbook", () => {
   it("no repite la ruta cuando el slug no cambió", () => {
     revalidateLogbook("misma-nota", "misma-nota");
 
-    expect(revalidatedPaths()).toEqual(["/logbook", "/logbook/misma-nota"]);
+    expect(revalidatedPaths()).toEqual(["/", "/logbook/misma-nota"]);
   });
 
   it("ignora los slugs ausentes", () => {
     revalidateLogbook("una-nota", undefined, null);
 
-    expect(revalidatedPaths()).toEqual(["/logbook", "/logbook/una-nota"]);
+    expect(revalidatedPaths()).toEqual(["/", "/logbook/una-nota"]);
   });
 });

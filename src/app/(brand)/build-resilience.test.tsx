@@ -41,7 +41,7 @@ beforeEach(() => {
 describe("generateStaticParams de /logbook/[slug]", () => {
   it("devuelve un parámetro por cada nota publicada", async () => {
     queries.slugs = ["una-nota", "otra-nota"];
-    const { generateStaticParams } = await import("./[slug]/page");
+    const { generateStaticParams } = await import("./logbook/[slug]/page");
 
     await expect(generateStaticParams()).resolves.toEqual([
       { slug: "una-nota" },
@@ -51,7 +51,7 @@ describe("generateStaticParams de /logbook/[slug]", () => {
 
   it("devuelve una lista vacía si la base no responde, en vez de propagar", async () => {
     queries.shouldFail = true;
-    const { generateStaticParams } = await import("./[slug]/page");
+    const { generateStaticParams } = await import("./logbook/[slug]/page");
 
     // Vacío significa "no prerenderices ninguna": las notas se generan igual en
     // su primera visita, porque `dynamicParams` viene en true por defecto.
@@ -59,13 +59,13 @@ describe("generateStaticParams de /logbook/[slug]", () => {
   });
 });
 
-describe("/logbook", () => {
+describe("el home, que es el listado del logbook", () => {
   it("renderiza el estado vacío si la base no responde, en vez de propagar", async () => {
     queries.shouldFail = true;
-    const { default: LogbookPage } = await import("./page");
+    const { default: HomePage } = await import("./page");
 
     // Que resuelva ya es la aserción: si el error se propagara, el build de la
     // página fallaría acá igual que en Vercel.
-    await expect(LogbookPage()).resolves.toBeTruthy();
+    await expect(HomePage()).resolves.toBeTruthy();
   });
 });

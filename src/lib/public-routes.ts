@@ -22,9 +22,9 @@ export type PublicRoute = {
 export const PUBLIC_ROUTES: readonly PublicRoute[] = [
   {
     path: "/",
-    title: "Sobre mí",
+    title: "Logbook",
     description:
-      "Joaquín Peralta Pérez (roahoki), ingeniero de software en Buk. Bio, stack, resumen de experiencia, proyectos destacados y testimonios.",
+      "El home: notas cortas sobre lo que voy construyendo y aprendiendo, de la más nueva a la más vieja.",
   },
   {
     path: "/experience",
@@ -43,11 +43,6 @@ export const PUBLIC_ROUTES: readonly PublicRoute[] = [
     title: "Clases",
     description:
       "Clases particulares para estudiantes de ingeniería de la PUC: estructuras de datos, algoritmos, paradigmas de programación, manejo de memoria y concurrencia.",
-  },
-  {
-    path: "/logbook",
-    title: "Logbook",
-    description: "Notas cortas sobre lo que voy construyendo y aprendiendo.",
   },
   {
     path: "/stats",

@@ -10,11 +10,11 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
 describe("SiteHeader", () => {
-  it("el logo es el link al logbook y se anuncia como roahoki", () => {
+  it("el logo es el link al home y se anuncia como roahoki", () => {
     render(<SiteHeader />);
     const logo = screen.getByRole("img", { name: "roahoki" });
 
-    expect(logo.closest("a")).toHaveAttribute("href", "/logbook");
+    expect(logo.closest("a")).toHaveAttribute("href", "/");
   });
 
   // Instagram es el canal de conversación: "escríbeme" abre un mensaje, no el

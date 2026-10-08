@@ -84,20 +84,21 @@ describe("sitemap", () => {
       entry({ slug: "vieja-editada", updatedAt: "2026-08-25T00:00:00.000Z" }),
     ];
 
-    const listing = (await sitemap()).find((item) =>
-      item.url.endsWith("/logbook"),
+    // El listado del logbook es el home.
+    const listing = (await sitemap()).find(
+      (item) => item.url === "https://www.roahoki.com/",
     );
 
     expect(listing?.lastModified).toEqual(new Date("2026-08-25T00:00:00.000Z"));
   });
 
   it("no le pone fecha a las páginas escritas a mano", async () => {
-    const home = (await sitemap()).find(
-      (item) => item.url === "https://www.roahoki.com/",
+    const experience = (await sitemap()).find(
+      (item) => item.url === "https://www.roahoki.com/experience",
     );
 
     // Fecharlas con el día del build declararía un cambio en cada deploy.
-    expect(home?.lastModified).toBeUndefined();
+    expect(experience?.lastModified).toBeUndefined();
   });
 
   it("sale con las rutas estáticas si la base no responde, en vez de voltear el build", async () => {
