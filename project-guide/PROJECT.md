@@ -25,6 +25,15 @@ brand book. Solo hay paleta clara. Bricolage Grotesque se carga desde
 `src/lib/fonts.ts` con el eje `opsz`, así el tamaño óptico lo pone el navegador.
 Conviven con los tokens de Shadcn mientras existan páginas con el diseño anterior.
 
+**El logo es código, no imágenes.** `src/components/brand/` tiene la figura
+(`LogoMark`, que elige el grosor de trazo según el tamaño, como pide el brand
+book) y el logo completo (`Logo`), dibujados con trazos en `currentColor`: toman
+el color del texto que los rodea. Los trazos salen de los SVG de la marca y viven
+en `paths.ts`. El favicon (`src/app/icon.svg`) es un SVG estático que repite esos
+trazos y pasa a crema con el navegador en oscuro; un test avisa si se
+desincroniza. El ícono de iOS (`apple-icon.tsx`) se genera con `next/og` porque
+iOS no acepta SVG.
+
 **Shadcn sin `components/ui/`.** Se adoptaron los tokens y convenciones, pero los
 componentes se escriben a mano sobre Radix en vez de generarse con el CLI. Muchas
 dependencias `@radix-ui/*` del `package.json` vienen del scaffold original de v0 y

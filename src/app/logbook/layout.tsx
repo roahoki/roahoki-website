@@ -34,7 +34,6 @@ export const metadata: Metadata = {
   // WhatsApp no siempre siguen el redirect.
   metadataBase: new URL("https://www.roahoki.com"),
   title: "Logbook — roahoki",
-  icons: { icon: "/favicon.ico" },
 };
 
 export default function LogbookRootLayout({

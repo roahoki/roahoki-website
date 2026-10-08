@@ -32,9 +32,6 @@ export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: "Joaquín",
   description: "Software Engineer, Developer, and Tutor.",
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export default function SiteLayout({
