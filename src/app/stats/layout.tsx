@@ -28,7 +28,6 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: "Stats — roahoki",
-  icons: { icon: "/favicon.ico" },
 };
 
 export default function StatsRootLayout({
