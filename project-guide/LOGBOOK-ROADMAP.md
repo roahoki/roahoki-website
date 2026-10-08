@@ -82,7 +82,7 @@ mano.
 | 10 | `feat/logbook-schema` | Tabla `logbook_entries` + índice GIN + políticas RLS, en una sola migración | Integración: RLS oculta `draft` al rol anónimo |
 | 11 | `feat/logbook-slug-and-markdown` | `src/lib/slug.ts` y `src/lib/markdown.tsx` (render sanitizado en Server Component) | Unitarios: slugify y sanitización de HTML malicioso |
 | 12 | `feat/logbook-api` | `src/lib/logbook/queries.ts` + route handlers de admin + subida de imágenes vía `StorageAdapter` | Integración de queries; unitarios de validación y autorización |
-| 13 | `feat/logbook-editor` | Editor en el panel: `textarea` + preview, sin WYSIWYG. La subida inserta `![](url)` en el cursor. Mobile-first | Unitarios de los helpers; capturas móvil y desktop |
+| 13 | `feat/logbook-editor` | Editor en el panel. Empezó como `textarea` + preview; desde el rediseño es visual (Tiptap con `@tiptap/markdown`), y el cuerpo se sigue guardando como markdown. Mobile-first | Unitarios de los helpers; capturas móvil y desktop |
 | 14 | `feat/logbook-public-pages` | `/logbook` y `/logbook/[slug]` con ISR, en español y sin next-intl | Capturas; verificación E2E manual |
 
 ### Esquema de `logbook_entries`

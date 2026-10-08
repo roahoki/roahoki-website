@@ -1,18 +1,14 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LogbookEntry } from "@/db/schema";
 import { LogbookEditor } from "./logbook-editor";
 
 /**
- * `next/navigation` no funciona fuera de un request de Next.
- *
- * Estos tests cubren lo que el usuario ve y toca —los campos, el toggle de
- * preview, el estado— sin llegar al `fetch`. Guardar de verdad pasa por la API,
- * que ya tiene sus propios tests en la PR 12.
+ * `next/navigation` no funciona fuera de un request de Next. Los `fetch` se
+ * sustituyen: guardar de verdad pasa por la API, que tiene sus propios tests.
  */
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-}));
+const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
 
 function entryFixture(overrides: Partial<LogbookEntry> = {}): LogbookEntry {
   return {
@@ -23,162 +19,170 @@ function entryFixture(overrides: Partial<LogbookEntry> = {}): LogbookEntry {
     bodyMd: "# Hola\n\nUn cuerpo.",
     coverImageUrl: null,
     coverFocus: "center",
-    format: null,
-    number: 1,
+    format: "update",
+    number: 27,
     tags: ["rails", "postgres"],
     status: "published",
-    publishedAt: "2026-01-01T00:00:00.000Z",
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
+    publishedAt: "2026-10-03T12:00:00.000Z",
+    createdAt: "2026-10-03T12:00:00.000Z",
+    updatedAt: "2026-10-03T12:00:00.000Z",
     ...overrides,
   };
 }
 
-describe("LogbookEditor — modo creación", () => {
-  it("arranca con los campos vacíos", () => {
-    render(<LogbookEditor />);
+const fetchMock = vi.fn();
 
-    expect(screen.getByText("Nueva nota")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("El título de la nota")).toHaveValue("");
+function respondWith(entry: LogbookEntry) {
+  fetchMock.mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({ entry }),
   });
+}
 
-  it("explica que el slug se deriva del título", () => {
+function lastRequest() {
+  const [url, init] = fetchMock.mock.calls.at(-1) ?? [];
+  return { url, method: init?.method, body: JSON.parse(init?.body ?? "{}") };
+}
+
+// El editor se crea después del primer render (`immediatelyRender: false`).
+async function editorReady() {
+  await waitFor(() =>
+    expect(screen.getByLabelText("cuerpo de la nota")).toBeInTheDocument(),
+  );
+}
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  router.push.mockReset();
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe("LogbookEditor — nota nueva", () => {
+  it("arranca vacía y sin publicar", async () => {
     render(<LogbookEditor />);
+    await editorReady();
 
+    expect(screen.getByPlaceholderText("título")).toHaveValue("");
+    expect(screen.getByText("nota nueva")).toBeInTheDocument();
     expect(
-      screen.getByText("Si lo dejas vacío se deriva del título."),
-    ).toBeInTheDocument();
+      screen.getAllByRole("button", { name: "publicar" }),
+    ).not.toHaveLength(0);
   });
 
-  it("no ofrece eliminar una nota que todavía no existe", () => {
+  it("Ctrl S la guarda como borrador sin salir del editor", async () => {
+    const replaceState = vi.spyOn(window.history, "replaceState");
+    respondWith(entryFixture({ status: "draft", id: "nueva-id" }));
     render(<LogbookEditor />);
+    await editorReady();
 
-    expect(screen.queryByRole("button", { name: "Eliminar" })).toBeNull();
-  });
+    fireEvent.change(screen.getByPlaceholderText("título"), {
+      target: { value: "la segunda manga" },
+    });
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
 
-  it("nace como publicada", () => {
-    render(<LogbookEditor />);
-
-    expect(screen.getByRole("button", { name: "Publicada" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
+    await waitFor(() =>
+      expect(screen.getByText("borrador · guardado")).toBeInTheDocument(),
+    );
+    expect(lastRequest()).toMatchObject({
+      url: "/api/admin/logbook",
+      method: "POST",
+      body: { title: "la segunda manga", status: "draft" },
+    });
+    expect(router.push).not.toHaveBeenCalled();
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      "",
+      "/admin/logbook/nueva-id",
     );
   });
 
-  it("permite pasarla a borrador", () => {
+  it("publicar la publica y vuelve a la lista", async () => {
+    respondWith(entryFixture());
     render(<LogbookEditor />);
+    await editorReady();
 
-    fireEvent.click(screen.getByRole("button", { name: "Borrador" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "publicar" })[0]);
 
-    expect(screen.getByRole("button", { name: "Borrador" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
+    await waitFor(() =>
+      expect(router.push).toHaveBeenCalledWith("/admin/logbook"),
     );
-    expect(screen.getByRole("button", { name: "Publicada" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
+    expect(lastRequest().body.status).toBe("published");
+  });
+
+  it("muestra el error de la API sin salir", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: async () => ({ error: "Ya existe una nota con ese slug." }),
+    });
+    render(<LogbookEditor />);
+    await editorReady();
+
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Ya existe una nota con ese slug.",
     );
+    expect(router.push).not.toHaveBeenCalled();
   });
 });
 
-describe("LogbookEditor — modo edición", () => {
-  it("precarga los campos de la nota", () => {
+describe("LogbookEditor — editando", () => {
+  it("muestra número, formato, título y guardar", async () => {
     render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
 
-    expect(screen.getByText("Editar nota")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("El título de la nota")).toHaveValue(
-      "Una nota",
-    );
-    expect(screen.getByPlaceholderText("se-deriva-del-titulo")).toHaveValue(
-      "una-nota",
-    );
-  });
-
-  it("muestra los tags como texto separado por comas", () => {
-    render(<LogbookEditor entry={entryFixture()} />);
-
-    expect(screen.getByPlaceholderText("rails, postgres")).toHaveValue(
-      "rails, postgres",
+    expect(screen.getByText("#27")).toBeInTheDocument();
+    expect(screen.getByText("un update")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("título")).toHaveValue("Una nota");
+    expect(screen.getAllByRole("button", { name: "guardar" })).not.toHaveLength(
+      0,
     );
   });
 
-  // Un slug ya publicado es parte de un link que puede estar circulando.
-  it("advierte que cambiar el slug rompe los links", () => {
+  // El cuerpo se edita visual pero se guarda como markdown: la base y la
+  // página pública no se enteran del cambio de editor.
+  it("guarda el cuerpo como markdown, con PATCH", async () => {
+    respondWith(entryFixture());
     render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
 
-    expect(
-      screen.getByText("Cambiarlo rompe los links ya compartidos."),
-    ).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(lastRequest()).toMatchObject({
+      url: "/api/admin/logbook/3f4a9d2e-1b6c-4c0a-9f5e-7d8a2b1c3e4f",
+      method: "PATCH",
+      body: { bodyMd: "# Hola\n\nUn cuerpo.", status: "published" },
+    });
   });
 
-  it("ofrece eliminar", () => {
+  it("datos despliega dirección, resumen y tags", async () => {
     render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
 
-    expect(
-      screen.getByRole("button", { name: "Eliminar" }),
-    ).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+
+    expect(screen.getByLabelText("dirección")).toHaveValue("una-nota");
+    expect(screen.getByLabelText("resumen")).toHaveValue("Un resumen");
+    expect(screen.getByLabelText("tags")).toHaveValue("rails, postgres");
   });
 
-  it("refleja el estado de borrador", () => {
-    render(<LogbookEditor entry={entryFixture({ status: "draft" })} />);
-
-    expect(screen.getByRole("button", { name: "Borrador" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-  });
-});
-
-describe("LogbookEditor — vista previa", () => {
-  it("empieza mostrando el textarea", () => {
+  it("Ctrl / abre los atajos y Esc los cierra", async () => {
     render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
 
-    expect(screen.getByPlaceholderText("# Escribe en markdown")).toHaveValue(
-      "# Hola\n\nUn cuerpo.",
-    );
-  });
+    fireEvent.keyDown(window, { key: "/", ctrlKey: true });
+    const dialog = screen.getByRole("dialog", { name: "atajos" });
+    expect(dialog).toHaveTextContent("Ctrl Alt 2");
+    expect(dialog).not.toHaveTextContent("Ctrl I");
 
-  it("cambia a la preview y renderiza el markdown", () => {
-    render(<LogbookEditor entry={entryFixture()} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Vista previa" }));
-
-    expect(screen.getByRole("heading", { name: "Hola" })).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText("# Escribe en markdown")).toBeNull();
-  });
-
-  it("vuelve al textarea", () => {
-    render(<LogbookEditor entry={entryFixture()} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Vista previa" }));
-    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
-
-    expect(
-      screen.getByPlaceholderText("# Escribe en markdown"),
-    ).toBeInTheDocument();
-  });
-
-  it("avisa cuando no hay nada que previsualizar", () => {
-    render(<LogbookEditor entry={entryFixture({ bodyMd: "   " })} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Vista previa" }));
-
-    expect(
-      screen.getByText("Nada que previsualizar todavía."),
-    ).toBeInTheDocument();
-  });
-
-  // La preview usa el mismo `MarkdownContent` que la página pública, así que
-  // hereda su sanitización: lo que se ve al escribir es lo que se va a publicar.
-  it("la preview no ejecuta HTML crudo", () => {
-    const { container } = render(
-      <LogbookEditor
-        entry={entryFixture({ bodyMd: "<script>alert(1)</script>" })}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Vista previa" }));
-
-    expect(container.querySelector("script")).toBeNull();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
