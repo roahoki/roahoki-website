@@ -316,3 +316,102 @@
 .prose-logbook th {
   @apply bg-muted font-semibold;
 }
+
+/*
+ * El cuerpo de una entrada con la marca nueva (brand book §5.4 y §7.4).
+ *
+ * Clase aparte de `.prose-logbook`, que todavía usa la vista previa del
+ * editor del panel en oscuro: esta usa la paleta de papel y tinta y en un
+ * fondo oscuro sería ilegible.
+ */
+.prose-entry {
+  @apply text-entry-body text-ink;
+}
+
+.prose-entry > * + * {
+  @apply mt-5;
+}
+
+.prose-entry h1,
+.prose-entry h2 {
+  @apply mt-11 text-card-title;
+}
+
+.prose-entry h3 {
+  @apply mt-9 text-card-title-sm;
+}
+
+.prose-entry a {
+  @apply text-leaf underline-offset-4 hover:underline focus-visible:underline;
+}
+
+/* Sin itálica: Bricolage no la trae y no se fabrica una falsa. El énfasis es
+   negrita, también cuando el markdown pide itálica. */
+.prose-entry strong,
+.prose-entry em {
+  @apply font-bold not-italic;
+}
+
+/* El tachado va en el color del texto, no en acento. */
+.prose-entry del {
+  text-decoration-color: currentColor;
+}
+
+.prose-entry ul {
+  @apply list-disc space-y-2 pl-5;
+}
+
+.prose-entry ol {
+  @apply list-decimal space-y-2 pl-5;
+}
+
+.prose-entry li::marker {
+  @apply text-faded;
+}
+
+.prose-entry blockquote {
+  @apply border-l-2 border-rule pl-4 text-faded;
+}
+
+.prose-entry code {
+  @apply rounded bg-rule/50 px-1.5 py-0.5 font-mono text-[0.85em];
+}
+
+.prose-entry pre {
+  @apply overflow-x-auto rounded-md bg-ink p-4 text-paper;
+}
+
+.prose-entry pre code {
+  @apply bg-transparent p-0 text-[0.85em];
+}
+
+.prose-entry img {
+  @apply my-8 block h-auto w-full rounded-md;
+}
+
+/* En escritorio las imágenes del cuerpo se salen de la columna de texto hasta
+   el ancho de la portada (680 → 896 px): el texto no, la imagen sí. */
+@media (min-width: 64rem) {
+  .prose-entry img {
+    width: calc(100% + 216px);
+    max-width: none;
+    margin-inline: -108px;
+  }
+}
+
+.prose-entry hr {
+  @apply my-11 border-rule;
+}
+
+.prose-entry table {
+  @apply w-full border-collapse text-body;
+}
+
+.prose-entry th,
+.prose-entry td {
+  @apply border border-rule px-3 py-1.5 text-left;
+}
+
+.prose-entry th {
+  @apply font-bold;
+}

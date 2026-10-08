@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatEntryDate } from "@/lib/logbook/format";
+import { CopyLinkButton } from "@/components/entry/copy-link-button";
+import { EntryNeighbors } from "@/components/entry/entry-neighbors";
+import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
+import { formatEntryDateShort } from "@/lib/logbook/format";
 import {
+  getEntryNeighbors,
   getPublishedEntryBySlug,
   listPublishedSlugs,
 } from "@/lib/logbook/queries";
 import { MarkdownContent, markdownToPlainText } from "@/lib/markdown";
+import { INSTAGRAM_DM_URL } from "@/lib/profile";
+import { absoluteUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -77,40 +82,28 @@ export default async function LogbookEntryPage({ params }: Props) {
   // igual que un slug inexistente: desde afuera no se distingue que existe.
   if (!entry) notFound();
 
+  const neighbors = await getEntryNeighbors(entry.number);
+
   return (
-    <main className="max-w-2xl mx-auto px-5 py-12 sm:py-16">
-      <Link
-        href="/logbook"
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        ← Logbook
-      </Link>
-
-      <article className="mt-6">
-        <header className="mb-8">
-          <time
-            className="text-xs text-muted-foreground"
-            dateTime={entry.publishedAt}
-          >
-            {formatEntryDate(entry.publishedAt)}
-          </time>
-
-          <h1 className="mt-2 text-2xl sm:text-3xl font-bold text-foreground leading-tight">
-            {entry.title}
-          </h1>
-
-          {entry.summary && (
-            <p className="mt-3 text-base text-foreground/70 leading-relaxed">
-              {entry.summary}
-            </p>
-          )}
-
+    <main className="px-4 pt-8 pb-12 md:px-8 md:pt-14 md:pb-16">
+      {/* Dos anchos (brand book §7.4): el texto a 68ch (680 px), y la portada,
+          las imágenes y la navegación a 896 px. */}
+      <article className="mx-auto flex max-w-[896px] flex-col gap-8">
+        <header className="mx-auto flex w-full max-w-[680px] flex-col gap-5">
+          <p className="flex flex-wrap gap-x-3 text-entry-meta text-faded">
+            <span>#{entry.number}</span>
+            <time dateTime={entry.publishedAt}>
+              {formatEntryDateShort(entry.publishedAt)}
+            </time>
+            {entry.format && <span>{ENTRY_FORMAT_LABELS[entry.format]}</span>}
+          </p>
+          <h1 className="text-entry-title text-ink">{entry.title}</h1>
           {entry.tags.length > 0 && (
-            <ul className="mt-4 flex flex-wrap gap-1.5">
+            <ul className="flex flex-wrap gap-2" aria-label="tags">
               {entry.tags.map((tag) => (
                 <li
                   key={tag}
-                  className="rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+                  className="rounded-full bg-bottle px-2.5 py-0.5 text-tag text-paper"
                 >
                   {tag}
                 </li>
@@ -119,10 +112,41 @@ export default async function LogbookEntryPage({ params }: Props) {
           )}
         </header>
 
-        <div className="prose-logbook">
+        {entry.coverImageUrl && (
+          // La foto entera, sin recorte: el recorte 2:1 es de la tarjeta. Es
+          // `<img>` y no `next/image` porque no se conocen sus dimensiones,
+          // igual que las imágenes del cuerpo en `src/lib/markdown.tsx`.
+          // biome-ignore lint/performance/noImgElement: dimensiones desconocidas
+          <img
+            src={entry.coverImageUrl}
+            alt=""
+            className="h-auto w-full rounded-md"
+          />
+        )}
+
+        <div className="prose-entry mx-auto w-full max-w-[680px]">
           <MarkdownContent>{entry.bodyMd}</MarkdownContent>
         </div>
+
+        <footer className="mx-auto flex w-full max-w-[680px] flex-col gap-5">
+          <p className="text-signature text-leaf">:)</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-rule pt-4">
+            <CopyLinkButton url={absoluteUrl(`/logbook/${entry.slug}`)} />
+            <a
+              href={INSTAGRAM_DM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline"
+            >
+              respóndeme por instagram
+            </a>
+          </div>
+        </footer>
       </article>
+
+      <div className="mx-auto mt-12 max-w-[896px]">
+        <EntryNeighbors {...neighbors} />
+      </div>
     </main>
   );
 }

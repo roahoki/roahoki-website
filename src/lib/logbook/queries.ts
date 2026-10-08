@@ -1,4 +1,4 @@
-import { and, desc, eq, like, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   type LogbookEntry,
@@ -164,6 +164,44 @@ export async function deleteEntry(id: string): Promise<string | undefined> {
     .returning({ slug: logbookEntries.slug });
 
   return deleted?.slug;
+}
+
+export type EntryNeighbor = Pick<LogbookEntry, "number" | "slug" | "title">;
+
+/**
+ * La nota publicada anterior y la siguiente a `number`, para la navegación al
+ * pie de cada entrada. Se ordena por número y no por fecha: el número es el
+ * orden que el visitante ve en cada tarjeta, y "anterior" tiene que ser la #24
+ * cuando está leyendo la #25. Los borradores se saltean: tienen número pero no
+ * página pública.
+ */
+export async function getEntryNeighbors(number: number): Promise<{
+  previous: EntryNeighbor | undefined;
+  next: EntryNeighbor | undefined;
+}> {
+  const columns = {
+    number: logbookEntries.number,
+    slug: logbookEntries.slug,
+    title: logbookEntries.title,
+  };
+  const published = eq(logbookEntries.status, "published");
+
+  const [[previous], [next]] = await Promise.all([
+    getDb()
+      .select(columns)
+      .from(logbookEntries)
+      .where(and(published, lt(logbookEntries.number, number)))
+      .orderBy(desc(logbookEntries.number))
+      .limit(1),
+    getDb()
+      .select(columns)
+      .from(logbookEntries)
+      .where(and(published, gt(logbookEntries.number, number)))
+      .orderBy(asc(logbookEntries.number))
+      .limit(1),
+  ]);
+
+  return { previous, next };
 }
 
 /** Los slugs de todas las notas publicadas. Para el sitemap y el feed. */
