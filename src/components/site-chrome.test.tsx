@@ -30,11 +30,19 @@ describe("SiteHeader", () => {
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("trae la bajada, oculta en móvil", () => {
+  it("lleva solo el logo y escríbeme, sin bajada", () => {
     render(<SiteHeader />);
-    const bajada = screen.getByText("compartir aprendizaje, based en santiago");
 
-    expect(bajada).toHaveClass("hidden", "md:block");
+    expect(screen.getByRole("banner")).toHaveTextContent(/^roahokiescríbeme$/);
+  });
+
+  // La palabra del logo y "escríbeme" comparten línea base; la figura, más
+  // alta, no debe empujar el texto.
+  it("alinea el logo y escríbeme por la línea base", () => {
+    render(<SiteHeader />);
+    const row = screen.getByRole("link", { name: "escríbeme" }).parentElement;
+
+    expect(row).toHaveClass("items-baseline");
   });
 });
 
