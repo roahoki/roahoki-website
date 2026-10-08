@@ -21,3 +21,18 @@ const FORMATTER = new Intl.DateTimeFormat("es-CL", {
 export function formatEntryDate(isoDate: string): string {
   return FORMATTER.format(new Date(isoDate));
 }
+
+const SHORT_FORMATTER = new Intl.DateTimeFormat("es-CL", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/**
+ * La fecha corta de las tarjetas: "24 sept 2026". La tarjeta tiene poco ancho
+ * y la fecha comparte línea con el número y el formato.
+ */
+export function formatEntryDateShort(isoDate: string): string {
+  return SHORT_FORMATTER.format(new Date(isoDate));
+}

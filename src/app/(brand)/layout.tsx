@@ -6,11 +6,13 @@ import { bricolage } from "@/lib/fonts";
 import "../globals.css";
 
 /**
- * Layout raíz del logbook, la primera raíz con la marca nueva: Bricolage,
- * papel y tinta, header y footer de roahoki.
+ * Layout raíz de las páginas con la marca nueva: el home (que es el logbook) y
+ * cada entrada en `/logbook/[slug]`. Bricolage, papel y tinta, header y footer
+ * de roahoki.
  *
  * No hay `src/app/layout.tsx`: cada raíz del árbol trae el suyo, igual que
- * `(site)` y `admin`.
+ * `(site)` y `admin`. Es un route group para que `/` y `/logbook/[slug]`
+ * compartan layout sin que `brand` aparezca en la URL.
  *
  * Va solo en claro (brand book §5.3: la página es papel y el texto es tinta),
  * así que no usa `Providers`: sin tema que alternar, `next-themes` sobra.
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
   // `www` porque el apex responde 308 hacia él y los scrapers de Instagram y
   // WhatsApp no siempre siguen el redirect.
   metadataBase: new URL("https://www.roahoki.com"),
-  title: "Logbook — roahoki",
+  title: "roahoki",
 };
 
 export default function LogbookRootLayout({

@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Invalida el caché de las páginas públicas del logbook.
  *
- * `/logbook` y `/logbook/[slug]` son ISR (`revalidate = 3600`): Next sirve el
+ * El home (el listado) y `/logbook/[slug]` son ISR (`revalidate = 3600`): Next sirve el
  * HTML que generó y solo lo regenera cuando vence la hora. Escribir en la base
  * no le avisa a nadie, así que sin esto **publicar una nota no se ve hasta una
  * hora después** — y si el listado se prerenderizó con la base vacía, el índice
@@ -19,7 +19,7 @@ import { revalidatePath } from "next/cache";
 export function revalidateLogbook(
   ...slugs: (string | null | undefined)[]
 ): void {
-  revalidatePath("/logbook");
+  revalidatePath("/");
 
   // En una edición corriente el slug viejo y el nuevo son el mismo, y sin el
   // `Set` se revalidaría dos veces la misma ruta. En un renombre son distintos

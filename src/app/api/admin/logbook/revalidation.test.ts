@@ -69,7 +69,7 @@ describe("POST /api/admin/logbook", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(revalidatedPaths()).toEqual(["/logbook", "/logbook/nota-nueva"]);
+    expect(revalidatedPaths()).toEqual(["/", "/logbook/nota-nueva"]);
   });
 
   it("no invalida nada si el guardado falla", async () => {
@@ -103,7 +103,7 @@ describe("PATCH /api/admin/logbook/[id]", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(revalidatedPaths()).toEqual(["/logbook", "/logbook/una-nota"]);
+    expect(revalidatedPaths()).toEqual(["/", "/logbook/una-nota"]);
   });
 
   it("invalida también la URL vieja cuando se renombra el slug", async () => {
@@ -118,7 +118,7 @@ describe("PATCH /api/admin/logbook/[id]", () => {
     // Sin la vieja, `/logbook/slug-viejo` seguiría sirviendo la nota aunque esa
     // URL ya no exista en la base.
     expect(revalidatedPaths()).toEqual([
-      "/logbook",
+      "/",
       "/logbook/slug-nuevo",
       "/logbook/slug-viejo",
     ]);
@@ -154,7 +154,7 @@ describe("DELETE /api/admin/logbook/[id]", () => {
     expect(response.status).toBe(200);
     // Sin esto, borrar deja la nota visible en su URL hasta que venza el ISR:
     // se borra algo y sigue público.
-    expect(revalidatedPaths()).toEqual(["/logbook", "/logbook/nota-borrada"]);
+    expect(revalidatedPaths()).toEqual(["/", "/logbook/nota-borrada"]);
   });
 
   it("no invalida nada si la nota no existía", async () => {
