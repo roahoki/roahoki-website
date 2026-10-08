@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COVER_FOCUSES, ENTRY_FORMATS } from "@/lib/logbook/entry-format";
 import { ALLOWED_IMAGE_EXTENSIONS } from "@/lib/storage";
 
 /**
@@ -94,6 +95,20 @@ export const createEntrySchema = z.object({
     .max(BODY_MAX_LENGTH, "El cuerpo es demasiado largo."),
 
   coverImageUrl: optionalUrl,
+  // Qué parte de la foto se ve en la tarjeta. Si no viene, la base pone
+  // "center".
+  coverFocus: z
+    .enum(COVER_FOCUSES, {
+      errorMap: () => ({ message: "El foco de la portada no es válido." }),
+    })
+    .optional(),
+  // `null` lo quita; ausente lo deja como está (o sin formato, al crear).
+  format: z
+    .enum(ENTRY_FORMATS, {
+      errorMap: () => ({ message: "Ese formato no existe." }),
+    })
+    .nullable()
+    .optional(),
   tags: tagsField,
   status: z.enum(["draft", "published"]).default("published"),
 

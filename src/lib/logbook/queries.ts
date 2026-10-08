@@ -104,12 +104,25 @@ export async function availableSlugFor(title: string): Promise<string> {
   );
 }
 
+/**
+ * Crea una nota con el número siguiente al más alto (#27, #28…). Los borradores
+ * también reciben el suyo: el número es de la nota, no de su estado.
+ *
+ * El máximo se calcula dentro del mismo `insert` y no con un `select` previo,
+ * para no abrir una ventana entre leerlo y usarlo. Si dos altas simultáneas
+ * calcularan el mismo número, el índice único rechaza la segunda: con un solo
+ * autor es casi imposible, y fallar es mejor que duplicar. Borrar la nota más
+ * nueva deja su número libre para la siguiente.
+ */
 export async function createEntry(
-  input: Omit<NewLogbookEntry, "id" | "createdAt" | "updatedAt">,
+  input: Omit<NewLogbookEntry, "id" | "number" | "createdAt" | "updatedAt">,
 ): Promise<LogbookEntry> {
   const [created] = await getDb()
     .insert(logbookEntries)
-    .values(input)
+    .values({
+      ...input,
+      number: sql`(select coalesce(max(${logbookEntries.number}), 0) + 1 from ${logbookEntries})`,
+    })
     .returning();
 
   return created;
@@ -123,7 +136,8 @@ export async function createEntry(
  */
 export async function updateEntry(
   id: string,
-  changes: Partial<Omit<NewLogbookEntry, "id" | "createdAt">>,
+  // El número no se edita: es el orden en que nacieron las notas.
+  changes: Partial<Omit<NewLogbookEntry, "id" | "number" | "createdAt">>,
 ): Promise<LogbookEntry | undefined> {
   const [updated] = await getDb()
     .update(logbookEntries)

@@ -67,6 +67,16 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     // El índice único de `slug` es la última barrera contra un duplicado, y
     // devolver 500 escondería que el problema lo puede arreglar quien escribe.
+    // Otra alta tomó el mismo número en el mismo instante (ver `createEntry`).
+    // Volver a guardar calcula uno nuevo.
+    if (isUniqueViolation(error, "logbook_entries_number_key")) {
+      return NextResponse.json(
+        {
+          error: "Otra nota tomó ese número al mismo tiempo. Vuelve a guardar.",
+        },
+        { status: 409 },
+      );
+    }
     if (isUniqueViolation(error)) {
       return NextResponse.json(
         { error: "Ya existe una nota con ese slug." },

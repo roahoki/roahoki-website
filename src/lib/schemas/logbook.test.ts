@@ -158,6 +158,66 @@ describe("createEntrySchema — casos inválidos", () => {
   });
 });
 
+describe("createEntrySchema — formato y foco de portada", () => {
+  it("sin formato ni foco los deja en manos de la base", () => {
+    const result = createEntrySchema.parse(validEntry());
+
+    expect(result.format).toBeUndefined();
+    expect(result.coverFocus).toBeUndefined();
+  });
+
+  it.each(["thought", "update", "one-liner", "project", "how-to"])(
+    "acepta el formato %s",
+    (format) => {
+      expect(createEntrySchema.parse(validEntry({ format })).format).toBe(
+        format,
+      );
+    },
+  );
+
+  it("acepta null para quitar el formato", () => {
+    expect(createEntrySchema.parse(validEntry({ format: null })).format).toBe(
+      null,
+    );
+  });
+
+  it("rechaza un formato que no existe, con un mensaje claro", () => {
+    const result = createEntrySchema.safeParse(validEntry({ format: "poema" }));
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(firstErrorMessage(result.error)).toBe("Ese formato no existe.");
+    }
+  });
+
+  it.each(["top", "center", "bottom"])("acepta el foco %s", (coverFocus) => {
+    expect(createEntrySchema.parse(validEntry({ coverFocus })).coverFocus).toBe(
+      coverFocus,
+    );
+  });
+
+  it("rechaza un foco fuera de arriba, centro y abajo", () => {
+    const result = createEntrySchema.safeParse(
+      validEntry({ coverFocus: "left" }),
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(firstErrorMessage(result.error)).toBe(
+        "El foco de la portada no es válido.",
+      );
+    }
+  });
+
+  // El número lo pone la base al crear; aceptarlo de afuera permitiría
+  // reescribir el orden de las notas desde el editor.
+  it("ignora un número que venga en el cuerpo", () => {
+    const result = createEntrySchema.parse(validEntry({ number: 99 }));
+
+    expect(result).not.toHaveProperty("number");
+  });
+});
+
 describe("updateEntrySchema", () => {
   it("acepta un cambio de un solo campo", () => {
     const result = updateEntrySchema.safeParse({ title: "Otro título" });

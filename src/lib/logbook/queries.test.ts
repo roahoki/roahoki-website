@@ -62,11 +62,46 @@ describe.skipIf(!hasTestDatabase)("queries del logbook", () => {
   }
 
   describe("createEntry", () => {
+    it("numera las notas en el orden en que se crean, desde 1", async () => {
+      const a = await seed({ slug: "a" });
+      const b = await seed({ slug: "b" });
+      const c = await seed({ slug: "c" });
+
+      expect([a.number, b.number, c.number]).toEqual([1, 2, 3]);
+    });
+
+    it("un borrador reserva su número", async () => {
+      await seed({ slug: "publicada" });
+      const draft = await seed({ slug: "borrador", status: "draft" });
+      const next = await seed({ slug: "siguiente" });
+
+      expect(draft.number).toBe(2);
+      expect(next.number).toBe(3);
+    });
+
+    it("sigue desde el más alto, aunque falten números en el medio", async () => {
+      await seed({ slug: "uno" });
+      const two = await seed({ slug: "dos" });
+      await seed({ slug: "tres" });
+      await queries.deleteEntry(two.id);
+
+      expect((await seed({ slug: "cuatro" })).number).toBe(4);
+    });
+
+    it("guarda formato y foco de portada", async () => {
+      const entry = await seed({ format: "one-liner", coverFocus: "top" });
+
+      expect(entry.format).toBe("one-liner");
+      expect(entry.coverFocus).toBe("top");
+    });
+
     it("crea una nota con los defaults de la base", async () => {
       const entry = await seed();
 
       expect(entry.id).toMatch(/^[\da-f-]{36}$/);
       expect(entry.status).toBe("published");
+      expect(entry.format).toBeNull();
+      expect(entry.coverFocus).toBe("center");
       expect(entry.tags).toEqual([]);
     });
 

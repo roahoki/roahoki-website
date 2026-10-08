@@ -6,13 +6,23 @@
  * el `lc_messages` del servidor.
  */
 
-/** `23505` es `unique_violation`. */
-export function isUniqueViolation(error: unknown): boolean {
-  return pgErrorCode(error) === "23505";
+/**
+ * `23505` es `unique_violation`. Con `constraint`, además exige que el índice
+ * que falló sea ese: una tabla con dos índices únicos necesita saber cuál de
+ * los dos chocó para decirle a quien escribe qué corregir.
+ */
+export function isUniqueViolation(
+  error: unknown,
+  constraint?: string,
+): boolean {
+  if (pgField(error, "code") !== "23505") return false;
+  return (
+    constraint === undefined || pgField(error, "constraint_name") === constraint
+  );
 }
 
-function pgErrorCode(error: unknown): string | undefined {
+function pgField(error: unknown, field: string): string | undefined {
   if (typeof error !== "object" || error === null) return undefined;
-  const code = (error as { code?: unknown }).code;
-  return typeof code === "string" ? code : undefined;
+  const value = (error as Record<string, unknown>)[field];
+  return typeof value === "string" ? value : undefined;
 }

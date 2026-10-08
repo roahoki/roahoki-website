@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { COVER_FOCUSES, ENTRY_FORMATS } from "@/lib/logbook/entry-format";
 import { EXERCISE_SLUGS } from "@/lib/stats/exercises";
 import { anonRole, serviceRole } from "./roles";
 
@@ -131,6 +132,18 @@ export const logbookEntries = pgTable(
     status: text({ enum: ["draft", "published"] })
       .default("published")
       .notNull(),
+    // El número de la entrada (#27). Lo pone `createEntry` al crear, así un
+    // borrador reserva el suyo desde el principio. Las notas que existían
+    // antes de esta columna se numeraron por fecha de publicación.
+    number: integer().notNull(),
+    // "un pensamiento", "un update", "una línea"… Los códigos y sus etiquetas
+    // están en `entry-format.ts`. Opcional: las notas anteriores no lo tienen
+    // y no se inventa.
+    format: text({ enum: ENTRY_FORMATS }),
+    // Qué parte de la foto se ve cuando la tarjeta la recorta a 2:1.
+    coverFocus: text("cover_focus", { enum: COVER_FOCUSES })
+      .default("center")
+      .notNull(),
     // Separada de `created_at` a propósito: permite fechar una nota en el día
     // que ocurrió lo que cuenta, no en el día que se escribió.
     publishedAt: timestamp("published_at", {
@@ -148,6 +161,10 @@ export const logbookEntries = pgTable(
   },
   (table) => [
     uniqueIndex("logbook_entries_slug_key").on(table.slug),
+    // Dos notas no pueden compartir número. Además de la regla, protege a
+    // `createEntry`, que calcula el siguiente como máximo + 1: si dos altas
+    // calcularan el mismo, la segunda falla en vez de duplicarlo.
+    uniqueIndex("logbook_entries_number_key").on(table.number),
 
     check(
       "logbook_entries_status_check",
@@ -158,6 +175,18 @@ export const logbookEntries = pgTable(
     // zod es la barrera principal, pero esto lo hace imposible incluso desde
     // psql.
     check("logbook_entries_slug_not_empty", sql`length(slug) > 0`),
+    check("logbook_entries_number_positive", sql`number > 0`),
+
+    // Igual que `status`: el enum de Drizzle solo existe en TypeScript, el
+    // check lo hace cumplir también en la base.
+    check(
+      "logbook_entries_format_check",
+      sql`format IS NULL OR format = ANY (ARRAY['thought'::text, 'update'::text, 'one-liner'::text, 'project'::text, 'how-to'::text])`,
+    ),
+    check(
+      "logbook_entries_cover_focus_check",
+      sql`cover_focus = ANY (ARRAY['top'::text, 'center'::text, 'bottom'::text])`,
+    ),
 
     // GIN es el índice que sirve para `tags @> ARRAY['x']`, que es como
     // consulta `arrayContains` de Drizzle. Un B-tree sobre un array indexa el
