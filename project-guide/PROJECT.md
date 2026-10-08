@@ -27,9 +27,10 @@ Conviven con los tokens de Shadcn mientras existan páginas con el diseño anter
 
 **El logo es código, no imágenes.** `src/components/brand/` tiene la figura
 (`LogoMark`, que elige el grosor de trazo según el tamaño, como pide el brand
-book) y el logo completo (`Logo`), dibujados con trazos en `currentColor`: toman
-el color del texto que los rodea. Los trazos salen de los SVG de la marca y viven
-en `paths.ts`. El favicon (`src/app/icon.svg`) es un SVG estático que repite esos
+book), dibujada con trazos en `currentColor`, y el logo completo (`Logo`): la
+figura cerca de la palabra "roahoki" en Bricolage Bold, que es texto real. Los dos
+toman el color del texto que los rodea. Los trazos de la figura salen de los SVG
+de la marca y viven en `paths.ts`. El favicon (`src/app/icon.svg`) es un SVG estático que repite esos
 trazos y pasa a crema con el navegador en oscuro; un test avisa si se
 desincroniza. El ícono de iOS (`apple-icon.tsx`) se genera con `next/og` porque
 iOS no acepta SVG.

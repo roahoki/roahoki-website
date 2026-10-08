@@ -1,40 +1,32 @@
-import type { SVGProps } from "react";
-import { LOGO_PATHS, LOGO_STROKE, LOGO_VIEWBOX, viewBoxAttr } from "./paths";
+import { LogoMark } from "./logo-mark";
 
-type LogoProps = Omit<SVGProps<SVGSVGElement>, "width" | "height"> & {
-  /** Alto en px. El ancho sale de la proporción del logo. */
-  height?: number;
+type LogoProps = {
+  /** Tamaño de la palabra en px. La figura y la separación salen de este. */
+  size?: number;
+  className?: string;
 };
 
 /**
- * El logo de roahoki: la figura al lado del nombre dibujado en el mismo trazo
- * (brand book §5.2). Toma el color del texto que lo rodea (`currentColor`).
+ * El logo de roahoki (brand book §5.2): la figura cerca de la palabra
+ * "roahoki" en Bricolage Grotesque Bold, en minúscula.
  *
- * Siempre se anuncia como "roahoki": cuando va solo, como en el header, es el
- * nombre del sitio y no un adorno.
+ * La palabra es texto de verdad y no un dibujo: se lee, se selecciona y es el
+ * nombre accesible del link que la envuelva. La figura es decorativa al lado
+ * del nombre, para que un lector de pantalla no diga "roahoki" dos veces.
+ *
+ * Proporciones del lockup de Figma: la figura mide 1,3 veces el tamaño de la
+ * letra y queda a 0,3 em de la palabra. `items-baseline` apoya el borde
+ * inferior de la figura —los hombros— en la línea base del texto. Toma el
+ * color del texto que la rodea.
  */
-export function Logo({ height = 24, ...props }: LogoProps) {
-  const width = (height * LOGO_VIEWBOX.width) / LOGO_VIEWBOX.height;
-
+export function Logo({ size = 20, className = "" }: LogoProps) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={viewBoxAttr(LOGO_VIEWBOX)}
-      width={width}
-      height={height}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={LOGO_STROKE}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      role="img"
-      aria-label="roahoki"
-      {...props}
+    <span
+      className={`inline-flex items-baseline gap-[0.3em] font-brand leading-none font-bold tracking-[-0.015em] ${className}`}
+      style={{ fontSize: size }}
     >
-      <title>roahoki</title>
-      {LOGO_PATHS.map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
+      <LogoMark size={Math.round(size * 1.3)} />
+      <span>roahoki</span>
+    </span>
   );
 }
