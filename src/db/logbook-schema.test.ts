@@ -14,6 +14,10 @@ describe.runIf(hasTestDatabase)("esquema de logbook_entries", () => {
     await resetTestDb();
   });
 
+  // `number` es obligatorio y único; en la app lo pone `createEntry`. Acá el
+  // insert es crudo, así que cada fila se lleva uno propio.
+  let nextNumber = 1;
+
   async function insertEntry(fields: Record<string, unknown> = {}) {
     const sql = connectTestDb();
     try {
@@ -21,6 +25,7 @@ describe.runIf(hasTestDatabase)("esquema de logbook_entries", () => {
         slug: "una-nota",
         title: "Una nota",
         body_md: "# Hola",
+        number: nextNumber++,
         ...fields,
       };
       const [created] = await sql`insert into logbook_entries ${sql(row)}
@@ -40,6 +45,8 @@ describe.runIf(hasTestDatabase)("esquema de logbook_entries", () => {
       expect(entry.tags).toEqual([]);
       expect(entry.summary).toBeNull();
       expect(entry.cover_image_url).toBeNull();
+      expect(entry.cover_focus).toBe("center");
+      expect(entry.format).toBeNull();
       expect(entry.published_at).not.toBeNull();
       expect(entry.created_at).not.toBeNull();
       expect(entry.updated_at).not.toBeNull();
@@ -85,7 +92,48 @@ describe.runIf(hasTestDatabase)("esquema de logbook_entries", () => {
       ).rejects.toThrow();
     });
 
-    it.each(["title", "body_md"])("exige %s", async (column) => {
+    it("rechaza un formato que no existe", async () => {
+      await expect(
+        insertEntry({ slug: `formato-${Date.now()}`, format: "poema" }),
+      ).rejects.toThrow();
+    });
+
+    it("acepta cada formato conocido", async () => {
+      for (const format of [
+        "thought",
+        "update",
+        "one-liner",
+        "project",
+        "how-to",
+      ]) {
+        const entry = await insertEntry({
+          slug: `f-${format}-${Date.now()}`,
+          format,
+        });
+        expect(entry.format).toBe(format);
+      }
+    });
+
+    it("rechaza un foco de portada fuera de arriba, centro y abajo", async () => {
+      await expect(
+        insertEntry({ slug: `foco-${Date.now()}`, cover_focus: "left" }),
+      ).rejects.toThrow();
+    });
+
+    it("rechaza un número repetido", async () => {
+      const entry = await insertEntry({ slug: `numero-a-${Date.now()}` });
+      await expect(
+        insertEntry({ slug: `numero-b-${Date.now()}`, number: entry.number }),
+      ).rejects.toThrow();
+    });
+
+    it.each([0, -1])("rechaza el número %i", async (number) => {
+      await expect(
+        insertEntry({ slug: `numero-${number}-${Date.now()}`, number }),
+      ).rejects.toThrow();
+    });
+
+    it.each(["title", "body_md", "number"])("exige %s", async (column) => {
       await expect(
         insertEntry({ slug: `sin-${column}-${Date.now()}`, [column]: null }),
       ).rejects.toThrow();
@@ -178,8 +226,8 @@ describe.runIf(hasTestDatabase)("esquema de logbook_entries", () => {
         asRole(
           "anon",
           (sql) => sql`
-            insert into logbook_entries (slug, title, body_md)
-            values (${`anon-${suffix}`}, 'Intento', 'x')
+            insert into logbook_entries (slug, title, body_md, number)
+            values (${`anon-${suffix}`}, 'Intento', 'x', 9999)
           `,
         ),
       ).rejects.toThrow();

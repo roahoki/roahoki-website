@@ -96,6 +96,9 @@ body_md          text not null             -- markdown crudo, nunca HTML
 cover_image_url  text                      -- preview al compartir
 tags             text[] not null default '{}'
 status           text not null default 'published'
+number           integer unique not null   -- #27: lo asigna createEntry, los borradores lo reservan
+format           text                      -- thought | update | one-liner | project | how-to
+cover_focus      text not null default 'center'  -- top | center | bottom: qué se ve en la tarjeta 2:1
 published_at     timestamptz not null default now()
 created_at       timestamptz not null default now()
 updated_at       timestamptz not null default now()
@@ -103,7 +106,9 @@ updated_at       timestamptz not null default now()
 
 `status` se crea aunque no haya UI de borradores: cuesta cero ahora y obliga a
 revisar todas las queries públicas si se agrega después. Las imágenes viven
-embebidas en el markdown; no hay tabla de adjuntos. El porqué de cada columna
+embebidas en el markdown; no hay tabla de adjuntos. `number`, `format` y `cover_focus` llegaron
+con el rediseño: las notas anteriores se numeraron por fecha de publicación
+(migración `0004`) y quedaron sin formato. El porqué de cada columna
 está en [`STACK.md` §7](STACK.md#7-diseño-de-datos).
 
 ## Bloque 5 — Distribución
