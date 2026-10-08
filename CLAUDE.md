@@ -106,9 +106,10 @@ excepción.
   el logbook) y `/logbook/[slug]`, `(site)` para las páginas anteriores
   (`/experience`, `/projects`, `/teaching`), y `admin` y `stats` para lo suyo.
   No hay `src/app/layout.tsx` porque cada raíz resuelve su tema por su cuenta:
-  `(brand)` va con la marca nueva y **solo en claro** (sin `next-themes`), el
-  panel sigue fijo en oscuro hasta su rediseño, y `(site)` sigue el tema del
-  visitante hasta que se rediseñe. `/logbook` redirige a `/`.
+  `(brand)` y el panel van con la marca nueva y **solo en claro** (sin
+  `next-themes`): el panel se ve igual que el sitio porque se escribe sobre el
+  mismo papel en que se lee. `(site)` sigue el tema del visitante hasta que se
+  rediseñe. `/logbook` redirige a `/`.
 - **El middleware (`src/proxy.ts`) solo atiende `/admin`.** Está ahí para
   inyectar el `x-pathname` que el layout protegido necesita para armar el
   `?next=`. Una ruta pública nueva no tiene que tocarlo.

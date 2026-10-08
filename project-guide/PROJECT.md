@@ -55,10 +55,11 @@ pasó de lista de exclusiones a `/admin/:path*`.
 JSX de cada componente. Las URLs viejas (`/es/...`, `/en/...`) se redirigen con
 301 desde `next.config.ts`.
 
-**Cuatro layouts raíz.** El sitio público vive en el route group `(site)`;
-`admin`, `logbook` y `stats` traen el suyo. Son cuatro `<html>` distintos a
-propósito: el panel va fijo en oscuro y las páginas públicas respetan el tema
-del visitante.
+**Cuatro layouts raíz.** `(brand)` sirve el home (que es el logbook) y las
+entradas con la marca nueva; `(site)`, las páginas anteriores; `admin` y `stats`
+traen el suyo. Son cuatro `<html>` distintos a propósito: `(brand)` y el panel
+van con la marca y solo en claro, mientras `(site)` y `stats` siguen el tema del
+visitante hasta rediseñarse.
 
 ## Entorno
 

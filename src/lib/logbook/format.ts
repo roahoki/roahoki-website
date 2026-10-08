@@ -36,3 +36,34 @@ const SHORT_FORMATTER = new Intl.DateTimeFormat("es-CL", {
 export function formatEntryDateShort(isoDate: string): string {
   return SHORT_FORMATTER.format(new Date(isoDate));
 }
+
+const RELATIVE_FORMATTER = new Intl.RelativeTimeFormat("es", {
+  numeric: "auto",
+  style: "short",
+});
+
+const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["minute", 60],
+  ["hour", 60 * 60],
+  ["day", 60 * 60 * 24],
+  ["week", 60 * 60 * 24 * 7],
+  ["month", 60 * 60 * 24 * 30],
+  ["year", 60 * 60 * 24 * 365],
+];
+
+/**
+ * Cuánto pasó desde una fecha, para el panel: "hace 2 h", "ayer", "hace 3 d".
+ * Sirve para ubicar un borrador ("¿este es el de anoche?"), no para fecharlo,
+ * así que redondea a la unidad más grande que cabe. `now` es parámetro para
+ * poder testearlo sin depender del reloj.
+ */
+export function formatTimeAgo(isoDate: string, now: Date = new Date()): string {
+  const seconds = (new Date(isoDate).getTime() - now.getTime()) / 1000;
+  if (Math.abs(seconds) < 60) return "recién";
+
+  let [unit, size] = UNITS[0];
+  for (const candidate of UNITS) {
+    if (Math.abs(seconds) >= candidate[1]) [unit, size] = candidate;
+  }
+  return RELATIVE_FORMATTER.format(Math.round(seconds / size), unit);
+}
