@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 function LoginForm() {
   const [password, setPassword] = useState("");
@@ -22,7 +23,7 @@ function LoginForm() {
     });
 
     if (!res.ok) {
-      setError("Contraseña incorrecta.");
+      setError("no es esa");
       setLoading(false);
       return;
     }
@@ -34,31 +35,45 @@ function LoginForm() {
     const next =
       raw.startsWith("/") && !raw.startsWith("//") && !raw.includes("@")
         ? raw
-        : "/admin/logbook/new";
+        : "/admin/logbook";
 
     router.push(next);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
+      <label htmlFor="password" className="sr-only">
+        contraseña
+      </label>
       <input
+        id="password"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="Contraseña"
+        placeholder="contraseña"
         // Pantalla de un solo campo cuyo único propósito es escribir la
         // contraseña: enfocarlo no desorienta ni le roba el foco a nada.
         // biome-ignore lint/a11y/noAutofocus: justificado arriba
         autoFocus
-        className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 transition-colors"
+        aria-invalid={error !== ""}
+        aria-describedby={error ? "password-error" : undefined}
+        className="w-full rounded-md border border-ink bg-paper px-3.5 py-3 text-body text-ink placeholder:text-faded focus:outline-2 focus:outline-offset-2 focus:outline-leaf"
       />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p
+          id="password-error"
+          role="alert"
+          className="text-entry-meta text-ink"
+        >
+          {error}
+        </p>
+      )}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-all disabled:opacity-60"
+        className="h-11 w-full rounded-md border border-ink text-action text-ink transition-colors hover:bg-ink hover:text-paper disabled:opacity-60"
       >
-        {loading ? "Entrando..." : "Entrar"}
+        {loading ? "entrando…" : "entrar"}
       </button>
     </form>
   );
@@ -66,14 +81,15 @@ function LoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 bg-background">
-      <div className="w-full max-w-sm">
-        <h1 className="text-base font-bold text-foreground mb-6 text-center">
-          Admin
-        </h1>
-        <Suspense>
-          <LoginForm />
-        </Suspense>
+    <main className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex w-full max-w-[360px] flex-col items-center gap-4">
+        <LogoMark size={72} />
+        <h1 className="text-card-title-sm text-ink">hola, roahoki</h1>
+        <div className="w-full pt-4">
+          <Suspense>
+            <LoginForm />
+          </Suspense>
+        </div>
       </div>
     </main>
   );

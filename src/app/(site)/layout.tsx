@@ -9,10 +9,10 @@ import "../globals.css";
 /**
  * Layout raíz del sitio público.
  *
- * Va en el route group `(site)` y no en `src/app/layout.tsx` porque `admin` y
- * `logbook` traen el suyo: un único layout raíz obligaría a los tres a
- * compartir `<html>`, y el panel lo necesita fijo en oscuro mientras las
- * páginas públicas respetan el tema del visitante.
+ * Va en el route group `(site)` y no en `src/app/layout.tsx` porque `(brand)`,
+ * `admin` y `stats` traen el suyo: un único layout raíz obligaría a todos a
+ * compartir `<html>`, y estas páginas anteriores siguen el tema del visitante
+ * mientras las rediseñadas van solo en claro.
  */
 
 const plusJakartaSans = Plus_Jakarta_Sans({

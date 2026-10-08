@@ -1,8 +1,14 @@
 import Link from "next/link";
+import { AdminTopbar } from "@/components/admin/admin-topbar";
+import type { LogbookEntry } from "@/db/schema";
+import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
+import { formatEntryDateShort, formatTimeAgo } from "@/lib/logbook/format";
 import { listAllEntries } from "@/lib/logbook/queries";
 
 /**
- * Listado de notas del panel, borradores incluidos.
+ * La lista de notas del panel, que es lo primero que se ve al entrar
+ * (brand book §7.4, admin): los borradores arriba —es lo que se retoma— y
+ * después las publicadas, de la más nueva a la más vieja.
  *
  * Es un Server Component y consulta directo con la query, sin pasar por
  * `/api/admin/logbook`: el layout de `(protected)` ya verificó la sesión, y una
@@ -13,106 +19,96 @@ import { listAllEntries } from "@/lib/logbook/queries";
  */
 export const dynamic = "force-dynamic";
 
-const STATUS_STYLES = {
-  published: "text-green-500 bg-green-500/10 border-green-500/20",
-  draft: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20",
-} as const;
-
-const STATUS_LABELS = {
-  published: "Publicada",
-  draft: "Borrador",
-} as const;
-
 export default async function AdminLogbookPage() {
   const entries = await listAllEntries();
+  const drafts = entries
+    .filter((entry) => entry.status === "draft")
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const published = entries
+    .filter((entry) => entry.status === "published")
+    .sort((a, b) => b.number - a.number);
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-6 gap-3">
-        <h1 className="text-sm font-bold text-foreground shrink-0">Logbook</h1>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/admin/stats"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-          >
-            Stats
-          </Link>
-          <Link
-            href="/admin/testimonials"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-          >
-            Testimonios
-          </Link>
-          <Link
-            href="/admin/logbook/new"
-            className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white whitespace-nowrap"
-          >
-            Nueva nota
-          </Link>
-        </div>
+    <div className="flex min-h-screen flex-col">
+      <AdminTopbar title="notas" />
+
+      <main className="mx-auto w-full max-w-[680px] flex-1 px-4 pt-6 pb-28 md:px-0 md:pt-12 md:pb-16">
+        {entries.length === 0 ? (
+          <p className="py-16 text-center text-body text-faded">
+            Todavía no hay notas. La primera empieza en "+ nueva nota".
+          </p>
+        ) : (
+          <div className="flex flex-col gap-8">
+            {drafts.length > 0 && (
+              <EntrySection title="borradores" entries={drafts} />
+            )}
+            {published.length > 0 && (
+              <EntrySection title="publicadas" entries={published} />
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* En el celular, la acción principal fija abajo: al alcance del pulgar
+          sin scrollear. En escritorio vive en la barra de arriba. */}
+      <div className="fixed inset-x-0 bottom-0 border-t border-rule bg-paper px-4 pt-3 pb-7 md:hidden">
+        <Link
+          href="/admin/logbook/new"
+          className="flex h-11 items-center justify-center rounded-md border border-ink text-action text-ink"
+        >
+          + nueva nota
+        </Link>
       </div>
-
-      {entries.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-12">
-          Todavía no hay notas.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {entries.map((entry) => (
-            <Link
-              key={entry.id}
-              href={`/admin/logbook/${entry.id}`}
-              className="block rounded-xl border border-border bg-card p-4 hover:border-brand/40 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-3 mb-1">
-                <h2 className="text-sm font-semibold text-foreground">
-                  {entry.title}
-                </h2>
-                <span
-                  className={`shrink-0 rounded-md border px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLES[entry.status]}`}
-                >
-                  {STATUS_LABELS[entry.status]}
-                </span>
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                /logbook/{entry.slug}
-              </p>
-
-              {entry.summary && (
-                <p className="mt-2 text-xs text-foreground/70 line-clamp-2">
-                  {entry.summary}
-                </p>
-              )}
-
-              <div className="mt-2 flex items-center gap-2 flex-wrap">
-                <time
-                  className="text-[11px] text-muted-foreground"
-                  dateTime={entry.publishedAt}
-                >
-                  {formatDate(entry.publishedAt)}
-                </time>
-                {entry.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </main>
+    </div>
   );
 }
 
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString("es-CL", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+function EntrySection({
+  title,
+  entries,
+}: {
+  title: string;
+  entries: LogbookEntry[];
+}) {
+  return (
+    <section aria-labelledby={`section-${title}`}>
+      <h2 id={`section-${title}`} className="text-entry-meta text-faded">
+        {title}
+      </h2>
+      <ul>
+        {entries.map((entry) => (
+          <li key={entry.id} className="border-b border-rule last:border-b-0">
+            <EntryRow entry={entry} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function EntryRow({ entry }: { entry: LogbookEntry }) {
+  const isDraft = entry.status === "draft";
+
+  return (
+    <Link
+      href={`/admin/logbook/${entry.id}`}
+      className="group flex flex-col gap-1 py-3.5 outline-offset-2 focus-visible:outline-2 focus-visible:outline-leaf"
+    >
+      <span className="flex flex-wrap gap-x-2.5 text-card-meta text-faded">
+        <span>#{entry.number}</span>
+        <span>
+          {isDraft ? "sin fecha" : formatEntryDateShort(entry.publishedAt)}
+        </span>
+        {entry.format && <span>{ENTRY_FORMAT_LABELS[entry.format]}</span>}
+      </span>
+      <span className="text-card-title-sm text-ink decoration-1 underline-offset-4 group-hover:underline">
+        {entry.title}
+      </span>
+      {isDraft && (
+        <span className="text-card-meta text-leaf">
+          sin publicar · editado {formatTimeAgo(entry.updatedAt)}
+        </span>
+      )}
+    </Link>
+  );
 }

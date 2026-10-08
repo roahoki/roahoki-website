@@ -19,9 +19,5 @@ export default async function ProtectedAdminLayout({
     redirect(`/admin/login?next=${encodeURIComponent(pathname)}`);
   }
 
-  return (
-    <div className="min-h-screen bg-background font-sans antialiased">
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatEntryDate, formatEntryDateShort } from "./format";
+import { formatEntryDate, formatEntryDateShort, formatTimeAgo } from "./format";
 
 describe("formatEntryDate", () => {
   it("formatea en español, con el mes en palabra", () => {
@@ -55,5 +55,22 @@ describe("formatEntryDateShort", () => {
   // Igual que la fecha larga: en UTC, para que servidor y cliente coincidan.
   it("no corre el día cerca de medianoche", () => {
     expect(formatEntryDateShort("2026-10-03T23:30:00.000Z")).toBe("3 oct 2026");
+  });
+});
+
+describe("formatTimeAgo", () => {
+  const now = new Date("2026-10-08T12:00:00.000Z");
+  const ago = (seconds: number) =>
+    new Date(now.getTime() - seconds * 1000).toISOString();
+
+  it.each([
+    [20, "recién"],
+    [5 * 60, "hace 5 min"],
+    [2 * 3600, "hace 2 h"],
+    [26 * 3600, "ayer"],
+    [3 * 86400, "hace 3 d"],
+    [15 * 86400, "hace 2 sem."],
+  ])("a %i segundos dice %s", (seconds, expected) => {
+    expect(formatTimeAgo(ago(seconds), now)).toBe(expected);
   });
 });
