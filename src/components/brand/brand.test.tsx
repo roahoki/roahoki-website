@@ -4,7 +4,7 @@ import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Logo } from "./logo";
 import { LogoMark, markStrokeForSize } from "./logo-mark";
-import { LOGO_VIEWBOX, MARK_PATHS, MARK_VIEWBOX } from "./paths";
+import { MARK_PATHS, MARK_VIEWBOX } from "./paths";
 
 describe("markStrokeForSize", () => {
   // Los bordes del brand book: 32 hasta 48 px, 22 hasta 160 px, 14 sobre eso.
@@ -69,18 +69,30 @@ describe("LogoMark", () => {
 });
 
 describe("Logo", () => {
-  it("se anuncia como roahoki", () => {
-    const svg = render(<Logo />).container.querySelector("svg");
-    expect(svg).toHaveAttribute("role", "img");
-    expect(svg).toHaveAttribute("aria-label", "roahoki");
+  // La palabra es texto, no un dibujo: en la fuente de la marca y legible.
+  it("escribe roahoki como texto, al lado de la figura", () => {
+    const { container } = render(<Logo />);
+
+    expect(container).toHaveTextContent("roahoki");
+    expect(container.querySelector("svg")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
   });
 
-  it("saca el ancho del alto pedido", () => {
-    const svg = render(<Logo height={30} />).container.querySelector("svg");
-    expect(svg).toHaveAttribute("height", "30");
-    expect(Number(svg?.getAttribute("width"))).toBeCloseTo(
-      (30 * LOGO_VIEWBOX.width) / LOGO_VIEWBOX.height,
-    );
+  it("la figura mide 1,3 veces el tamaño de la palabra", () => {
+    const { container } = render(<Logo size={20} />);
+    const wrapper = container.firstElementChild as HTMLElement;
+
+    expect(wrapper.style.fontSize).toBe("20px");
+    expect(container.querySelector("svg")).toHaveAttribute("height", "26");
+  });
+
+  it("va en Bricolage Bold, en minúscula", () => {
+    const { container } = render(<Logo />);
+
+    expect(container.firstElementChild).toHaveClass("font-brand", "font-bold");
+    expect(container).toHaveTextContent(/^roahoki$/);
   });
 });
 

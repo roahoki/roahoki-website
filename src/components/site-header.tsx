@@ -14,7 +14,7 @@ export function SiteHeader() {
       <div className="flex items-center justify-between gap-6 px-4 py-5 md:px-8 md:py-7">
         <div className="flex items-baseline gap-4">
           <Link href="/" className="text-ink">
-            <Logo height={22} className="block" />
+            <Logo size={20} />
           </Link>
           <p className="hidden text-lead text-faded md:block">
             compartir aprendizaje, based en santiago
