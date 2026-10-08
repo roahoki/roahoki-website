@@ -20,6 +20,13 @@ export const LINKEDIN_URL =
   "https://www.linkedin.com/in/joaquin-peralta-perez/";
 export const WHATSAPP_URL = "https://wa.link/ht8ioc";
 
+/**
+ * Instagram es el canal de conversación de roahoki (brand book §7.1): el
+ * "escríbeme" del header abre directo un mensaje, no el perfil.
+ */
+export const INSTAGRAM_URL = "https://www.instagram.com/roahoki/";
+export const INSTAGRAM_DM_URL = "https://ig.me/m/roahoki";
+
 /** El blurb del `llms.txt`. Una frase: es lo primero y a veces lo único. */
 export const SUMMARY =
   "Ingeniero de software chileno, actualmente en Buk. Trabaja el stack completo y enseña programación en la PUC hace más de cuatro años.";

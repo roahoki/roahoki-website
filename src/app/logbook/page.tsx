@@ -38,13 +38,7 @@ export default async function LogbookPage() {
   return (
     <main className="max-w-2xl mx-auto px-5 py-12 sm:py-16">
       <header className="mb-10">
-        <Link
-          href="/"
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          ← roahoki
-        </Link>
-        <h1 className="mt-4 text-2xl sm:text-3xl font-bold text-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           Logbook
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
