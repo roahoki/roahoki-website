@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { LogbookEntry } from "@/db/schema";
-import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
+import {
+  COVER_FOCUS_CLASS,
+  ENTRY_FORMAT_LABELS,
+} from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
 
 export type EntryCardData = Pick<
@@ -16,14 +19,6 @@ export type EntryCardData = Pick<
   | "tags"
   | "publishedAt"
 >;
-
-// Clases completas y no `object-${focus}`: Tailwind solo genera las clases que
-// encuentra escritas tal cual en el código.
-const FOCUS_CLASS = {
-  top: "object-top",
-  center: "object-center",
-  bottom: "object-bottom",
-} as const;
 
 /**
  * La tarjeta de una nota en el home (brand book §7.4).
@@ -49,7 +44,7 @@ export function EntryCard({ entry }: { entry: EntryCardData }) {
               alt=""
               fill
               sizes="(min-width: 1024px) 325px, (min-width: 640px) 50vw, 100vw"
-              className={`object-cover ${FOCUS_CLASS[entry.coverFocus]}`}
+              className={`object-cover ${COVER_FOCUS_CLASS[entry.coverFocus]}`}
             />
           ) : (
             <p
