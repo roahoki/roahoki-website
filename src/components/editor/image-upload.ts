@@ -2,8 +2,7 @@ import { Extension } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
 import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
-import { uploadImageSchema } from "@/lib/schemas/logbook";
-import { extensionOf } from "@/lib/storage";
+import { ALLOWED_IMAGE_EXTENSIONS, extensionOf } from "@/lib/storage";
 
 /**
  * Arrastrar, soltar y pegar imágenes en el cuerpo de la nota.
@@ -139,20 +138,30 @@ function hasFiles(event: DragEvent): boolean {
 }
 
 /**
+ * Formatos que se aceptan para **elegir**: los que se suben, más HEIC, el de
+ * las fotos del iPhone. Antes de subir toda foto se convierte
+ * (`prepare-image.ts`), y HEIC sale en JPEG. Si el navegador no sabe leerla,
+ * eso se avisa al procesarla.
+ */
+const PICKABLE_EXTENSIONS = new Set([
+  ...ALLOWED_IMAGE_EXTENSIONS,
+  "heic",
+  "heif",
+]);
+
+/**
  * Por qué no se puede subir un archivo, o `null` si se puede.
  *
  * Es una cortesía para no esperar una subida que va a fallar: la regla la
- * aplica el route handler con el mismo esquema.
+ * aplica el route handler. El peso no se mira acá: se mide después de achicar
+ * la foto, que es lo que se sube.
  */
 export function rejectReason(file: File): string | null {
   if (!file.type.startsWith("image/")) return `${file.name}: solo imágenes.`;
-  const parsed = uploadImageSchema.safeParse({
-    extension: extensionOf(file.name) ?? "",
-    size: file.size,
-  });
-  return parsed.success
-    ? null
-    : `${file.name}: ${parsed.error.issues[0]?.message ?? "no se pudo subir."}`;
+  if (!PICKABLE_EXTENSIONS.has(extensionOf(file.name) ?? "")) {
+    return `${file.name}: Formato no admitido. Se aceptan: ${ALLOWED_IMAGE_EXTENSIONS.join(", ")}, heic.`;
+  }
+  return null;
 }
 
 let nextId = 0;

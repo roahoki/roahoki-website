@@ -13,7 +13,7 @@ import {
   type EntryStatus,
 } from "./editor/entry-data-panel";
 import { countWords, editorExtensions } from "./editor/extensions";
-import { uploadImage } from "./editor/upload-image";
+import { uploadPreparedImage } from "./editor/prepare-image";
 
 /**
  * Editor de una nota, para crear y para editar (brand book §7.4, admin).
@@ -102,7 +102,7 @@ export function LogbookEditor({ entry }: Props) {
     extensions: editorExtensions({
       placeholder: "escribe acá…",
       upload: {
-        upload: uploadImage,
+        upload: uploadPreparedImage,
         onError: setErrorMsg,
         onPendingChange: setUploading,
       },
