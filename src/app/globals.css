@@ -261,6 +261,12 @@
   @apply mt-9 text-card-title-sm;
 }
 
+/* Un título al comienzo del cuerpo no suma su margen al espacio que ya separa
+   el cuerpo del encabezado de la nota. */
+.prose-entry > :first-child {
+  @apply mt-0;
+}
+
 .prose-entry a {
   @apply text-leaf underline-offset-4 hover:underline focus-visible:underline;
 }

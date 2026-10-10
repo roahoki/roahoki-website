@@ -87,7 +87,7 @@ export default async function LogbookEntryPage({ params }: Props) {
 
   return (
     <main className="px-4 pt-8 pb-12 md:px-8 md:pt-14 md:pb-16">
-      {/* Dos anchos (brand book §7.4): el texto a 68ch (680 px), y la portada,
+      {/* Dos anchos (brand book §7.4): el texto a 68ch (680 px), y
           las imágenes y la navegación a 896 px. */}
       <article className="mx-auto flex max-w-[896px] flex-col gap-8">
         <header className="mx-auto flex w-full max-w-[680px] flex-col gap-5">
@@ -113,17 +113,9 @@ export default async function LogbookEntryPage({ params }: Props) {
           )}
         </header>
 
-        {entry.coverImageUrl && (
-          // La foto entera, sin recorte: el recorte 2:1 es de la tarjeta. Es
-          // `<img>` y no `next/image` porque no se conocen sus dimensiones,
-          // igual que las imágenes del cuerpo en `src/lib/markdown.tsx`.
-          // biome-ignore lint/performance/noImgElement: dimensiones desconocidas
-          <img
-            src={entry.coverImageUrl}
-            alt=""
-            className="h-auto w-full rounded-md"
-          />
-        )}
+        {/* La portada no va acá: es de la tarjeta del home (y de la vista
+            previa al compartir). Si una foto importa para la nota, se pone en
+            el cuerpo. */}
 
         <div className="prose-entry mx-auto w-full max-w-[680px]">
           <MarkdownContent>{entry.bodyMd}</MarkdownContent>
