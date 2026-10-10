@@ -5,6 +5,7 @@ import { Placeholder } from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { safeUrl } from "@/lib/markdown";
+import { ImageUpload, type ImageUploadOptions } from "./image-upload";
 
 /**
  * Itálica que se conserva pero no se crea.
@@ -30,11 +31,17 @@ const ItalicWithoutShortcut = Italic.extend({
  * Atajos que traen las extensiones: Ctrl B negrita, Ctrl Alt 1/2/3 títulos,
  * Ctrl Alt 0 texto normal, y `## ` al empezar la línea. Los del editor
  * (guardar, publicar, link) los maneja el componente.
+ *
+ * Las imágenes se arrastran desde el escritorio o se pegan: ver
+ * `image-upload.ts`.
  */
 export function editorExtensions({
   placeholder = "",
+  upload = {},
 }: {
   placeholder?: string;
+  /** Cómo subir las imágenes que se arrastran o se pegan. */
+  upload?: Partial<ImageUploadOptions>;
 } = {}): Extensions {
   return [
     StarterKit.configure({
@@ -44,6 +51,9 @@ export function editorExtensions({
       italic: false,
       // Markdown no tiene subrayado: lo que se subrayara se perdería al guardar.
       underline: false,
+      // La línea al mover algo dentro del editor. Al arrastrar un archivo la
+      // reemplaza la de `ImageUpload`, que cae entre bloques (ver CSS).
+      dropcursor: { class: "drop-cursor", color: false, width: 3 },
       link: {
         openOnClick: false,
         autolink: true,
@@ -55,6 +65,7 @@ export function editorExtensions({
     }),
     ItalicWithoutShortcut,
     Image,
+    ImageUpload.configure(upload),
     Markdown,
     Placeholder.configure({ placeholder }),
   ];

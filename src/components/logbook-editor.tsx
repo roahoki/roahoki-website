@@ -9,6 +9,7 @@ import { formatTagsInput, parseTagsInput } from "@/lib/logbook/editor";
 import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
 import { countWords, editorExtensions } from "./editor/extensions";
+import { uploadImage } from "./editor/upload-image";
 
 /**
  * Editor de una nota, para crear y para editar (brand book §7.4, admin).
@@ -17,6 +18,9 @@ import { countWords, editorExtensions } from "./editor/extensions";
  * cuerpo a 68ch con los estilos de la entrada— y no como un formulario. El
  * cuerpo es un editor visual (Tiptap) que guarda markdown, así que la base y
  * la página pública no cambian.
+ *
+ * Las imágenes se arrastran desde el escritorio, se pegan o se eligen con
+ * "foto"; suben mientras se sigue escribiendo (`editor/image-upload.ts`).
  *
  * Mobile-first: en el celular la barra de acciones queda fija abajo; en
  * escritorio va arriba, con el contador de palabras.
@@ -28,7 +32,7 @@ type Props = {
 };
 
 type Status = "draft" | "published";
-type SaveState = "idle" | "dirty" | "saving" | "saved" | "uploading" | "error";
+type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 const SHORTCUTS = [
   ["negrita", "Ctrl B"],
@@ -64,12 +68,22 @@ export function LogbookEditor({ entry }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const [showData, setShowData] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  // Imágenes que todavía están subiendo. Mientras haya, no se publica: la
+  // nota saldría sin ellas.
+  const [uploading, setUploading] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   const editor = useEditor({
-    extensions: editorExtensions({ placeholder: "escribe acá…" }),
+    extensions: editorExtensions({
+      placeholder: "escribe acá…",
+      upload: {
+        upload: uploadImage,
+        onError: setErrorMsg,
+        onPendingChange: setUploading,
+      },
+    }),
     content: entry?.bodyMd ?? "",
     contentType: "markdown",
     // Next renderiza en el servidor; el editor necesita el DOM.
@@ -110,7 +124,13 @@ export function LogbookEditor({ entry }: Props) {
    * publicar con el botón; Ctrl S guarda y deja seguir escribiendo.
    */
   async function save(nextStatus: Status, { leave }: { leave: boolean }) {
-    if (!editor || saveState === "saving" || saveState === "uploading") return;
+    if (!editor || saveState === "saving") return;
+    // Guardar sin salir sí se puede: el aviso de "subiendo" no es parte del
+    // cuerpo y la imagen entra cuando termina.
+    if (leave && uploading > 0) {
+      setErrorMsg("Espera a que terminen de subir las imágenes.");
+      return;
+    }
     setSaveState("saving");
     setErrorMsg("");
 
@@ -182,38 +202,15 @@ export function LogbookEditor({ entry }: Props) {
     router.refresh();
   }
 
-  async function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
     // Se limpia para que elegir el mismo archivo dos veces vuelva a disparar
     // el evento.
     e.target.value = "";
-    if (!file || !editor) return;
+    if (files.length === 0 || !editor) return;
 
-    setSaveState("uploading");
     setErrorMsg("");
-
-    const form = new FormData();
-    form.append("file", file);
-
-    try {
-      const res = await fetch("/api/admin/logbook/images", {
-        method: "POST",
-        body: form,
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrorMsg(data.error ?? "No se pudo subir la imagen.");
-        setSaveState("error");
-        return;
-      }
-
-      editor.chain().focus().setImage({ src: data.url, alt: "" }).run();
-      setSaveState("dirty");
-    } catch {
-      setErrorMsg("No se pudo subir la imagen.");
-      setSaveState("error");
-    }
+    editor.chain().focus().uploadImages(files).run();
   }
 
   function promptLink() {
@@ -263,9 +260,12 @@ export function LogbookEditor({ entry }: Props) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const busy = saveState === "saving" || saveState === "uploading";
+  const busy = saveState === "saving" || uploading > 0;
   const primaryLabel = status === "published" ? "guardar" : "publicar";
-  const statusText = describeState(saveState, status, saved !== undefined);
+  const statusText =
+    uploading > 0
+      ? `subiendo ${uploading === 1 ? "imagen" : `${uploading} imágenes`}…`
+      : describeState(saveState, status, saved !== undefined);
 
   const primaryButton = (
     <button
@@ -304,7 +304,6 @@ export function LogbookEditor({ entry }: Props) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={busy}
               className={secondaryClass}
             >
               foto
@@ -327,6 +326,8 @@ export function LogbookEditor({ entry }: Props) {
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
+        aria-label="foto"
         onChange={handleImagePick}
         className="hidden"
       />
@@ -385,7 +386,6 @@ export function LogbookEditor({ entry }: Props) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={busy}
           className={secondaryClass}
         >
           foto
@@ -418,8 +418,6 @@ function describeState(
   switch (state) {
     case "saving":
       return "guardando…";
-    case "uploading":
-      return "subiendo imagen…";
     case "dirty":
       return `${noun} · sin guardar`;
     case "saved":

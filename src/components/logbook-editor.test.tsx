@@ -10,6 +10,16 @@ import { LogbookEditor } from "./logbook-editor";
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 
+// La subida real va por XHR y tiene su propio test; acá importa qué hace el
+// editor mientras espera.
+const uploads = vi.hoisted(() => ({
+  resolve: [] as ((url: string) => void)[],
+}));
+vi.mock("./editor/upload-image", () => ({
+  uploadImage: () =>
+    new Promise<string>((resolve) => uploads.resolve.push(resolve)),
+}));
+
 function entryFixture(overrides: Partial<LogbookEntry> = {}): LogbookEntry {
   return {
     id: "3f4a9d2e-1b6c-4c0a-9f5e-7d8a2b1c3e4f",
@@ -184,5 +194,58 @@ describe("LogbookEditor — editando", () => {
 
     fireEvent.keyDown(window, { key: "Escape" });
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});
+
+describe("LogbookEditor — fotos", () => {
+  it("foto sube varias imágenes y no deja publicar hasta que terminan", async () => {
+    uploads.resolve = [];
+    respondWith(entryFixture({ status: "draft" }));
+    render(<LogbookEditor entry={entryFixture({ status: "draft" })} />);
+    await editorReady();
+
+    fireEvent.change(screen.getByLabelText("foto"), {
+      target: {
+        files: [
+          new File(["a"], "1.jpg", { type: "image/jpeg" }),
+          new File(["b"], "2.jpg", { type: "image/jpeg" }),
+        ],
+      },
+    });
+
+    expect(await screen.findByText("subiendo 2 imágenes…")).toBeInTheDocument();
+    for (const button of screen.getAllByRole("button", { name: "publicar" })) {
+      expect(button).toBeDisabled();
+    }
+
+    uploads.resolve[0]("https://cdn.test/1.jpg");
+    await waitFor(() => expect(uploads.resolve).toHaveLength(2));
+    uploads.resolve[1]("https://cdn.test/2.jpg");
+
+    await waitFor(() =>
+      expect(screen.getByText("borrador · sin guardar")).toBeInTheDocument(),
+    );
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(lastRequest().body.bodyMd).toContain(
+      "![](https://cdn.test/1.jpg)\n\n![](https://cdn.test/2.jpg)",
+    );
+  });
+
+  it("un archivo que no es imagen se explica y no se sube", async () => {
+    uploads.resolve = [];
+    render(<LogbookEditor />);
+    await editorReady();
+
+    fireEvent.change(screen.getByLabelText("foto"), {
+      target: {
+        files: [new File(["%PDF"], "cv.pdf", { type: "application/pdf" })],
+      },
+    });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "cv.pdf: solo imágenes.",
+    );
+    expect(uploads.resolve).toHaveLength(0);
   });
 });
