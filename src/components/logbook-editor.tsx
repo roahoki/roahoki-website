@@ -3,11 +3,15 @@
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LogbookEntry } from "@/db/schema";
-import { formatTagsInput, parseTagsInput } from "@/lib/logbook/editor";
 import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
-import { formatEntryDateShort } from "@/lib/logbook/format";
+import { formatEntryDateShort, formatTimeAgo } from "@/lib/logbook/format";
+import {
+  type EntryData,
+  EntryDataPanel,
+  type EntryStatus,
+} from "./editor/entry-data-panel";
 import { countWords, editorExtensions } from "./editor/extensions";
 import { uploadImage } from "./editor/upload-image";
 
@@ -22,6 +26,10 @@ import { uploadImage } from "./editor/upload-image";
  * Las imágenes se arrastran desde el escritorio, se pegan o se eligen con
  * "foto"; suben mientras se sigue escribiendo (`editor/image-upload.ts`).
  *
+ * Los borradores se guardan solos unos segundos después de dejar de escribir.
+ * Una nota publicada no: cada guardado cambia lo que ya se ve en el sitio, así
+ * que eso se hace a propósito, con "guardar".
+ *
  * Mobile-first: en el celular la barra de acciones queda fija abajo; en
  * escritorio va arriba, con el contador de palabras.
  */
@@ -31,8 +39,24 @@ type Props = {
   entry?: LogbookEntry;
 };
 
-type Status = "draft" | "published";
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+
+/** Cuánto se espera sin cambios antes de guardar un borrador solo. */
+export const AUTOSAVE_DELAY_MS = 2500;
+
+function initialData(entry?: LogbookEntry): EntryData {
+  return {
+    format: entry?.format ?? null,
+    publishedAt: entry?.publishedAt ?? null,
+    tags: entry?.tags ?? [],
+    coverImageUrl: entry?.coverImageUrl ?? "",
+    coverFocus: entry?.coverFocus ?? "center",
+    summary: entry?.summary ?? "",
+    slug: entry?.slug ?? "",
+    // Una nota nueva nace borrador: se publica a propósito, con "publicar".
+    status: entry?.status ?? "draft",
+  };
+}
 
 const SHORTCUTS = [
   ["negrita", "Ctrl B"],
@@ -53,18 +77,17 @@ export function LogbookEditor({ entry }: Props) {
   const [saved, setSaved] = useState(entry);
 
   const [title, setTitle] = useState(entry?.title ?? "");
-  const [slug, setSlug] = useState(entry?.slug ?? "");
-  const [summary, setSummary] = useState(entry?.summary ?? "");
-  const [coverImageUrl, setCoverImageUrl] = useState(
-    entry?.coverImageUrl ?? "",
-  );
-  const [tagsInput, setTagsInput] = useState(
-    formatTagsInput(entry?.tags ?? []),
-  );
-  // Una nota nueva nace borrador: se publica a propósito, con "publicar".
-  const [status, setStatus] = useState<Status>(entry?.status ?? "draft");
+  const [data, setData] = useState(() => initialData(entry));
+  const status = data.status;
 
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  // Cada cambio suma uno. Sirve para saber si algo cambió mientras se
+  // guardaba: en ese caso lo guardado ya no es lo último y sigue "sin guardar".
+  const [revision, setRevision] = useState(0);
+  const revisionRef = useRef(0);
+  const savingRef = useRef(false);
+  const now = useNow(15_000);
   const [errorMsg, setErrorMsg] = useState("");
   const [showData, setShowData] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -94,7 +117,7 @@ export function LogbookEditor({ entry }: Props) {
         "aria-label": "cuerpo de la nota",
       },
     },
-    onUpdate: () => setSaveState("dirty"),
+    onUpdate: () => markChanged(),
   });
 
   const words =
@@ -103,11 +126,15 @@ export function LogbookEditor({ entry }: Props) {
       selector: ({ editor: current }) => countWords(current?.getText() ?? ""),
     }) ?? 0;
 
-  function markDirty<T>(setter: (value: T) => void) {
-    return (value: T) => {
-      setter(value);
-      setSaveState("dirty");
-    };
+  function markChanged() {
+    revisionRef.current += 1;
+    setRevision(revisionRef.current);
+    setSaveState("dirty");
+  }
+
+  function updateData(changes: Partial<EntryData>) {
+    setData((current) => ({ ...current, ...changes }));
+    markChanged();
   }
 
   // El título crece con el texto en vez de mostrar una barra de scroll.
@@ -123,65 +150,107 @@ export function LogbookEditor({ entry }: Props) {
    * Guarda con el estado pedido. `leave` vuelve a la lista: es lo que pasa al
    * publicar con el botón; Ctrl S guarda y deja seguir escribiendo.
    */
-  async function save(nextStatus: Status, { leave }: { leave: boolean }) {
-    if (!editor || saveState === "saving") return;
+  async function save(nextStatus: EntryStatus, { leave }: { leave: boolean }) {
+    // Con un ref y no con `saveState`: el guardado automático y Ctrl S pueden
+    // llegar en el mismo instante, antes de que el estado se actualice.
+    if (!editor || savingRef.current) return;
     // Guardar sin salir sí se puede: el aviso de "subiendo" no es parte del
     // cuerpo y la imagen entra cuando termina.
     if (leave && uploading > 0) {
       setErrorMsg("Espera a que terminen de subir las imágenes.");
       return;
     }
+    savingRef.current = true;
     setSaveState("saving");
     setErrorMsg("");
+    const startedAt = revisionRef.current;
 
     const payload = {
       title,
-      summary: summary || null,
+      summary: data.summary || null,
       bodyMd: editor.getMarkdown(),
-      coverImageUrl: coverImageUrl || null,
-      tags: parseTagsInput(tagsInput),
+      coverImageUrl: data.coverImageUrl || null,
+      coverFocus: data.coverFocus,
+      format: data.format,
+      tags: data.tags,
       status: nextStatus,
       // Al crear, un slug vacío hace que el servidor lo derive del título.
-      ...(slug ? { slug } : {}),
+      ...(data.slug ? { slug: data.slug } : {}),
+      // La fecha solo viaja si se cambió en el panel. Sin cambios, la deja
+      // como está (o la pone la base, al crear).
+      ...(data.publishedAt && data.publishedAt !== saved?.publishedAt
+        ? { publishedAt: data.publishedAt }
+        : {}),
     };
 
-    const res = await fetch(
-      saved ? `/api/admin/logbook/${saved.id}` : "/api/admin/logbook",
-      {
-        method: saved ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
+    let res: Response;
+    let body: { entry?: LogbookEntry; error?: string };
+    try {
+      res = await fetch(
+        saved ? `/api/admin/logbook/${saved.id}` : "/api/admin/logbook",
+        {
+          method: saved ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      body = await res.json();
+    } catch {
+      setErrorMsg("No se pudo guardar; revisa la conexión.");
+      setSaveState("error");
+      return;
+    } finally {
+      savingRef.current = false;
+    }
 
     if (res.status === 401) {
       router.push("/admin/login");
       return;
     }
-
-    const data = await res.json();
-    if (!res.ok) {
-      setErrorMsg(data.error ?? "No se pudo guardar.");
+    if (!res.ok || !body.entry) {
+      setErrorMsg(body.error ?? "No se pudo guardar.");
       setSaveState("error");
       return;
     }
 
-    setStatus(nextStatus);
     if (leave) {
       router.push("/admin/logbook");
       router.refresh();
       return;
     }
 
-    const stored: LogbookEntry = data.entry;
+    const stored = body.entry;
     if (!saved) {
       // La URL pasa a ser la de la nota sin recargar la página: recargarla
       // movería el cursor y el scroll de quien está escribiendo.
       window.history.replaceState(null, "", `/admin/logbook/${stored.id}`);
     }
     setSaved(stored);
-    setSlug(stored.slug);
-    setSaveState("saved");
+    setSavedAt(new Date().toISOString());
+
+    const changedMeanwhile = revisionRef.current !== startedAt;
+    // Lo que decide el servidor (la dirección derivada, la fecha) se toma de
+    // vuelta, salvo que se haya seguido editando: pisaría lo nuevo.
+    setData((current) =>
+      changedMeanwhile
+        ? { ...current, status: nextStatus }
+        : {
+            ...current,
+            status: nextStatus,
+            slug: stored.slug,
+            publishedAt: stored.publishedAt,
+          },
+    );
+    setSaveState(changedMeanwhile ? "dirty" : "saved");
+  }
+
+  /** El guardado automático: solo borradores, y solo si hay algo que guardar. */
+  function autosave() {
+    if (!editor || data.status !== "draft") return;
+    // El título y el cuerpo son obligatorios: sin ellos la API lo rechaza, y
+    // un error a los dos segundos de abrir una nota nueva no ayuda.
+    if (title.trim() === "" || editor.isEmpty) return;
+    save("draft", { leave: false });
   }
 
   async function remove() {
@@ -226,12 +295,27 @@ export function LogbookEditor({ entry }: Props) {
 
   // Los atajos del editor que no son de formato. Se lee la versión más nueva
   // de cada función por ref, para registrar el listener una sola vez.
-  const actions = useRef({ save, promptLink, status });
-  actions.current = { save, promptLink, status };
+  const actions = useRef({ save, promptLink, status, autosave });
+  actions.current = { save, promptLink, status, autosave };
+
+  // Cada cambio reinicia la cuenta: se guarda cuando se deja de escribir, no
+  // a cada letra.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `revision` reinicia la cuenta a propósito
+  useEffect(() => {
+    if (saveState !== "dirty" || status !== "draft") return;
+    const timer = setTimeout(
+      () => actions.current.autosave(),
+      AUTOSAVE_DELAY_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [revision, saveState, status]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setShowShortcuts(false);
+      if (e.key === "Escape") {
+        setShowShortcuts(false);
+        setShowData(false);
+      }
       if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
 
       const {
@@ -265,7 +349,7 @@ export function LogbookEditor({ entry }: Props) {
   const statusText =
     uploading > 0
       ? `subiendo ${uploading === 1 ? "imagen" : `${uploading} imágenes`}…`
-      : describeState(saveState, status, saved !== undefined);
+      : describeState(saveState, status, saved !== undefined, savedAt, now);
 
   const primaryButton = (
     <button
@@ -336,11 +420,11 @@ export function LogbookEditor({ entry }: Props) {
         <p className="flex flex-wrap gap-x-3 text-entry-meta text-faded">
           <span>{saved ? `#${saved.number}` : "nueva"}</span>
           <span>
-            {saved && status === "published"
-              ? formatEntryDateShort(saved.publishedAt)
+            {data.publishedAt && status === "published"
+              ? formatEntryDateShort(data.publishedAt)
               : "sin publicar"}
           </span>
-          {saved?.format && <span>{ENTRY_FORMAT_LABELS[saved.format]}</span>}
+          {data.format && <span>{ENTRY_FORMAT_LABELS[data.format]}</span>}
         </p>
 
         <label htmlFor="entry-title" className="sr-only">
@@ -351,30 +435,17 @@ export function LogbookEditor({ entry }: Props) {
           ref={titleRef}
           rows={1}
           value={title}
-          onChange={(e) => markDirty(setTitle)(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            markChanged();
+          }}
           placeholder="título"
           className="w-full resize-none overflow-hidden bg-transparent text-entry-title text-ink placeholder:text-rule focus:outline-none"
         />
 
         <EditorContent editor={editor} />
 
-        {showData && (
-          <EntryData
-            slug={slug}
-            onSlug={markDirty(setSlug)}
-            summary={summary}
-            onSummary={markDirty(setSummary)}
-            tagsInput={tagsInput}
-            onTags={markDirty(setTagsInput)}
-            coverImageUrl={coverImageUrl}
-            onCover={markDirty(setCoverImageUrl)}
-            status={status}
-            onStatus={markDirty(setStatus)}
-            onDelete={saved ? remove : undefined}
-          />
-        )}
-
-        {errorMsg && (
+        {errorMsg && !showData && (
           <p className="text-entry-meta text-ink" role="alert">
             {errorMsg}
           </p>
@@ -402,6 +473,18 @@ export function LogbookEditor({ entry }: Props) {
         <div className="flex-1 [&>button]:w-full">{primaryButton}</div>
       </div>
 
+      {showData && (
+        <EntryDataPanel
+          data={data}
+          onChange={updateData}
+          number={saved?.number ?? null}
+          onClose={() => setShowData(false)}
+          onDelete={saved ? remove : undefined}
+          error={errorMsg}
+          onError={setErrorMsg}
+        />
+      )}
+
       {showShortcuts && (
         <ShortcutList onClose={() => setShowShortcuts(false)} />
       )}
@@ -411,8 +494,10 @@ export function LogbookEditor({ entry }: Props) {
 
 function describeState(
   state: SaveState,
-  status: Status,
+  status: EntryStatus,
   exists: boolean,
+  savedAt: string | null,
+  now: Date,
 ): string {
   const noun = status === "published" ? "publicada" : "borrador";
   switch (state) {
@@ -421,126 +506,14 @@ function describeState(
     case "dirty":
       return `${noun} · sin guardar`;
     case "saved":
-      return `${noun} · guardado`;
+      return savedAt
+        ? `${noun} · guardado ${formatTimeAgo(savedAt, now)}`
+        : `${noun} · guardado`;
     case "error":
       return `${noun} · no se guardó`;
     default:
       return exists ? noun : "nota nueva";
   }
-}
-
-const fieldClass =
-  "w-full rounded-md border border-ink bg-paper px-3 py-2.5 text-body text-ink placeholder:text-faded focus:outline-2 focus:outline-offset-2 focus:outline-leaf";
-
-/**
- * Los datos de la nota: dirección, resumen, tags, portada y estado.
- *
- * TODO: pasan al panel lateral del diseño (PR 10 del rediseño), con formato,
- * fecha y foco de la portada.
- */
-function EntryData(props: {
-  slug: string;
-  onSlug: (value: string) => void;
-  summary: string;
-  onSummary: (value: string) => void;
-  tagsInput: string;
-  onTags: (value: string) => void;
-  coverImageUrl: string;
-  onCover: (value: string) => void;
-  status: Status;
-  onStatus: (value: Status) => void;
-  onDelete?: () => void;
-}) {
-  return (
-    <section
-      id="datos"
-      aria-label="datos de la nota"
-      className="flex flex-col gap-5 border-t border-rule pt-6"
-    >
-      <Field label="dirección" hint="Si la dejas vacía se deriva del título.">
-        {(id) => (
-          <input
-            id={id}
-            value={props.slug}
-            onChange={(e) => props.onSlug(e.target.value)}
-            placeholder="se-deriva-del-titulo"
-            className={fieldClass}
-          />
-        )}
-      </Field>
-      <Field
-        label="resumen"
-        hint="Opcional. Sale en la tarjeta y al compartir."
-      >
-        {(id) => (
-          <textarea
-            id={id}
-            value={props.summary}
-            onChange={(e) => props.onSummary(e.target.value)}
-            rows={2}
-            className={fieldClass}
-          />
-        )}
-      </Field>
-      <Field label="tags" hint="Separados por coma.">
-        {(id) => (
-          <input
-            id={id}
-            value={props.tagsInput}
-            onChange={(e) => props.onTags(e.target.value)}
-            placeholder="la prenda, costura"
-            className={fieldClass}
-          />
-        )}
-      </Field>
-      <Field
-        label="portada"
-        hint="URL de la foto. Sin foto, la portada es tipográfica."
-      >
-        {(id) => (
-          <input
-            id={id}
-            type="url"
-            value={props.coverImageUrl}
-            onChange={(e) => props.onCover(e.target.value)}
-            placeholder="https://…"
-            className={fieldClass}
-          />
-        )}
-      </Field>
-      {/* Botones y no `Field`: un `<label>` que envuelve botones hace que
-          tocar la etiqueta active uno de ellos. */}
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-entry-meta text-ink">estado</legend>
-        <div className="flex gap-2">
-          {(["draft", "published"] as const).map((value) => (
-            <button
-              type="button"
-              key={value}
-              onClick={() => props.onStatus(value)}
-              aria-pressed={props.status === value}
-              className={`rounded-full px-3 py-1.5 text-entry-meta transition-colors ${
-                props.status === value
-                  ? "bg-bottle text-paper"
-                  : "border border-rule text-ink hover:border-ink"
-              }`}
-            >
-              {value === "published" ? "publicada" : "borrador"}
-            </button>
-          ))}
-        </div>
-      </fieldset>
-      {props.onDelete && (
-        <button
-          type="button"
-          onClick={props.onDelete}
-          className="self-start text-action text-faded hover:text-ink"
-        >
-          eliminar nota
-        </button>
-      )}
-    </section>
-  );
 }
 
 function ShortcutList({ onClose }: { onClose: () => void }) {
@@ -587,30 +560,14 @@ function ShortcutList({ onClose }: { onClose: () => void }) {
 }
 
 /**
- * Etiqueta, control y ayuda.
- *
- * `children` es una función que recibe el `id` en vez de un nodo suelto: así el
- * `htmlFor` del label y el `id` del control quedan atados sin poder
- * desincronizarse, y el linter puede comprobar que la etiqueta apunta a algo.
+ * La hora actual, renovada cada `intervalMs`. Para que "guardado hace 2 min"
+ * avance solo, sin esperar a otro cambio.
  */
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: (id: string) => React.ReactNode;
-}) {
-  const id = useId();
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-entry-meta text-ink">
-        {label}
-      </label>
-      {children(id)}
-      {hint && <span className="text-card-meta text-faded">{hint}</span>}
-    </div>
-  );
+function useNow(intervalMs: number): Date {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), intervalMs);
+    return () => clearInterval(timer);
+  }, [intervalMs]);
+  return now;
 }
