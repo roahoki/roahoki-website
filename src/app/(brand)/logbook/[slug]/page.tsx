@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AdminFab } from "@/components/admin/admin-fab";
 import { CopyLinkButton } from "@/components/entry/copy-link-button";
 import { EntryNeighbors } from "@/components/entry/entry-neighbors";
 import { InstagramDmLink } from "@/components/instagram-dm-link";
@@ -142,6 +143,7 @@ export default async function LogbookEntryPage({ params }: Props) {
       <div className="mx-auto mt-12 max-w-[896px]">
         <EntryNeighbors {...neighbors} />
       </div>
+      <AdminFab entry={{ id: entry.id, title: entry.title }} />
     </main>
   );
 }

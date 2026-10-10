@@ -141,3 +141,11 @@ export function sessionCookieOptions() {
     path: "/",
   };
 }
+
+/**
+ * Las opciones de `SESSION_HINT_COOKIE` (`./session-hint.ts`): las mismas que
+ * la sesión, para que venzan juntas, pero legible desde el navegador.
+ */
+export function sessionHintCookieOptions() {
+  return { ...sessionCookieOptions(), httpOnly: false };
+}
