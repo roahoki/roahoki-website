@@ -19,7 +19,7 @@ import {
 } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
 import { rejectReason } from "./image-upload";
-import { uploadImage } from "./upload-image";
+import { uploadPreparedImage } from "./prepare-image";
 
 /**
  * El panel "datos de la nota" (brand book §7.4, admin).
@@ -370,7 +370,7 @@ function Cover({
 
     setProgress(`subiendo ${file.name} · 0 %`);
     try {
-      const uploaded = await uploadImage(file, (percent) =>
+      const uploaded = await uploadPreparedImage(file, (percent) =>
         setProgress(`subiendo ${file.name} · ${Math.round(percent)} %`),
       );
       lastUrl.current = uploaded;
