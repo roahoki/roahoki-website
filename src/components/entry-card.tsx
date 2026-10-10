@@ -1,10 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { LogbookEntry } from "@/db/schema";
-import {
-  COVER_FOCUS_CLASS,
-  ENTRY_FORMAT_LABELS,
-} from "@/lib/logbook/entry-format";
+import { coverCropStyle } from "@/lib/logbook/cover-crop";
+import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
 
 export type EntryCardData = Pick<
@@ -14,7 +12,9 @@ export type EntryCardData = Pick<
   | "title"
   | "summary"
   | "coverImageUrl"
-  | "coverFocus"
+  | "coverCropX"
+  | "coverCropY"
+  | "coverZoom"
   | "format"
   | "tags"
   | "publishedAt"
@@ -44,7 +44,12 @@ export function EntryCard({ entry }: { entry: EntryCardData }) {
               alt=""
               fill
               sizes="(min-width: 1024px) 325px, (min-width: 640px) 50vw, 100vw"
-              className={`object-cover ${COVER_FOCUS_CLASS[entry.coverFocus]}`}
+              className="object-cover"
+              style={coverCropStyle({
+                x: entry.coverCropX,
+                y: entry.coverCropY,
+                zoom: entry.coverZoom,
+              })}
             />
           ) : (
             <p

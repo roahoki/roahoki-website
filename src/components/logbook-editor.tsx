@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { LogbookEntry } from "@/db/schema";
+import { DEFAULT_COVER_CROP } from "@/lib/logbook/cover-crop";
 import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort, formatTimeAgo } from "@/lib/logbook/format";
 import {
@@ -50,7 +51,9 @@ function initialData(entry?: LogbookEntry): EntryData {
     publishedAt: entry?.publishedAt ?? null,
     tags: entry?.tags ?? [],
     coverImageUrl: entry?.coverImageUrl ?? "",
-    coverFocus: entry?.coverFocus ?? "center",
+    coverCrop: entry
+      ? { x: entry.coverCropX, y: entry.coverCropY, zoom: entry.coverZoom }
+      : DEFAULT_COVER_CROP,
     summary: entry?.summary ?? "",
     slug: entry?.slug ?? "",
     // Una nota nueva nace borrador: se publica a propósito, con "publicar".
@@ -170,7 +173,9 @@ export function LogbookEditor({ entry }: Props) {
       summary: data.summary || null,
       bodyMd: editor.getMarkdown(),
       coverImageUrl: data.coverImageUrl || null,
-      coverFocus: data.coverFocus,
+      coverCropX: data.coverCrop.x,
+      coverCropY: data.coverCrop.y,
+      coverZoom: data.coverCrop.zoom,
       format: data.format,
       tags: data.tags,
       status: nextStatus,
@@ -476,6 +481,7 @@ export function LogbookEditor({ entry }: Props) {
       {showData && (
         <EntryDataPanel
           data={data}
+          title={title}
           onChange={updateData}
           number={saved?.number ?? null}
           onClose={() => setShowData(false)}

@@ -3,6 +3,11 @@
 import { ImageUp } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import {
+  type CoverCrop,
+  coverCropStyle,
+  DEFAULT_COVER_CROP,
+} from "@/lib/logbook/cover-crop";
+import {
   isSameDay,
   parseTagsInput,
   parseTimestamp,
@@ -10,15 +15,12 @@ import {
   withDate,
 } from "@/lib/logbook/editor";
 import {
-  COVER_FOCUS_CLASS,
-  COVER_FOCUS_LABELS,
-  COVER_FOCUSES,
-  type CoverFocus,
   ENTRY_FORMAT_LABELS,
   ENTRY_FORMATS,
   type EntryFormat,
 } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
+import { CoverCropper } from "./cover-cropper";
 import { rejectReason } from "./image-upload";
 import { uploadImage } from "./upload-image";
 
@@ -39,7 +41,7 @@ export type EntryData = {
   tags: string[];
   /** Vacía si la portada es tipográfica. */
   coverImageUrl: string;
-  coverFocus: CoverFocus;
+  coverCrop: CoverCrop;
   summary: string;
   slug: string;
   status: EntryStatus;
@@ -47,6 +49,8 @@ export type EntryData = {
 
 type Props = {
   data: EntryData;
+  /** El título de la nota, para la tarjeta de muestra al ajustar la portada. */
+  title: string;
   onChange: (changes: Partial<EntryData>) => void;
   /** El número de la nota; `null` hasta el primer guardado. */
   number: number | null;
@@ -72,6 +76,7 @@ const fieldClass =
 
 export function EntryDataPanel({
   data,
+  title,
   onChange,
   number,
   onClose,
@@ -161,7 +166,18 @@ export function EntryDataPanel({
 
         <Cover
           url={data.coverImageUrl}
-          focus={data.coverFocus}
+          crop={data.coverCrop}
+          preview={{
+            // Una nota nueva no tiene número ni fecha hasta guardarse: la
+            // tarjeta de muestra usa los de una nota de hoy.
+            number: number ?? 0,
+            slug: data.slug,
+            title: title || "sin título",
+            summary: data.summary || null,
+            format: data.format,
+            tags: data.tags,
+            publishedAt: data.publishedAt ?? new Date().toISOString(),
+          }}
           onChange={onChange}
           onError={onError}
         />
@@ -348,16 +364,19 @@ function Tags({
 
 function Cover({
   url,
-  focus,
+  crop,
+  preview,
   onChange,
   onError,
 }: {
   url: string;
-  focus: CoverFocus;
+  crop: CoverCrop;
+  preview: React.ComponentProps<typeof CoverCropper>["preview"];
   onChange: (changes: Partial<EntryData>) => void;
   onError: (message: string) => void;
 }) {
   const [progress, setProgress] = useState<string | null>(null);
+  const [adjusting, setAdjusting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -374,7 +393,8 @@ function Cover({
       const uploaded = await uploadImage(file, (percent) =>
         setProgress(`subiendo ${file.name} · ${Math.round(percent)} %`),
       );
-      onChange({ coverImageUrl: uploaded });
+      // Una foto nueva parte centrada: el encuadre de la anterior no le sirve.
+      onChange({ coverImageUrl: uploaded, coverCrop: DEFAULT_COVER_CROP });
     } catch (error) {
       onError(
         `${file.name}: ${error instanceof Error ? error.message : "no se pudo subir."}`,
@@ -420,7 +440,8 @@ function Cover({
             <img
               src={url}
               alt=""
-              className={`absolute inset-0 h-full w-full object-cover ${COVER_FOCUS_CLASS[focus]}`}
+              className="absolute inset-0 h-full w-full object-cover"
+              style={coverCropStyle(crop)}
             />
             {progress && (
               <span className="absolute inset-0 flex items-center justify-center bg-ink/60 text-entry-meta text-paper">
@@ -471,50 +492,54 @@ function Cover({
         />
 
         {url ? (
-          <>
-            {/* TODO: lo reemplaza "ajustar encuadre" (posición y zoom libres). */}
-            <fieldset className="flex flex-wrap items-center gap-2">
-              <legend className="float-left mr-1 text-entry-meta text-faded">
-                qué parte se ve
-              </legend>
-              {COVER_FOCUSES.map((value) => (
-                <button
-                  type="button"
-                  key={value}
-                  aria-pressed={focus === value}
-                  onClick={() => onChange({ coverFocus: value })}
-                  className={chipClass(focus === value)}
-                >
-                  {COVER_FOCUS_LABELS[value]}
-                </button>
-              ))}
-            </fieldset>
-            <div className="flex gap-5">
-              <button
-                type="button"
-                onClick={pick}
-                disabled={busy}
-                className={linkClass}
-              >
-                cambiar foto
-              </button>
-              <button
-                type="button"
-                onClick={() => onChange({ coverImageUrl: "" })}
-                disabled={busy}
-                aria-label="quitar la foto de portada"
-                className="text-action text-faded hover:text-ink disabled:opacity-50"
-              >
-                quitar
-              </button>
-            </div>
-          </>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <button
+              type="button"
+              onClick={() => setAdjusting(true)}
+              disabled={busy}
+              className={chipClass(false)}
+            >
+              ajustar encuadre
+            </button>
+            <button
+              type="button"
+              onClick={pick}
+              disabled={busy}
+              className={linkClass}
+            >
+              cambiar foto
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onChange({ coverImageUrl: "", coverCrop: DEFAULT_COVER_CROP })
+              }
+              disabled={busy}
+              aria-label="quitar la foto de portada"
+              className="text-action text-faded hover:text-ink disabled:opacity-50"
+            >
+              quitar
+            </button>
+          </div>
         ) : (
           <p className="text-card-meta text-faded">
             sin foto, la tarjeta muestra el número
           </p>
         )}
       </div>
+
+      {adjusting && url && (
+        <CoverCropper
+          url={url}
+          initial={crop}
+          preview={preview}
+          onDone={(next) => {
+            onChange({ coverCrop: next });
+            setAdjusting(false);
+          }}
+          onCancel={() => setAdjusting(false)}
+        />
+      )}
     </Group>
   );
 }

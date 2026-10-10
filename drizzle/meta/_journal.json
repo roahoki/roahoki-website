@@ -43,6 +43,20 @@
       "when": 1791428914602,
       "tag": "0005_logbook_number_required",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791672903203,
+      "tag": "0006_logbook_cover_crop",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791672909635,
+      "tag": "0007_logbook_cover_crop_backfill",
+      "breakpoints": true
     }
   ]
 }

@@ -9,7 +9,9 @@ function card(overrides: Partial<EntryCardData> = {}): EntryCardData {
     title: "volver después de un mes sin publicar",
     summary: "Dejé de publicar el 25 de agosto.",
     coverImageUrl: null,
-    coverFocus: "center",
+    coverCropX: 0.5,
+    coverCropY: 0.5,
+    coverZoom: 1,
     format: "thought",
     tags: ["hábitos"],
     publishedAt: "2026-09-24T12:00:00.000Z",
@@ -52,22 +54,25 @@ describe("EntryCard", () => {
     expect(container.querySelector("img")).toBeNull();
   });
 
-  it.each([
-    ["top", "object-top"],
-    ["center", "object-center"],
-    ["bottom", "object-bottom"],
-  ] as const)("con foto y foco %s, recorta con %s", (coverFocus, cls) => {
+  it("con foto, la recorta con el encuadre guardado", () => {
     const { container } = render(
       <EntryCard
         entry={card({
           coverImageUrl:
             "https://xutwlpliollsczaatoxd.supabase.co/storage/v1/object/public/logbook-images/foto.jpg",
-          coverFocus,
+          coverCropX: 0.25,
+          coverCropY: 1,
+          coverZoom: 1.5,
         })}
       />,
     );
+    const img = container.querySelector("img");
 
-    expect(container.querySelector("img")).toHaveClass("object-cover", cls);
+    expect(img).toHaveClass("object-cover");
+    expect(img).toHaveStyle({
+      objectPosition: "25% 100%",
+      transform: "scale(1.5)",
+    });
     expect(container.querySelector(".text-cover-number")).toBeNull();
   });
 

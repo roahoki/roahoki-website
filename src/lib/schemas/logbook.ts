@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { COVER_FOCUSES, ENTRY_FORMATS } from "@/lib/logbook/entry-format";
+import { MAX_COVER_ZOOM } from "@/lib/logbook/cover-crop";
+import { ENTRY_FORMATS } from "@/lib/logbook/entry-format";
 import { ALLOWED_IMAGE_EXTENSIONS } from "@/lib/storage";
 
 /**
@@ -77,6 +78,11 @@ const optionalUrl = z
       .nullable(),
   );
 
+const cropAxis = z
+  .number({ invalid_type_error: "El encuadre de la portada no es válido." })
+  .min(0, "El encuadre de la portada no es válido.")
+  .max(1, "El encuadre de la portada no es válido.");
+
 export const createEntrySchema = z.object({
   title: z
     .string({ required_error: "El título es obligatorio." })
@@ -95,12 +101,14 @@ export const createEntrySchema = z.object({
     .max(BODY_MAX_LENGTH, "El cuerpo es demasiado largo."),
 
   coverImageUrl: optionalUrl,
-  // Qué parte de la foto se ve en la tarjeta. Si no viene, la base pone
-  // "center".
-  coverFocus: z
-    .enum(COVER_FOCUSES, {
-      errorMap: () => ({ message: "El foco de la portada no es válido." }),
-    })
+  // El encuadre de la portada en la tarjeta (`src/lib/logbook/cover-crop.ts`).
+  // Si no viene, la base lo deja centrado y sin zoom.
+  coverCropX: cropAxis.optional(),
+  coverCropY: cropAxis.optional(),
+  coverZoom: z
+    .number({ invalid_type_error: "El zoom de la portada no es válido." })
+    .min(1, "El zoom de la portada no es válido.")
+    .max(MAX_COVER_ZOOM, "El zoom de la portada no es válido.")
     .optional(),
   // `null` lo quita; ausente lo deja como está (o sin formato, al crear).
   format: z
