@@ -1,5 +1,6 @@
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { parseImageSrc } from "@/lib/logbook/image-width";
 
 /**
  * Render de markdown para las notas del logbook.
@@ -101,12 +102,21 @@ const components = {
     const safe = safeUrl(typeof src === "string" ? src : "");
     if (safe === "") return null;
 
+    // El ancho viaja en el fragmento de la URL (`#w=60`); el CSS de
+    // `.prose-entry img` lo lee de la variable.
+    const { src: url, width } = parseImageSrc(safe);
+    const style = width
+      ? ({ "--image-width": width / 100 } as React.CSSProperties)
+      : undefined;
+
     // `next/image` a propósito no: exige declarar el host en `remotePatterns` y
     // conocer las dimensiones. Las imágenes del logbook vienen de Supabase
     // Storage con tamaños arbitrarios, y una `<img>` con `loading="lazy"`
     // resuelve el caso sin agregar una fricción por cada host nuevo.
-    // biome-ignore lint/performance/noImgElement: ver comentario
-    return <img src={safe} alt={alt ?? ""} loading="lazy" {...props} />;
+    return (
+      // biome-ignore lint/performance/noImgElement: ver comentario
+      <img src={url} alt={alt ?? ""} loading="lazy" style={style} {...props} />
+    );
   },
 
   // Una tabla de tres columnas no entra en 390px de ancho y se cortaba por la

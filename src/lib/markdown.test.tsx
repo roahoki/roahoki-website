@@ -184,6 +184,22 @@ describe("MarkdownContent — enlaces", () => {
   });
 });
 
+describe("MarkdownContent — ancho de imágenes", () => {
+  const url =
+    "https://x.supabase.co/storage/v1/object/public/logbook-images/a.jpg";
+
+  it("aplica el ancho del fragmento y lo saca de la URL", () => {
+    const img = renderDom(`![](${url}#w=60)`).querySelector("img");
+    expect(img?.getAttribute("src")).toBe(url);
+    expect(img?.style.getPropertyValue("--image-width")).toBe("0.6");
+  });
+
+  it("una imagen sin ancho no lleva estilo", () => {
+    const img = renderDom(`![](${url})`).querySelector("img");
+    expect(img?.hasAttribute("style")).toBe(false);
+  });
+});
+
 describe("markdownToPlainText", () => {
   it("quita la sintaxis de encabezados y énfasis", () => {
     expect(
