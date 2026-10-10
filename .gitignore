@@ -41,3 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+
+# Preferencias personales de Claude Code, no se commitean
+CLAUDE.local.md
