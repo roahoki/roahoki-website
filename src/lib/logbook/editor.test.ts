@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatTagsInput, parseTagsInput } from "./editor";
+import {
+  isSameDay,
+  parseTagsInput,
+  parseTimestamp,
+  toDateInput,
+  withDate,
+} from "./editor";
 
 describe("parseTagsInput", () => {
   it("separa por coma y recorta", () => {
@@ -32,18 +38,30 @@ describe("parseTagsInput", () => {
   });
 });
 
-describe("formatTagsInput", () => {
-  it("une con coma y espacio", () => {
-    expect(formatTagsInput(["rails", "postgres"])).toBe("rails, postgres");
+describe("fechas del panel", () => {
+  // Así llega de Postgres. Safari no lo parsea tal cual.
+  const fromDb = "2026-10-03 21:30:00.123+00";
+
+  it("parseTimestamp entiende el formato de Postgres y el ISO", () => {
+    expect(parseTimestamp(fromDb).toISOString()).toBe(
+      "2026-10-03T21:30:00.123Z",
+    );
+    expect(parseTimestamp("2026-10-03T21:30:00.000Z").toISOString()).toBe(
+      "2026-10-03T21:30:00.000Z",
+    );
   });
 
-  it("devuelve cadena vacía sin tags", () => {
-    expect(formatTagsInput([])).toBe("");
+  it("toDateInput da el día en UTC", () => {
+    expect(toDateInput(fromDb)).toBe("2026-10-03");
   });
 
-  it("es el inverso de parseTagsInput", () => {
-    const tags = ["rails", "postgres", "drizzle"];
+  it("withDate cambia el día y conserva la hora", () => {
+    expect(withDate(fromDb, "2026-09-24")).toBe("2026-09-24T21:30:00.123Z");
+  });
 
-    expect(parseTagsInput(formatTagsInput(tags))).toEqual(tags);
+  it("isSameDay compara en UTC", () => {
+    const a = new Date("2026-10-07T01:00:00Z");
+    expect(isSameDay(a, new Date("2026-10-07T23:59:00Z"))).toBe(true);
+    expect(isSameDay(a, new Date("2026-10-06T23:59:00Z"))).toBe(false);
   });
 });

@@ -1,7 +1,13 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LogbookEntry } from "@/db/schema";
-import { LogbookEditor } from "./logbook-editor";
+import { AUTOSAVE_DELAY_MS, LogbookEditor } from "./logbook-editor";
 
 /**
  * `next/navigation` no funciona fuera de un request de Next. Los `fetch` se
@@ -96,7 +102,9 @@ describe("LogbookEditor — nota nueva", () => {
     fireEvent.keyDown(window, { key: "s", ctrlKey: true });
 
     await waitFor(() =>
-      expect(screen.getByText("borrador · guardado")).toBeInTheDocument(),
+      expect(
+        screen.getByText("borrador · guardado recién"),
+      ).toBeInTheDocument(),
     );
     expect(lastRequest()).toMatchObject({
       url: "/api/admin/logbook",
@@ -172,15 +180,127 @@ describe("LogbookEditor — editando", () => {
     });
   });
 
-  it("datos despliega dirección, resumen y tags", async () => {
+  it("datos abre el panel con lo que ya tiene la nota", async () => {
     render(<LogbookEditor entry={entryFixture()} />);
     await editorReady();
 
     fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    const panel = screen.getByRole("dialog", { name: "datos de la nota" });
 
-    expect(screen.getByLabelText("dirección")).toHaveValue("una-nota");
-    expect(screen.getByLabelText("resumen")).toHaveValue("Un resumen");
-    expect(screen.getByLabelText("tags")).toHaveValue("rails, postgres");
+    expect(
+      within(panel).getByRole("button", { name: "un update" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(within(panel).getByText("#27")).toBeInTheDocument();
+    expect(within(panel).getByText("3 oct 2026")).toBeInTheDocument();
+    expect(
+      within(panel).getByRole("button", { name: "quitar rails" }),
+    ).toBeInTheDocument();
+    expect(within(panel).getByLabelText(/resumen/)).toHaveValue("Un resumen");
+    expect(within(panel).getByText("/logbook/una-nota")).toBeInTheDocument();
+    // Sin foto, la portada es tipográfica.
+    expect(
+      within(panel).getByRole("button", { name: "tipográfica" }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("lo que se cambia en el panel viaja al guardar", async () => {
+    respondWith(entryFixture());
+    render(
+      <LogbookEditor
+        entry={entryFixture({ coverImageUrl: "https://cdn.test/portada.jpg" })}
+      />,
+    );
+    await editorReady();
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    const panel = screen.getByRole("dialog", { name: "datos de la nota" });
+
+    fireEvent.click(within(panel).getByRole("button", { name: "proyecto" }));
+    fireEvent.click(within(panel).getByRole("button", { name: "arriba" }));
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "quitar rails" }),
+    );
+    fireEvent.click(within(panel).getByRole("button", { name: "+ agregar" }));
+    const tagInput = within(panel).getByLabelText("nuevo tag");
+    fireEvent.change(tagInput, { target: { value: "Costura, la prenda" } });
+    fireEvent.keyDown(tagInput, { key: "Enter" });
+    fireEvent.click(within(panel).getByRole("button", { name: "cambiar" }));
+    fireEvent.change(within(panel).getByLabelText("fecha"), {
+      target: { value: "2026-09-24" },
+    });
+
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    expect(lastRequest().body).toMatchObject({
+      format: "project",
+      coverFocus: "top",
+      coverImageUrl: "https://cdn.test/portada.jpg",
+      tags: ["postgres", "costura", "la prenda"],
+      publishedAt: "2026-09-24T12:00:00.000Z",
+    });
+  });
+
+  it("tocar el formato elegido lo quita, y la portada tipográfica borra la foto", async () => {
+    respondWith(entryFixture());
+    render(
+      <LogbookEditor
+        entry={entryFixture({ coverImageUrl: "https://cdn.test/portada.jpg" })}
+      />,
+    );
+    await editorReady();
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    const panel = screen.getByRole("dialog", { name: "datos de la nota" });
+
+    fireEvent.click(within(panel).getByRole("button", { name: "un update" }));
+    fireEvent.click(within(panel).getByRole("button", { name: "tipográfica" }));
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    expect(lastRequest().body).toMatchObject({
+      format: null,
+      coverImageUrl: null,
+    });
+    // Sin cambiar la fecha, no se manda: queda la que tenía.
+    expect(lastRequest().body).not.toHaveProperty("publishedAt");
+  });
+
+  it("la foto de portada se sube desde el panel", async () => {
+    uploads.resolve = [];
+    respondWith(entryFixture());
+    render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    const panel = screen.getByRole("dialog", { name: "datos de la nota" });
+
+    fireEvent.click(within(panel).getByRole("button", { name: "foto" }));
+    fireEvent.change(within(panel).getByLabelText("foto de portada"), {
+      target: {
+        files: [new File(["a"], "portada.jpg", { type: "image/jpeg" })],
+      },
+    });
+    await waitFor(() => expect(uploads.resolve).toHaveLength(1));
+    uploads.resolve[0]("https://cdn.test/portada.jpg");
+
+    // Con foto aparece el foco, que antes no tenía sentido.
+    expect(
+      await within(panel).findByRole("button", { name: "centro" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(lastRequest().body.coverImageUrl).toBe(
+      "https://cdn.test/portada.jpg",
+    );
+  });
+
+  it("Esc cierra el panel", async () => {
+    render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("Ctrl / abre los atajos y Esc los cierra", async () => {
@@ -247,5 +367,64 @@ describe("LogbookEditor — fotos", () => {
       "cv.pdf: solo imágenes.",
     );
     expect(uploads.resolve).toHaveLength(0);
+  });
+});
+
+describe("LogbookEditor — guardado automático", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function typeTitle(value: string) {
+    fireEvent.change(screen.getByPlaceholderText("título"), {
+      target: { value },
+    });
+  }
+
+  it("un borrador se guarda solo al dejar de escribir", async () => {
+    respondWith(entryFixture({ status: "draft" }));
+    render(<LogbookEditor entry={entryFixture({ status: "draft" })} />);
+    await editorReady();
+
+    typeTitle("Una nota, con otro título");
+    expect(screen.getByText("borrador · sin guardar")).toBeInTheDocument();
+
+    vi.advanceTimersByTime(AUTOSAVE_DELAY_MS - 100);
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(200);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(lastRequest()).toMatchObject({
+      method: "PATCH",
+      body: { title: "Una nota, con otro título", status: "draft" },
+    });
+    expect(
+      await screen.findByText("borrador · guardado recién"),
+    ).toBeInTheDocument();
+  });
+
+  // Cada guardado de una publicada cambia lo que ya se ve en el sitio.
+  it("una nota publicada no se guarda sola", async () => {
+    render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
+
+    typeTitle("Otro título");
+    vi.advanceTimersByTime(AUTOSAVE_DELAY_MS * 2);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText("publicada · sin guardar")).toBeInTheDocument();
+  });
+
+  it("una nota nueva sin cuerpo todavía no se guarda", async () => {
+    render(<LogbookEditor />);
+    await editorReady();
+
+    typeTitle("Solo el título");
+    vi.advanceTimersByTime(AUTOSAVE_DELAY_MS * 2);
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
