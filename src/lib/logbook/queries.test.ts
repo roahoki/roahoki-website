@@ -88,11 +88,20 @@ describe.skipIf(!hasTestDatabase)("queries del logbook", () => {
       expect((await seed({ slug: "cuatro" })).number).toBe(4);
     });
 
-    it("guarda formato y foco de portada", async () => {
-      const entry = await seed({ format: "one-liner", coverFocus: "top" });
+    it("guarda formato y encuadre de portada", async () => {
+      const entry = await seed({
+        format: "one-liner",
+        coverCropX: 0.25,
+        coverCropY: 0,
+        coverZoom: 2,
+      });
 
       expect(entry.format).toBe("one-liner");
-      expect(entry.coverFocus).toBe("top");
+      expect(entry).toMatchObject({
+        coverCropX: 0.25,
+        coverCropY: 0,
+        coverZoom: 2,
+      });
     });
 
     it("crea una nota con los defaults de la base", async () => {
@@ -101,7 +110,12 @@ describe.skipIf(!hasTestDatabase)("queries del logbook", () => {
       expect(entry.id).toMatch(/^[\da-f-]{36}$/);
       expect(entry.status).toBe("published");
       expect(entry.format).toBeNull();
-      expect(entry.coverFocus).toBe("center");
+      // Sin encuadre, la portada va centrada y sin zoom.
+      expect(entry).toMatchObject({
+        coverCropX: 0.5,
+        coverCropY: 0.5,
+        coverZoom: 1,
+      });
       expect(entry.tags).toEqual([]);
     });
 

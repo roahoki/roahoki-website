@@ -35,6 +35,9 @@ function entryFixture(overrides: Partial<LogbookEntry> = {}): LogbookEntry {
     bodyMd: "# Hola\n\nUn cuerpo.",
     coverImageUrl: null,
     coverFocus: "center",
+    coverCropX: 0.5,
+    coverCropY: 0.5,
+    coverZoom: 1,
     format: "update",
     number: 27,
     tags: ["rails", "postgres"],
@@ -218,7 +221,6 @@ describe("LogbookEditor — editando", () => {
     const panel = screen.getByRole("dialog", { name: "datos de la nota" });
 
     fireEvent.click(within(panel).getByRole("button", { name: "proyecto" }));
-    fireEvent.click(within(panel).getByRole("button", { name: "arriba" }));
     fireEvent.click(
       within(panel).getByRole("button", { name: "quitar rails" }),
     );
@@ -236,7 +238,9 @@ describe("LogbookEditor — editando", () => {
 
     expect(lastRequest().body).toMatchObject({
       format: "project",
-      coverFocus: "top",
+      coverCropX: 0.5,
+      coverCropY: 0.5,
+      coverZoom: 1,
       coverImageUrl: "https://cdn.test/portada.jpg",
       tags: ["postgres", "costura", "la prenda"],
       publishedAt: "2026-09-24T12:00:00.000Z",
@@ -285,10 +289,10 @@ describe("LogbookEditor — editando", () => {
     await waitFor(() => expect(uploads.resolve).toHaveLength(1));
     uploads.resolve[0]("https://cdn.test/portada.jpg");
 
-    // Con foto aparecen el foco y las acciones sobre la foto.
+    // Con foto aparecen las acciones sobre la foto.
     expect(
-      await within(panel).findByRole("button", { name: "centro" }),
-    ).toHaveAttribute("aria-pressed", "true");
+      await within(panel).findByRole("button", { name: "ajustar encuadre" }),
+    ).toBeInTheDocument();
     expect(
       within(panel).getByRole("button", { name: "cambiar foto" }),
     ).toBeInTheDocument();
@@ -319,6 +323,33 @@ describe("LogbookEditor — editando", () => {
     );
 
     await waitFor(() => expect(uploads.resolve).toHaveLength(1));
+  });
+
+  it("ajustar encuadre se abre sobre el panel, y Esc cierra solo el ajuste", async () => {
+    render(
+      <LogbookEditor
+        entry={entryFixture({ coverImageUrl: "https://cdn.test/portada.jpg" })}
+      />,
+    );
+    await editorReady();
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    const panel = screen.getByRole("dialog", { name: "datos de la nota" });
+
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "ajustar encuadre" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "ajustar portada" }),
+    ).toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByRole("application"), { key: "Escape" });
+
+    expect(
+      screen.queryByRole("dialog", { name: "ajustar portada" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("dialog", { name: "datos de la nota" }),
+    ).toBeInTheDocument();
   });
 
   it("Esc cierra el panel", async () => {

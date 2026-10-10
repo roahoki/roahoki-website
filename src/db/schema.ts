@@ -5,6 +5,7 @@ import {
   integer,
   pgPolicy,
   pgTable,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -140,10 +141,16 @@ export const logbookEntries = pgTable(
     // están en `entry-format.ts`. Opcional: las notas anteriores no lo tienen
     // y no se inventa.
     format: text({ enum: ENTRY_FORMATS }),
-    // Qué parte de la foto se ve cuando la tarjeta la recorta a 2:1.
+    // TODO: borrar. Lo reemplaza el encuadre de abajo; queda mientras el
+    // código desplegado antes de esta migración pueda seguir leyéndolo.
     coverFocus: text("cover_focus", { enum: COVER_FOCUSES })
       .default("center")
       .notNull(),
+    // El encuadre de la portada en la tarjeta 2:1: un punto de la foto (0 a 1)
+    // y un zoom (1 a 4). Las cuentas están en `src/lib/logbook/cover-crop.ts`.
+    coverCropX: real("cover_crop_x").default(0.5).notNull(),
+    coverCropY: real("cover_crop_y").default(0.5).notNull(),
+    coverZoom: real("cover_zoom").default(1).notNull(),
     // Separada de `created_at` a propósito: permite fechar una nota en el día
     // que ocurrió lo que cuenta, no en el día que se escribió.
     publishedAt: timestamp("published_at", {
@@ -186,6 +193,10 @@ export const logbookEntries = pgTable(
     check(
       "logbook_entries_cover_focus_check",
       sql`cover_focus = ANY (ARRAY['top'::text, 'center'::text, 'bottom'::text])`,
+    ),
+    check(
+      "logbook_entries_cover_crop_check",
+      sql`cover_crop_x BETWEEN 0 AND 1 AND cover_crop_y BETWEEN 0 AND 1 AND cover_zoom BETWEEN 1 AND 4`,
     ),
 
     // GIN es el índice que sirve para `tags @> ARRAY['x']`, que es como

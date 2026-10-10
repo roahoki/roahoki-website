@@ -158,12 +158,13 @@ describe("createEntrySchema — casos inválidos", () => {
   });
 });
 
-describe("createEntrySchema — formato y foco de portada", () => {
-  it("sin formato ni foco los deja en manos de la base", () => {
+describe("createEntrySchema — formato y encuadre de portada", () => {
+  it("sin formato ni encuadre los deja en manos de la base", () => {
     const result = createEntrySchema.parse(validEntry());
 
     expect(result.format).toBeUndefined();
-    expect(result.coverFocus).toBeUndefined();
+    expect(result.coverCropX).toBeUndefined();
+    expect(result.coverZoom).toBeUndefined();
   });
 
   it.each(["thought", "update", "one-liner", "project", "how-to"])(
@@ -190,22 +191,23 @@ describe("createEntrySchema — formato y foco de portada", () => {
     }
   });
 
-  it.each(["top", "center", "bottom"])("acepta el foco %s", (coverFocus) => {
-    expect(createEntrySchema.parse(validEntry({ coverFocus })).coverFocus).toBe(
-      coverFocus,
-    );
+  it("acepta un encuadre válido", () => {
+    const crop = { coverCropX: 0, coverCropY: 0.75, coverZoom: 2.5 };
+    expect(createEntrySchema.parse(validEntry(crop))).toMatchObject(crop);
   });
 
-  it("rechaza un foco fuera de arriba, centro y abajo", () => {
-    const result = createEntrySchema.safeParse(
-      validEntry({ coverFocus: "left" }),
-    );
+  it.each([
+    [{ coverCropX: 1.2 }, "El encuadre de la portada no es válido."],
+    [{ coverCropY: -0.1 }, "El encuadre de la portada no es válido."],
+    [{ coverZoom: 0.5 }, "El zoom de la portada no es válido."],
+    [{ coverZoom: 5 }, "El zoom de la portada no es válido."],
+    [{ coverZoom: "2" }, "El zoom de la portada no es válido."],
+  ])("rechaza %o con un mensaje claro", (changes, message) => {
+    const result = createEntrySchema.safeParse(validEntry(changes));
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(firstErrorMessage(result.error)).toBe(
-        "El foco de la portada no es válido.",
-      );
+      expect(firstErrorMessage(result.error)).toBe(message);
     }
   });
 
