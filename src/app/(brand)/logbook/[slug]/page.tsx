@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CopyLinkButton } from "@/components/entry/copy-link-button";
 import { EntryNeighbors } from "@/components/entry/entry-neighbors";
+import { InstagramDmLink } from "@/components/instagram-dm-link";
 import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
 import {
@@ -10,7 +11,6 @@ import {
   listPublishedSlugs,
 } from "@/lib/logbook/queries";
 import { MarkdownContent, markdownToPlainText } from "@/lib/markdown";
-import { INSTAGRAM_DM_URL } from "@/lib/profile";
 import { absoluteUrl } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -132,14 +132,9 @@ export default async function LogbookEntryPage({ params }: Props) {
           <p className="text-signature text-leaf">:)</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-rule pt-4">
             <CopyLinkButton url={absoluteUrl(`/logbook/${entry.slug}`)} />
-            <a
-              href={INSTAGRAM_DM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline"
-            >
+            <InstagramDmLink className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline">
               respóndeme por instagram
-            </a>
+            </InstagramDmLink>
           </div>
         </footer>
       </article>
