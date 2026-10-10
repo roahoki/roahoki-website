@@ -3,7 +3,9 @@ import {
   createSessionToken,
   SESSION_COOKIE,
   sessionCookieOptions,
+  sessionHintCookieOptions,
 } from "@/lib/auth/session";
+import { SESSION_HINT_COOKIE } from "@/lib/auth/session-hint";
 import { adminPassword } from "@/lib/env";
 
 export async function POST(req: NextRequest) {
@@ -29,5 +31,6 @@ export async function POST(req: NextRequest) {
     await createSessionToken(),
     sessionCookieOptions(),
   );
+  res.cookies.set(SESSION_HINT_COOKIE, "1", sessionHintCookieOptions());
   return res;
 }

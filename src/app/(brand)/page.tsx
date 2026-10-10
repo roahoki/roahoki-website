@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminFab } from "@/components/admin/admin-fab";
 import { EntryCard } from "@/components/entry-card";
 import type { LogbookEntry } from "@/db/schema";
 import { listPublishedEntries } from "@/lib/logbook/queries";
@@ -50,6 +51,7 @@ export default async function HomePage() {
           ))}
         </ul>
       )}
+      <AdminFab />
     </main>
   );
 }
