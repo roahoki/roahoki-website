@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
+import { COUNTER_STEP, MAX_MANUAL_AMOUNT } from "@/lib/schemas/stats";
 import { EXERCISES, type ExerciseSlug } from "@/lib/stats/exercises";
 import type { ExerciseTotals } from "@/lib/stats/queries";
 
@@ -17,9 +18,36 @@ import type { ExerciseTotals } from "@/lib/stats/queries";
  * entren cuatro y las otras dos queden bajo el scroll, los botones ocupan media
  * tarjeta cada uno para no errarle con el pulgar, y el número sube en el mismo
  * gesto en vez de esperar al servidor.
+ *
+ * Hay dos formas de cargar, para dos momentos distintos: el "+" para contar
+ * repetición por repetición mientras la hago, y el campo de abajo para anotar
+ * una serie entera de una —doce dominadas, sesenta segundos de handstand— sin
+ * dar sesenta toques.
  */
 
 type Direction = "up" | "down";
+
+/** Lo escrito en cada campo, mientras no se haya enviado. */
+type Drafts = Partial<Record<ExerciseSlug, string>>;
+
+/**
+ * Qué vale lo escrito, o `null` si todavía no vale nada.
+ *
+ * Los mismos límites que el esquema de zod, repetidos acá a propósito: esto
+ * decide si el botón está habilitado, y el servidor decide si el evento se
+ * guarda. Sin la copia del cliente, escribir un cero y tocar "Sumar" costaría
+ * un viaje de red para recibir un error que ya se sabía.
+ */
+function parseManualAmount(draft: string): number | null {
+  const trimmed = draft.trim();
+  if (trimmed === "") return null;
+
+  const amount = Number(trimmed);
+  if (!Number.isInteger(amount)) return null;
+  if (amount < 1 || amount > MAX_MANUAL_AMOUNT) return null;
+
+  return amount;
+}
 
 export function ExerciseCounterGrid({
   initialTotals,
@@ -27,6 +55,7 @@ export function ExerciseCounterGrid({
   initialTotals: ExerciseTotals;
 }) {
   const [totals, setTotals] = useState(initialTotals);
+  const [drafts, setDrafts] = useState<Drafts>({});
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -44,8 +73,19 @@ export function ExerciseCounterGrid({
     setTotals((prev) => ({ ...prev, [exercise]: prev[exercise] + by }));
   }
 
-  async function bump(exercise: ExerciseSlug, direction: Direction) {
-    const step = direction === "up" ? 1 : -1;
+  /**
+   * Mueve el contador. Sin `amount` vale un tap; con `amount`, la serie
+   * escrita.
+   *
+   * El `amount` solo se manda cuando existe: un tap sigue viajando como
+   * `{ exercise, direction }` pelado, y el paso lo pone el servidor.
+   */
+  async function bump(
+    exercise: ExerciseSlug,
+    direction: Direction,
+    amount?: number,
+  ) {
+    const step = (amount ?? COUNTER_STEP) * (direction === "up" ? 1 : -1);
 
     // El número se mueve ahora, no cuando responda el servidor. Con la señal
     // de un gimnasio, esperar el round trip por cada repetición hace que la
@@ -58,7 +98,11 @@ export function ExerciseCounterGrid({
       const res = await fetch("/api/admin/stats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exercise, direction }),
+        body: JSON.stringify(
+          amount === undefined
+            ? { exercise, direction }
+            : { exercise, direction, amount },
+        ),
       });
 
       if (res.status === 401) {
@@ -88,6 +132,22 @@ export function ExerciseCounterGrid({
     }
   }
 
+  function submitDraft(event: FormEvent<HTMLFormElement>, slug: ExerciseSlug) {
+    // Es un `<form>` y no un botón suelto para que el Enter del teclado del
+    // celular también envíe: con el teclado numérico abierto, tener que buscar
+    // el botón con el pulgar es un paso de más.
+    event.preventDefault();
+
+    const amount = parseManualAmount(drafts[slug] ?? "");
+    if (amount === null) return;
+
+    // El campo se limpia antes de saber si el servidor aceptó, igual que el
+    // número sube antes: la próxima serie se escribe sobre un campo vacío, y
+    // si algo falla el mensaje de error lo dice y el total vuelve solo.
+    setDrafts((prev) => ({ ...prev, [slug]: "" }));
+    bump(slug, "up", amount);
+  }
+
   return (
     <>
       {error && (
@@ -102,6 +162,8 @@ export function ExerciseCounterGrid({
       <div className="grid grid-cols-2 gap-3">
         {EXERCISES.map((exercise) => {
           const total = totals[exercise.slug];
+          const draft = drafts[exercise.slug] ?? "";
+          const amount = parseManualAmount(draft);
 
           return (
             <section
@@ -154,6 +216,47 @@ export function ExerciseCounterGrid({
                   +
                 </button>
               </div>
+
+              <form
+                onSubmit={(event) => submitDraft(event, exercise.slug)}
+                className="mt-2 flex gap-1.5"
+              >
+                <input
+                  // `inputMode="numeric"` abre el teclado de números en el
+                  // celular; `type="number"` solo no alcanza en iOS.
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={MAX_MANUAL_AMOUNT}
+                  step={1}
+                  value={draft}
+                  onChange={(event) =>
+                    setDrafts((prev) => ({
+                      ...prev,
+                      [exercise.slug]: event.target.value,
+                    }))
+                  }
+                  placeholder={exercise.unit === "seconds" ? "seg" : "reps"}
+                  aria-label={`Cantidad para ${exercise.label}`}
+                  // `min-w-0` para que el input no imponga su ancho por
+                  // defecto y desborde la tarjeta, que en móvil es media
+                  // pantalla. Las flechitas de `type="number"` se apagan: en
+                  // desktop se comen ancho del campo, y en el celular no
+                  // existen.
+                  className="w-full min-w-0 rounded-lg border border-border bg-muted px-2 py-2 text-center text-sm tabular-nums text-foreground outline-none [appearance:textfield] placeholder:text-muted-foreground focus:border-brand [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+                <button
+                  type="submit"
+                  // Deshabilitado mientras lo escrito no sea una cantidad
+                  // válida: el botón apagado dice que falta algo sin tener que
+                  // mandar el request para que el servidor lo explique.
+                  disabled={amount === null}
+                  aria-label={`Sumar la cantidad escrita en ${exercise.label}`}
+                  className="shrink-0 select-none rounded-lg bg-muted px-3 text-xs font-semibold text-foreground transition-colors touch-manipulation active:bg-muted/60 disabled:opacity-40"
+                >
+                  Sumar
+                </button>
+              </form>
             </section>
           );
         })}
