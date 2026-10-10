@@ -1,5 +1,6 @@
 "use client";
 
+import { ImageUp } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   isSameDay,
@@ -293,7 +294,10 @@ function Tags({
               type="button"
               aria-label={`quitar ${tag}`}
               onClick={() => onTags(tags.filter((t) => t !== tag))}
-              className="rounded-full bg-bottle px-2.5 py-0.5 text-tag text-paper hover:bg-ink"
+              // Del tamaño de los demás chips del panel: el chip chico es el
+              // de la tarjeta pública, y al lado de "+ agregar" se veía
+              // desproporcionado.
+              className={`${chipClass(true)} hover:bg-ink`}
             >
               {tag} ×
             </button>
@@ -353,11 +357,8 @@ function Cover({
   onChange: (changes: Partial<EntryData>) => void;
   onError: (message: string) => void;
 }) {
-  const [wantsPhoto, setWantsPhoto] = useState(url !== "");
   const [progress, setProgress] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  // Volver a "tipográfica" y otra vez a "foto" recupera la foto que había.
-  const lastUrl = useRef(url);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function upload(file: File | undefined) {
@@ -373,7 +374,6 @@ function Cover({
       const uploaded = await uploadImage(file, (percent) =>
         setProgress(`subiendo ${file.name} · ${Math.round(percent)} %`),
       );
-      lastUrl.current = uploaded;
       onChange({ coverImageUrl: uploaded });
     } catch (error) {
       onError(
@@ -384,109 +384,135 @@ function Cover({
     }
   }
 
-  function choose(photo: boolean) {
-    setWantsPhoto(photo);
-    onChange({ coverImageUrl: photo ? lastUrl.current : "" });
-  }
+  const pick = () => inputRef.current?.click();
+  const busy = progress !== null;
+
+  // Con foto o sin ella, se puede soltar una encima para reemplazarla.
+  const dropTarget = {
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(true);
+    },
+    onDragLeave: () => setDragging(false),
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      upload(e.dataTransfer.files[0]);
+    },
+  };
 
   return (
     <Group label="portada" hint="en la tarjeta se ve en 2:1">
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            aria-pressed={!wantsPhoto}
-            onClick={() => choose(false)}
-            className={chipClass(!wantsPhoto)}
+      <div className="flex flex-col gap-3">
+        {/* Sin chips de "tipográfica" o "foto": sin foto la tarjeta muestra el
+            número, así que la caja vacía ya dice cuál es el estado. */}
+        {url ? (
+          <div
+            {...dropTarget}
+            className={`relative aspect-[2/1] w-full overflow-hidden rounded-md bg-ink ${
+              dragging ? "outline-[3px] outline-offset-2 outline-leaf" : ""
+            }`}
           >
-            tipográfica
-          </button>
-          <button
-            type="button"
-            aria-pressed={wantsPhoto}
-            onClick={() => choose(true)}
-            className={chipClass(wantsPhoto)}
-          >
-            foto
-          </button>
-        </div>
-
-        {wantsPhoto && (
-          <>
-            {/* Toda la caja es el botón: tocarla elige una foto, y también se
-                puede soltar una encima. */}
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragging(false);
-                upload(e.dataTransfer.files[0]);
-              }}
-              disabled={progress !== null}
-              aria-label={
-                url ? "cambiar la foto de portada" : "elegir la foto de portada"
-              }
-              className={`relative mt-2 aspect-[2/1] w-full overflow-hidden rounded-md bg-ink text-entry-meta text-paper/80 ${
-                dragging ? "outline-[3px] outline-offset-2 outline-leaf" : ""
-              }`}
-            >
-              {url && (
-                // `img` y no `next/image`: la portada puede venir de una URL
-                // que no está en `remotePatterns`, y en el panel no hace falta
-                // optimizarla.
-                // biome-ignore lint/performance/noImgElement: ver arriba
-                <img
-                  src={url}
-                  alt=""
-                  className={`absolute inset-0 h-full w-full object-cover ${COVER_FOCUS_CLASS[focus]}`}
-                />
-              )}
-              <span
-                className={`relative rounded px-2 py-1 ${url ? "bg-ink/60" : ""}`}
-              >
-                {progress ??
-                  (url
-                    ? "cambiar foto · o arrastrar otra acá"
-                    : "elegir foto · o arrastrarla acá")}
-              </span>
-            </button>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/*"
-              aria-label="foto de portada"
-              className="hidden"
-              onChange={(e) => {
-                upload(e.target.files?.[0]);
-                e.target.value = "";
-              }}
+            {/* `img` y no `next/image`: la portada puede venir de una URL que
+                no está en `remotePatterns`, y en el panel no hace falta
+                optimizarla. */}
+            {/* biome-ignore lint/performance/noImgElement: ver arriba */}
+            <img
+              src={url}
+              alt=""
+              className={`absolute inset-0 h-full w-full object-cover ${COVER_FOCUS_CLASS[focus]}`}
             />
-
-            {url && (
-              <fieldset className="flex flex-wrap items-center gap-2">
-                <legend className="float-left mr-1 text-entry-meta text-faded">
-                  qué parte se ve
-                </legend>
-                {COVER_FOCUSES.map((value) => (
-                  <button
-                    type="button"
-                    key={value}
-                    aria-pressed={focus === value}
-                    onClick={() => onChange({ coverFocus: value })}
-                    className={chipClass(focus === value)}
-                  >
-                    {COVER_FOCUS_LABELS[value]}
-                  </button>
-                ))}
-              </fieldset>
+            {progress && (
+              <span className="absolute inset-0 flex items-center justify-center bg-ink/60 text-entry-meta text-paper">
+                {progress}
+              </span>
             )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={pick}
+            {...dropTarget}
+            disabled={busy}
+            aria-label="subir la foto de portada"
+            className={`flex aspect-[2/1] w-full flex-col items-center justify-center gap-1 rounded-md border-[1.5px] border-dashed transition-colors ${
+              dragging
+                ? "border-leaf bg-leaf/5"
+                : "border-rule hover:border-ink"
+            }`}
+          >
+            {progress ? (
+              <span className="text-entry-meta text-faded">{progress}</span>
+            ) : (
+              <>
+                <ImageUp
+                  aria-hidden="true"
+                  strokeWidth={1.5}
+                  className="mb-2 size-8 text-faded"
+                />
+                <span className="text-action text-leaf">sube una foto</span>
+                <span className="text-card-meta text-faded">
+                  o arrástrala acá
+                </span>
+              </>
+            )}
+          </button>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          aria-label="foto de portada"
+          className="hidden"
+          onChange={(e) => {
+            upload(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+
+        {url ? (
+          <>
+            {/* TODO: lo reemplaza "ajustar encuadre" (posición y zoom libres). */}
+            <fieldset className="flex flex-wrap items-center gap-2">
+              <legend className="float-left mr-1 text-entry-meta text-faded">
+                qué parte se ve
+              </legend>
+              {COVER_FOCUSES.map((value) => (
+                <button
+                  type="button"
+                  key={value}
+                  aria-pressed={focus === value}
+                  onClick={() => onChange({ coverFocus: value })}
+                  className={chipClass(focus === value)}
+                >
+                  {COVER_FOCUS_LABELS[value]}
+                </button>
+              ))}
+            </fieldset>
+            <div className="flex gap-5">
+              <button
+                type="button"
+                onClick={pick}
+                disabled={busy}
+                className={linkClass}
+              >
+                cambiar foto
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange({ coverImageUrl: "" })}
+                disabled={busy}
+                aria-label="quitar la foto de portada"
+                className="text-action text-faded hover:text-ink disabled:opacity-50"
+              >
+                quitar
+              </button>
+            </div>
           </>
+        ) : (
+          <p className="text-card-meta text-faded">
+            sin foto, la tarjeta muestra el número
+          </p>
         )}
       </div>
     </Group>

@@ -197,10 +197,13 @@ describe("LogbookEditor — editando", () => {
     ).toBeInTheDocument();
     expect(within(panel).getByLabelText(/resumen/)).toHaveValue("Un resumen");
     expect(within(panel).getByText("/logbook/una-nota")).toBeInTheDocument();
-    // Sin foto, la portada es tipográfica.
+    // Sin foto, la caja invita a subir una y avisa qué muestra la tarjeta.
     expect(
-      within(panel).getByRole("button", { name: "tipográfica" }),
-    ).toHaveAttribute("aria-pressed", "true");
+      within(panel).getByRole("button", { name: "subir la foto de portada" }),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).getByText("sin foto, la tarjeta muestra el número"),
+    ).toBeInTheDocument();
   });
 
   it("lo que se cambia en el panel viaja al guardar", async () => {
@@ -240,7 +243,7 @@ describe("LogbookEditor — editando", () => {
     });
   });
 
-  it("tocar el formato elegido lo quita, y la portada tipográfica borra la foto", async () => {
+  it("tocar el formato elegido lo quita, y quitar la foto la borra", async () => {
     respondWith(entryFixture());
     render(
       <LogbookEditor
@@ -252,7 +255,9 @@ describe("LogbookEditor — editando", () => {
     const panel = screen.getByRole("dialog", { name: "datos de la nota" });
 
     fireEvent.click(within(panel).getByRole("button", { name: "un update" }));
-    fireEvent.click(within(panel).getByRole("button", { name: "tipográfica" }));
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "quitar la foto de portada" }),
+    );
     fireEvent.keyDown(window, { key: "s", ctrlKey: true });
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
@@ -272,7 +277,6 @@ describe("LogbookEditor — editando", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
     const panel = screen.getByRole("dialog", { name: "datos de la nota" });
 
-    fireEvent.click(within(panel).getByRole("button", { name: "foto" }));
     fireEvent.change(within(panel).getByLabelText("foto de portada"), {
       target: {
         files: [new File(["a"], "portada.jpg", { type: "image/jpeg" })],
@@ -281,15 +285,40 @@ describe("LogbookEditor — editando", () => {
     await waitFor(() => expect(uploads.resolve).toHaveLength(1));
     uploads.resolve[0]("https://cdn.test/portada.jpg");
 
-    // Con foto aparece el foco, que antes no tenía sentido.
+    // Con foto aparecen el foco y las acciones sobre la foto.
     expect(
       await within(panel).findByRole("button", { name: "centro" }),
     ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(panel).getByRole("button", { name: "cambiar foto" }),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("button", { name: "subir la foto de portada" }),
+    ).toBeNull();
     fireEvent.keyDown(window, { key: "s", ctrlKey: true });
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     expect(lastRequest().body.coverImageUrl).toBe(
       "https://cdn.test/portada.jpg",
     );
+  });
+
+  it("la foto de portada también se puede soltar sobre la caja vacía", async () => {
+    uploads.resolve = [];
+    render(<LogbookEditor entry={entryFixture()} />);
+    await editorReady();
+    fireEvent.click(screen.getAllByRole("button", { name: "datos" })[0]);
+    const panel = screen.getByRole("dialog", { name: "datos de la nota" });
+
+    fireEvent.drop(
+      within(panel).getByRole("button", { name: "subir la foto de portada" }),
+      {
+        dataTransfer: {
+          files: [new File(["a"], "portada.jpg", { type: "image/jpeg" })],
+        },
+      },
+    );
+
+    await waitFor(() => expect(uploads.resolve).toHaveLength(1));
   });
 
   it("Esc cierra el panel", async () => {
