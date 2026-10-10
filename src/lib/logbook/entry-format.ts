@@ -37,3 +37,13 @@ export const COVER_FOCUS_LABELS: Record<CoverFocus, string> = {
   center: "centro",
   bottom: "abajo",
 };
+
+/**
+ * La clase de Tailwind de cada foco. Completas y no `object-${focus}`: Tailwind
+ * solo genera las clases que encuentra escritas tal cual en el código.
+ */
+export const COVER_FOCUS_CLASS: Record<CoverFocus, string> = {
+  top: "object-top",
+  center: "object-center",
+  bottom: "object-bottom",
+};
