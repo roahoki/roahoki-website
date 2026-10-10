@@ -319,6 +319,29 @@
   }
 }
 
+/*
+ * El editor del panel: dónde cae una imagen arrastrada y el aviso de la que
+ * está subiendo (`src/components/editor/image-upload.ts`). Son decoraciones,
+ * no parte de la nota.
+ */
+.file-drop-indicator {
+  @apply border-t-[3px] border-leaf pt-1.5 text-card-meta text-leaf;
+}
+
+.image-upload {
+  @apply rounded-md border border-rule px-4 py-3.5 text-entry-meta text-faded;
+}
+
+.drop-cursor {
+  @apply bg-leaf;
+}
+
+/* Al arrastrar un archivo manda la línea entre bloques: la del cursor de
+   ProseMirror marcaría un punto en medio del texto donde la imagen no va. */
+body:has(.file-drop-indicator) .drop-cursor {
+  display: none;
+}
+
 .prose-entry hr {
   @apply my-11 border-rule;
 }
