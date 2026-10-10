@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { INSTAGRAM_DM_URL } from "@/lib/profile";
+import { InstagramDmLink } from "@/components/instagram-dm-link";
 
 /**
  * Header del sitio con la marca nueva (brand book §7.4): el logo y
@@ -18,14 +18,9 @@ export function SiteHeader() {
         <Link href="/" className="text-ink">
           <Logo size={20} />
         </Link>
-        <a
-          href={INSTAGRAM_DM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline"
-        >
+        <InstagramDmLink className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline">
           escríbeme
-        </a>
+        </InstagramDmLink>
       </div>
     </header>
   );

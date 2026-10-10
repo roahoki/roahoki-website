@@ -20,7 +20,8 @@ describe("SiteHeader", () => {
   });
 
   // Instagram es el canal de conversación: "escríbeme" abre un mensaje, no el
-  // perfil, y en otra pestaña para no sacar al visitante del sitio.
+  // perfil, y en otra pestaña para no sacar al visitante del sitio. Dentro del
+  // navegador de Instagram cambia: ver `instagram-dm-link.test.tsx`.
   it("escríbeme abre un mensaje directo de Instagram en otra pestaña", () => {
     render(<SiteHeader />);
     const link = screen.getByRole("link", { name: "escríbeme" });
