@@ -305,17 +305,82 @@
   @apply bg-transparent p-0 text-[0.85em];
 }
 
-.prose-entry img {
-  @apply my-8 block h-auto w-full rounded-md;
+/*
+ * `--image-width` es la fracción del ancho completo que ocupa la imagen (1 si
+ * no tiene ancho propio; ver `src/lib/logbook/image-width.ts`). Va centrada:
+ * el margen reparte lo que sobra de la columna, o lo que falta, a los dos lados.
+ *
+ * En el editor el ancho lo lleva el marco con las manijas (`.image-frame`) y la
+ * imagen lo llena.
+ */
+.prose-entry img,
+.prose-entry .image-frame {
+  @apply my-8 block h-auto rounded-md;
+  width: calc(100% * var(--image-width, 1));
+  margin-inline: calc((100% - 100% * var(--image-width, 1)) / 2);
 }
 
-/* En escritorio las imágenes del cuerpo se salen de la columna de texto hasta
-   el ancho de la portada (680 → 896 px): el texto no, la imagen sí. */
+/* En escritorio el ancho completo de una imagen del cuerpo se sale de la
+   columna de texto hasta el de la portada (680 → 896 px): el texto no, la
+   imagen sí. */
 @media (min-width: 64rem) {
-  .prose-entry img {
-    width: calc(100% + 216px);
+  .prose-entry img,
+  .prose-entry .image-frame {
+    width: calc((100% + 216px) * var(--image-width, 1));
     max-width: none;
-    margin-inline: -108px;
+    margin-inline: calc((100% - (100% + 216px) * var(--image-width, 1)) / 2);
+  }
+}
+
+.prose-entry .image-frame img {
+  @apply m-0 w-full;
+}
+
+/* Las manijas para cambiar el tamaño, en las esquinas de abajo. El área que se
+   toca es más grande que lo que se ve: en el celular se agarra con el dedo. */
+.prose-entry .image-frame {
+  position: relative;
+}
+
+.image-handle {
+  @apply absolute bottom-0 hidden size-11 touch-none items-end;
+  cursor: ew-resize;
+}
+
+.image-handle::after {
+  content: "";
+  @apply m-2 size-4 rounded-full border-2 border-paper bg-leaf;
+}
+
+.image-handle-left {
+  @apply left-0 justify-start;
+}
+
+.image-handle-right {
+  @apply right-0 justify-end;
+}
+
+.image-width-label {
+  @apply absolute top-2 left-1/2 hidden -translate-x-1/2 rounded-full bg-ink px-2.5 py-1 text-card-meta text-paper;
+}
+
+.image-resizable.is-selected .image-frame,
+.image-resizable.is-resizing .image-frame {
+  @apply outline-2 outline-offset-2 outline-leaf;
+}
+
+.image-resizable.is-selected .image-handle,
+.image-resizable.is-resizing .image-handle {
+  @apply flex;
+}
+
+.image-resizable.is-resizing .image-width-label {
+  @apply block;
+}
+
+@media (hover: hover) {
+  .image-resizable:hover .image-handle {
+    @apply flex;
   }
 }
 

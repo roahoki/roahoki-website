@@ -1,11 +1,11 @@
 import type { Extensions } from "@tiptap/core";
-import Image from "@tiptap/extension-image";
 import Italic from "@tiptap/extension-italic";
 import { Placeholder } from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { safeUrl } from "@/lib/markdown";
 import { ImageUpload, type ImageUploadOptions } from "./image-upload";
+import { ResizableImage } from "./resizable-image";
 
 /**
  * Itálica que se conserva pero no se crea.
@@ -32,8 +32,9 @@ const ItalicWithoutShortcut = Italic.extend({
  * Ctrl Alt 0 texto normal, y `## ` al empezar la línea. Los del editor
  * (guardar, publicar, link) los maneja el componente.
  *
- * Las imágenes se arrastran desde el escritorio o se pegan: ver
- * `image-upload.ts`.
+ * Las imágenes se arrastran desde el escritorio o se pegan (ver
+ * `image-upload.ts`) y se achican arrastrando una esquina (ver
+ * `resizable-image.ts`).
  */
 export function editorExtensions({
   placeholder = "",
@@ -64,7 +65,7 @@ export function editorExtensions({
       },
     }),
     ItalicWithoutShortcut,
-    Image,
+    ResizableImage,
     ImageUpload.configure(upload),
     Markdown,
     Placeholder.configure({ placeholder }),
