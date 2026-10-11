@@ -1,11 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import {
-  GITHUB_URL,
-  INSTAGRAM_DM_URL,
-  INSTAGRAM_URL,
-  LINKEDIN_URL,
-} from "@/lib/profile";
+import { GITHUB_URL, INSTAGRAM_URL, LINKEDIN_URL } from "@/lib/profile";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
@@ -19,14 +14,13 @@ describe("SiteHeader", () => {
     );
   });
 
-  // Instagram es el canal de conversación: "escríbeme" abre un mensaje, no el
-  // perfil, y en otra pestaña para no sacar al visitante del sitio. Dentro del
-  // navegador de Instagram cambia: ver `instagram-dm-link.test.tsx`.
-  it("escríbeme abre un mensaje directo de Instagram en otra pestaña", () => {
+  // Al perfil y no a ig.me: dentro del navegador interno de Instagram, ig.me
+  // no abre el chat. En otra pestaña para no sacar al visitante del sitio.
+  it("escríbeme abre el perfil de Instagram en otra pestaña", () => {
     render(<SiteHeader />);
     const link = screen.getByRole("link", { name: "escríbeme" });
 
-    expect(link).toHaveAttribute("href", INSTAGRAM_DM_URL);
+    expect(link).toHaveAttribute("href", INSTAGRAM_URL);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
