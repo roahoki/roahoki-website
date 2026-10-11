@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { LogbookEntry } from "@/db/schema";
 import LogbookEntryPage, { generateMetadata } from "./page";
@@ -63,5 +63,15 @@ describe("página de la nota", () => {
   it("la portada sigue en la vista previa al compartir", async () => {
     const metadata = await generateMetadata({ params });
     expect(metadata.openGraph?.images).toEqual([COVER]);
+  });
+
+  // Se lee desde una historia, en el navegador interno de Instagram, donde
+  // ningún link a Instagram abre el chat: para responder basta cerrar la nota.
+  it("no lleva link para responder por Instagram", async () => {
+    render(await LogbookEntryPage({ params }));
+
+    expect(
+      screen.queryByRole("link", { name: /instagram/i }),
+    ).not.toBeInTheDocument();
   });
 });
