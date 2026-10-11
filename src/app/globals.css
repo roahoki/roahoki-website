@@ -239,6 +239,28 @@
 }
 
 /*
+ * El logo del header se dibuja al cargar (`animated-logo.tsx`), así que
+ * arranca invisible. Se esconde acá y no desde JS: el HTML se pinta antes de
+ * que el JS hidrate, y esconderlo recién ahí mostraría el logo entero un
+ * instante antes de borrarlo para dibujarlo.
+ *
+ * Solo si hay JS y movimiento; si no, el logo está quieto desde el principio.
+ * Y si el JS no llega, la animación de respaldo lo muestra igual a los 3 s.
+ */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-motion="logo"] {
+    visibility: hidden;
+    animation: motion-fallback-reveal 0s 3s forwards;
+  }
+}
+
+@keyframes motion-fallback-reveal {
+  to {
+    visibility: visible;
+  }
+}
+
+/*
  * El cuerpo de una entrada con la marca nueva (brand book §5.4 y §7.4).
  *
  * La usan la página pública de la entrada y el editor del panel, así se

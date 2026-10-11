@@ -35,6 +35,15 @@ trazos y pasa a crema con el navegador en oscuro; un test avisa si se
 desincroniza. El ícono de iOS (`apple-icon.tsx`) se genera con `next/og` porque
 iOS no acepta SVG.
 
+**Movimiento con GSAP.** El movimiento es parte de la marca, no adorno: se
+eligió GSAP sobre CSS solo o Motion porque sus plugins (DrawSVG, SplitText,
+ScrollTrigger, Flip, Draggable) resuelven justo lo que el sitio quiere hacer —el
+logo es de trazos y se puede dibujar— y desde que Webflow lo compró son todos
+gratis. Las curvas y duraciones son tokens en `src/lib/motion/tokens.ts`. GSAP
+vive en componentes de cliente chicos con `useGSAP`; las páginas siguen siendo
+Server Components. Todo gesto pasa por `gsap.matchMedia(MOTION_OK)`: con
+movimiento reducido o sin JS, el contenido se ve quieto y entero.
+
 **Shadcn sin `components/ui/`.** Se adoptaron los tokens y convenciones, pero los
 componentes se escriben a mano sobre Radix en vez de generarse con el CLI. Muchas
 dependencias `@radix-ui/*` del `package.json` vienen del scaffold original de v0 y
