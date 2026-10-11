@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { LogbookEntry } from "@/db/schema";
-import { INSTAGRAM_URL } from "@/lib/profile";
 import LogbookEntryPage, { generateMetadata } from "./page";
 
 const COVER =
@@ -66,13 +65,13 @@ describe("página de la nota", () => {
     expect(metadata.openGraph?.images).toEqual([COVER]);
   });
 
-  // Se lee desde una historia, en el navegador interno de Instagram: ahí ig.me
-  // no abre el chat, así que se responde desde el perfil.
-  it("respóndeme por instagram lleva al perfil", async () => {
+  // Se lee desde una historia, en el navegador interno de Instagram, donde
+  // ningún link a Instagram abre el chat: para responder basta cerrar la nota.
+  it("no lleva link para responder por Instagram", async () => {
     render(await LogbookEntryPage({ params }));
 
     expect(
-      screen.getByRole("link", { name: "respóndeme por instagram" }),
-    ).toHaveAttribute("href", INSTAGRAM_URL);
+      screen.queryByRole("link", { name: /instagram/i }),
+    ).not.toBeInTheDocument();
   });
 });

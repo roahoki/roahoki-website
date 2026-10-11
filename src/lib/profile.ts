@@ -15,18 +15,11 @@
 export const FULL_NAME = "Joaquín Peralta Pérez";
 export const HANDLE = "roahoki";
 
+export const INSTAGRAM_URL = "https://www.instagram.com/roahoki/";
 export const GITHUB_URL = "https://github.com/roahoki";
 export const LINKEDIN_URL =
   "https://www.linkedin.com/in/joaquin-peralta-perez/";
 export const WHATSAPP_URL = "https://wa.link/ht8ioc";
-
-/**
- * Instagram es el canal de conversación de roahoki (brand book §7.1). Todo
- * "escríbeme" lleva al perfil y no a `ig.me`: casi todos llegan desde una
- * historia, en el navegador interno de Instagram, y ahí `ig.me` no abre el
- * chat. Desde el perfil, "Mensaje" queda a un toque.
- */
-export const INSTAGRAM_URL = "https://www.instagram.com/roahoki/";
 
 /** El blurb del `llms.txt`. Una frase: es lo primero y a veces lo único. */
 export const SUMMARY =

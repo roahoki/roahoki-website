@@ -11,7 +11,6 @@ import {
   listPublishedSlugs,
 } from "@/lib/logbook/queries";
 import { MarkdownContent, markdownToPlainText } from "@/lib/markdown";
-import { INSTAGRAM_URL } from "@/lib/profile";
 import { absoluteUrl } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -125,14 +124,6 @@ export default async function LogbookEntryPage({ params }: Props) {
           <p className="text-signature text-leaf">:)</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-rule pt-4">
             <CopyLinkButton url={absoluteUrl(`/logbook/${entry.slug}`)} />
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline"
-            >
-              respóndeme por instagram
-            </a>
           </div>
         </footer>
       </article>

@@ -14,30 +14,12 @@ describe("SiteHeader", () => {
     );
   });
 
-  // Al perfil y no a ig.me: dentro del navegador interno de Instagram, ig.me
-  // no abre el chat. En otra pestaña para no sacar al visitante del sitio.
-  it("escríbeme abre el perfil de Instagram en otra pestaña", () => {
+  it("lleva solo el logo", () => {
     render(<SiteHeader />);
-    const link = screen.getByRole("link", { name: "escríbeme" });
+    const header = screen.getByRole("banner");
 
-    expect(link).toHaveAttribute("href", INSTAGRAM_URL);
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
-  });
-
-  it("lleva solo el logo y escríbeme, sin bajada", () => {
-    render(<SiteHeader />);
-
-    expect(screen.getByRole("banner")).toHaveTextContent(/^roahokiescríbeme$/);
-  });
-
-  // La palabra del logo y "escríbeme" comparten línea base; la figura, más
-  // alta, no debe empujar el texto.
-  it("alinea el logo y escríbeme por la línea base", () => {
-    render(<SiteHeader />);
-    const row = screen.getByRole("link", { name: "escríbeme" }).parentElement;
-
-    expect(row).toHaveClass("items-baseline");
+    expect(header).toHaveTextContent(/^roahoki$/);
+    expect(within(header).getAllByRole("link")).toHaveLength(1);
   });
 });
 

@@ -1,31 +1,20 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { INSTAGRAM_URL } from "@/lib/profile";
 
 /**
- * Header del sitio con la marca nueva (brand book §7.4): el logo y
- * "escríbeme", nada más.
+ * Header del sitio con la marca nueva (brand book §7.4): solo el logo.
  *
- * `items-baseline` alinea la palabra "roahoki" con "escríbeme" por la línea
- * base del texto, aunque tengan tamaños distintos. Con `items-center` se
- * alinearían las cajas, y la figura —más alta que la palabra— corre el texto
- * del logo hacia abajo.
+ * No lleva "escríbeme": casi todos leen desde una historia, en el navegador
+ * interno de Instagram, donde ningún link a Instagram abre el chat. Cerrar la
+ * página ya los deja a un toque de responder.
  */
 export function SiteHeader() {
   return (
     <header className="border-b border-rule">
-      <div className="flex items-baseline justify-between gap-6 px-4 py-5 md:px-8 md:py-7">
+      <div className="flex px-4 py-5 md:px-8 md:py-7">
         <Link href="/" className="text-ink">
           <Logo size={20} />
         </Link>
-        <a
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-action text-leaf underline-offset-4 hover:underline focus-visible:underline"
-        >
-          escríbeme
-        </a>
       </div>
     </header>
   );
