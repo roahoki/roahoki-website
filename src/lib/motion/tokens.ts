@@ -26,3 +26,19 @@ export const STAGGER = 0.045;
  * lugar desde el principio.
  */
 export const MOTION_OK = "(prefers-reduced-motion: no-preference)";
+
+/** Cuánto sube algo que entra, en px, antes de asentarse en su lugar. */
+export const ENTER_OFFSET = 24;
+
+/**
+ * Lo que se anima al cargar arranca invisible desde el CSS
+ * (`[data-motion]` en `globals.css`), con un respaldo que lo muestra a los 3 s
+ * por si el JS no llega. Si la página lleva más que esto cargando, el
+ * respaldo ya lo mostró (o está por hacerlo): animarlo sería borrarlo para
+ * volver a mostrarlo, así que se deja quieto. Un poco antes de los 3 s para
+ * no arrancar justo cuando aparece.
+ *
+ * También vale tras una navegación del cliente: `performance.now()` cuenta
+ * desde la carga de la página, así que volver al home no repite la entrada.
+ */
+export const REVEAL_DEADLINE_MS = 2800;

@@ -27,6 +27,9 @@ export type EntryCardData = Pick<
  * formato, título y extracto juntos; los tags un poco aparte. La portada es
  * 2:1. Sin foto —el caso más común— es tipográfica: el número de la entrada
  * sobre verde botella, así la grilla no se rompe cuando falta imagen.
+ *
+ * El número de la portada va en su propio span (`data-motion="count"`) para
+ * que `AnimatedEntryGrid` lo haga contar desde cero sin tocar el "#".
  */
 export function EntryCard({ entry }: { entry: EntryCardData }) {
   const href = `/logbook/${entry.slug}`;
@@ -56,7 +59,7 @@ export function EntryCard({ entry }: { entry: EntryCardData }) {
               aria-hidden="true"
               className="absolute bottom-0 left-0 p-5 text-cover-number text-paper"
             >
-              #{entry.number}
+              #<span data-motion="count">{entry.number}</span>
             </p>
           )}
         </div>
