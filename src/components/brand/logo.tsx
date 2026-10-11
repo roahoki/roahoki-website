@@ -18,6 +18,9 @@ type LogoProps = {
  * letra y queda a 0,3 em de la palabra. `items-baseline` apoya el borde
  * inferior de la figura —los hombros— en la línea base del texto. Toma el
  * color del texto que la rodea.
+ *
+ * Los `data-logo-part` son para que `AnimatedLogo` encuentre la figura y la
+ * palabra sin depender del orden del marcado.
  */
 export function Logo({ size = 20, className = "" }: LogoProps) {
   return (
@@ -25,8 +28,8 @@ export function Logo({ size = 20, className = "" }: LogoProps) {
       className={`inline-flex items-baseline gap-[0.3em] font-brand leading-none font-bold tracking-[-0.015em] ${className}`}
       style={{ fontSize: size }}
     >
-      <LogoMark size={Math.round(size * 1.3)} />
-      <span>roahoki</span>
+      <LogoMark data-logo-part="mark" size={Math.round(size * 1.3)} />
+      <span data-logo-part="word">roahoki</span>
     </span>
   );
 }
