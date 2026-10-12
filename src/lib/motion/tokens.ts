@@ -16,6 +16,8 @@ export const EASE = {
   stroke: "power2.inOut",
   /** Algo que entra y se asienta. */
   enter: "power3.out",
+  /** Lo que va pegado al scroll: lineal, o se despega de la mano que scrollea. */
+  scroll: "none",
 } as const;
 
 /** Desfase entre elementos que entran uno tras otro, como las letras. */
@@ -29,6 +31,13 @@ export const MOTION_OK = "(prefers-reduced-motion: no-preference)";
 
 /** Cuánto sube algo que entra, en px, antes de asentarse en su lugar. */
 export const ENTER_OFFSET = 24;
+
+/**
+ * Cuánto se corre una imagen del cuerpo respecto del texto mientras cruza la
+ * pantalla, en px, hacia cada lado. Menos que el margen que la separa del
+ * texto (32 px): nunca llega a tocarlo.
+ */
+export const PARALLAX_DRIFT = 24;
 
 /**
  * Lo que se anima al cargar arranca invisible desde el CSS
