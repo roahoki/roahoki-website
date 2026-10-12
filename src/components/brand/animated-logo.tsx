@@ -5,18 +5,16 @@ import gsap from "gsap";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { SplitText } from "gsap/SplitText";
 import { useRef } from "react";
-import { DURATION, EASE, MOTION_OK, STAGGER } from "@/lib/motion/tokens";
+import {
+  DURATION,
+  EASE,
+  MOTION_OK,
+  REVEAL_DEADLINE_MS,
+  STAGGER,
+} from "@/lib/motion/tokens";
 import { Logo } from "./logo";
 
 gsap.registerPlugin(useGSAP, DrawSVGPlugin, SplitText);
-
-/**
- * Pasado este tiempo desde que empezó a cargar la página, el CSS ya mostró el
- * logo entero (ver `[data-motion="logo"]` en `globals.css`). Dibujarlo
- * entonces sería borrarlo para volver a hacerlo: mejor dejarlo quieto. Un poco
- * antes de los 3 s del respaldo, para no arrancar justo cuando aparece.
- */
-const INTRO_DEADLINE_MS = 2800;
 
 /** Los trazos de la figura, en orden: cabeza, hombro izquierdo y ojo. */
 function markPaths(el: HTMLElement) {
@@ -49,7 +47,7 @@ export function AnimatedLogo({ size }: { size?: number }) {
         const el = root.current;
         if (!el) return;
         gsap.set(el, { visibility: "visible" });
-        if (performance.now() > INTRO_DEADLINE_MS) return;
+        if (performance.now() > REVEAL_DEADLINE_MS) return;
 
         const [head, shoulder, eye] = markPaths(el);
         // Mientras dura, la palabra se anuncia por el `aria-label` que le pone

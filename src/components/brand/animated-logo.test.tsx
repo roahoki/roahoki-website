@@ -1,28 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { mockElapsed, mockMotion } from "@/test/motion";
 import { AnimatedLogo } from "./animated-logo";
-
-/** Simula la preferencia de movimiento del visitante. */
-function mockMotion(allowed: boolean) {
-  vi.spyOn(window, "matchMedia").mockImplementation(
-    (query: string) =>
-      ({
-        matches: query.includes("no-preference") ? allowed : false,
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-      }) as MediaQueryList,
-  );
-}
-
-/** Simula cuánto lleva cargando la página cuando el logo hidrata. */
-function mockElapsed(ms: number) {
-  vi.spyOn(performance, "now").mockReturnValue(ms);
-}
 
 function renderLogo() {
   const { container } = render(

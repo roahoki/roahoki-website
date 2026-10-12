@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AdminFab } from "@/components/admin/admin-fab";
+import { AnimatedEntryGrid } from "@/components/animated-entry-grid";
 import { EntryCard } from "@/components/entry-card";
 import type { LogbookEntry } from "@/db/schema";
 import { listPublishedEntries } from "@/lib/logbook/queries";
@@ -43,13 +44,13 @@ export default async function HomePage() {
           Todavía no hay notas publicadas.
         </p>
       ) : (
-        <ul className="grid grid-cols-1 gap-y-[60px] sm:grid-cols-2 sm:gap-x-10 md:gap-y-14 lg:grid-cols-3">
+        <AnimatedEntryGrid className="grid grid-cols-1 gap-y-[60px] sm:grid-cols-2 sm:gap-x-10 md:gap-y-14 lg:grid-cols-3">
           {entries.map((entry) => (
-            <li key={entry.id}>
+            <li key={entry.id} data-motion="card">
               <EntryCard entry={entry} />
             </li>
           ))}
-        </ul>
+        </AnimatedEntryGrid>
       )}
       <AdminFab />
     </main>
