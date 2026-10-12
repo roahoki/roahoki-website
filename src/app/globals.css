@@ -240,8 +240,9 @@
 
 /*
  * Lo que se anima al cargar arranca invisible: el logo del header, que se
- * dibuja (`animated-logo.tsx`), y las tarjetas del home, que entran
- * escalonadas (`animated-entry-grid.tsx`). Se esconde acá y no desde JS: el
+ * dibuja (`animated-logo.tsx`), las tarjetas del home, que entran
+ * escalonadas (`animated-entry-grid.tsx`), y el título de la nota, que sube
+ * línea a línea (`animated-entry-title.tsx`). Se esconde acá y no desde JS: el
  * HTML se pinta antes de que el JS hidrate, y esconderlo recién ahí mostraría
  * todo entero un instante antes de borrarlo para animarlo.
  *
@@ -251,7 +252,8 @@
  */
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   [data-motion="logo"],
-  [data-motion="card"] {
+  [data-motion="card"],
+  [data-motion="title"] {
     visibility: hidden;
     animation: motion-fallback-reveal 0s 3s forwards;
   }
@@ -261,6 +263,23 @@
   to {
     visibility: visible;
   }
+}
+
+/* Cada línea del título sube desde detrás de su renglón, que la recorta. El
+   interlineado del título es más bajo que lo que ocupan las letras: sin este
+   margen, el recorte se comería las colas de la g y las tildes de las
+   mayúsculas mientras sube. */
+.entry-title-line-mask {
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
+
+/* En columna flex los márgenes negativos no se colapsan entre renglones: se
+   suman y compensan el relleno, y el título partido mide lo mismo que el
+   entero. En bloque, el título crecía mientras subía y empujaba los tags. */
+[data-motion="title"]:has(> .entry-title-line-mask) {
+  display: flex;
+  flex-direction: column;
 }
 
 /*

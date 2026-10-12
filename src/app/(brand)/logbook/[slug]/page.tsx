@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminFab } from "@/components/admin/admin-fab";
+import { AnimatedEntryTitle } from "@/components/entry/animated-entry-title";
 import { CopyLinkButton } from "@/components/entry/copy-link-button";
 import { EntryNeighbors } from "@/components/entry/entry-neighbors";
+import { ParallaxImages } from "@/components/entry/parallax-images";
 import { ENTRY_FORMAT_LABELS } from "@/lib/logbook/entry-format";
 import { formatEntryDateShort } from "@/lib/logbook/format";
 import {
@@ -97,7 +99,9 @@ export default async function LogbookEntryPage({ params }: Props) {
             </time>
             {entry.format && <span>{ENTRY_FORMAT_LABELS[entry.format]}</span>}
           </p>
-          <h1 className="text-entry-title text-ink">{entry.title}</h1>
+          <AnimatedEntryTitle className="text-entry-title text-ink">
+            {entry.title}
+          </AnimatedEntryTitle>
           {entry.tags.length > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label="tags">
               {entry.tags.map((tag) => (
@@ -116,9 +120,9 @@ export default async function LogbookEntryPage({ params }: Props) {
             previa al compartir). Si una foto importa para la nota, se pone en
             el cuerpo. */}
 
-        <div className="prose-entry mx-auto w-full max-w-[680px]">
+        <ParallaxImages className="prose-entry mx-auto w-full max-w-[680px]">
           <MarkdownContent>{entry.bodyMd}</MarkdownContent>
-        </div>
+        </ParallaxImages>
 
         <footer className="mx-auto flex w-full max-w-[680px] flex-col gap-5">
           <p className="text-signature text-leaf">:)</p>
