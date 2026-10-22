@@ -16,13 +16,13 @@ import { AUTOSAVE_DELAY_MS, LogbookEditor } from "./logbook-editor";
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 
-// La subida real va por XHR y tiene su propio test; acá importa qué hace el
-// editor mientras espera.
+// El procesamiento y la subida real (canvas y XHR) tienen sus propios tests;
+// acá importa qué hace el editor mientras espera.
 const uploads = vi.hoisted(() => ({
   resolve: [] as ((url: string) => void)[],
 }));
-vi.mock("./editor/upload-image", () => ({
-  uploadImage: () =>
+vi.mock("./editor/prepare-image", () => ({
+  uploadPreparedImage: () =>
     new Promise<string>((resolve) => uploads.resolve.push(resolve)),
 }));
 

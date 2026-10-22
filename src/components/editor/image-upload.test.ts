@@ -183,10 +183,12 @@ describe("subir imágenes al cuerpo", () => {
 describe("rejectReason", () => {
   it.each([
     [image("a.jpg"), null],
-    [image("a.heic", "image/heic"), /Formato no admitido/],
-    [image("grande.jpg", "image/jpeg", 5 * 1024 * 1024), /más de 4 MB/],
+    // HEIC sale en JPEG al procesarla, y el peso se mide después de achicar.
+    [image("a.heic", "image/heic"), null],
+    [image("grande.jpg", "image/jpeg", 5 * 1024 * 1024), null],
+    [image("a.tiff", "image/tiff"), /Formato no admitido/],
     [new File(["x"], "nota.txt", { type: "text/plain" }), /solo imágenes/],
-  ])("%s", (file, expected) => {
+  ])("$0.name", (file, expected) => {
     const reason = rejectReason(file);
     if (expected === null) expect(reason).toBeNull();
     else expect(reason).toMatch(expected);

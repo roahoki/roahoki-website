@@ -22,7 +22,7 @@ import {
 import { formatEntryDateShort } from "@/lib/logbook/format";
 import { CoverCropper } from "./cover-cropper";
 import { rejectReason } from "./image-upload";
-import { uploadImage } from "./upload-image";
+import { uploadPreparedImage } from "./prepare-image";
 
 /**
  * El panel "datos de la nota" (brand book §7.4, admin).
@@ -390,7 +390,7 @@ function Cover({
 
     setProgress(`subiendo ${file.name} · 0 %`);
     try {
-      const uploaded = await uploadImage(file, (percent) =>
+      const uploaded = await uploadPreparedImage(file, (percent) =>
         setProgress(`subiendo ${file.name} · ${Math.round(percent)} %`),
       );
       // Una foto nueva parte centrada: el encuadre de la anterior no le sirve.
