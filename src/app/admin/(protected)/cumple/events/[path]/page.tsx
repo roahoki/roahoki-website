@@ -4,15 +4,17 @@ import { notFound } from "next/navigation";
 import { AlbumForm } from "@/components/birthday/admin/album-form";
 import { BackBar } from "@/components/birthday/admin/back-bar";
 import { CopyButton } from "@/components/birthday/admin/copy-button";
-import { eventByPath } from "@/lib/birthday/events";
+import { EventTextsForm } from "@/components/birthday/admin/event-texts-form";
+import { eventByPath, withTexts } from "@/lib/birthday/events";
 import { formatDayTime } from "@/lib/birthday/format";
 import { reminderMessage, whatsappLink } from "@/lib/birthday/links";
 import { dotState, visitLabel } from "@/lib/birthday/panel";
-import { albums, listGuests } from "@/lib/birthday/queries";
+import { albums, eventTexts, listGuests } from "@/lib/birthday/queries";
 
 /**
  * Un plan visto desde el panel (Figma: panel v1, por plan): a quién recordarle,
- * quién va y quién no, la lista final para copiar y el álbum de fotos.
+ * quién va y quién no, la lista final para copiar, los textos que ven los
+ * invitados y el álbum de fotos.
  */
 export const dynamic = "force-dynamic";
 
@@ -25,7 +27,12 @@ export default async function AdminBirthdayEventPage({
   const plan = eventByPath(path);
   if (!plan) notFound();
 
-  const [guests, albumUrls] = await Promise.all([listGuests(), albums()]);
+  const [guests, albumUrls, texts] = await Promise.all([
+    listGuests(),
+    albums(),
+    eventTexts(),
+  ]);
+  const shown = withTexts(plan, texts[plan.slug]);
   const going = guests.filter((g) => dotState(g, plan.slug) === "going");
   const notGoing = guests.filter((g) => dotState(g, plan.slug) === "not_going");
   const pending = guests.filter((g) => dotState(g, plan.slug) === "pending");
@@ -124,6 +131,20 @@ export default async function AdminBirthdayEventPage({
             Los nombres de quienes van, uno por línea, para el grupo o la
             reserva.
           </p>
+        </section>
+
+        <section aria-labelledby="textos" className="flex flex-col gap-2.5">
+          <h2 id="textos" className="text-entry-meta text-faded">
+            lo que ven los invitados
+          </h2>
+          <EventTextsForm
+            // Remonta al volver a los originales para que el formulario los
+            // muestre.
+            key={texts[plan.slug] ? "edited" : "original"}
+            event={plan.slug}
+            initial={{ question: shown.question, details: shown.details }}
+            edited={Boolean(texts[plan.slug])}
+          />
         </section>
 
         <section aria-labelledby="album" className="flex flex-col gap-2.5">

@@ -54,10 +54,14 @@ export function PlanSection({
         </h2>
       </div>
 
-      <dl className="flex flex-col gap-4">
-        {plan.details.map((detail) => (
-          <div key={detail.label}>
-            <dt className="text-entry-meta font-bold">{detail.label}</dt>
+      <dl className="flex flex-col gap-5">
+        {plan.details.map((detail, index) => (
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: lista fija por render; dos datos pueden repetir subtítulo desde el panel.
+            key={index}
+            className="flex flex-col gap-1"
+          >
+            <dt className="text-card-title-sm">{detail.label}</dt>
             <dd className="text-entry-body">{detail.value}</dd>
           </div>
         ))}

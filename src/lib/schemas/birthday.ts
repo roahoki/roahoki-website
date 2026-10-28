@@ -119,6 +119,40 @@ export const albumInputSchema = z.object({
     .or(z.literal("").transform(() => null)),
 });
 
+/**
+ * Los textos de un plan desde el panel. `texts: null` vuelve a los de
+ * `events.ts`. Los largos máximos son holgados: solo cuidan que un pegado por
+ * error no rompa la página.
+ */
+export const eventDetailSchema = z.object({
+  label: z
+    .string()
+    .trim()
+    .min(1, "Cada dato necesita un subtítulo.")
+    .max(60, "El subtítulo es muy largo (máximo 60)."),
+  value: z
+    .string()
+    .trim()
+    .min(1, "Cada dato necesita su texto.")
+    .max(500, "El texto es muy largo (máximo 500)."),
+});
+
+export const eventTextsSchema = z.object({
+  question: z
+    .string()
+    .trim()
+    .min(1, "Falta la pregunta.")
+    .max(120, "La pregunta es muy larga (máximo 120)."),
+  details: z.array(eventDetailSchema).max(8, "Máximo 8 datos por plan."),
+});
+
+export const eventTextsInputSchema = z.object({
+  event: eventSlug,
+  texts: eventTextsSchema.nullable(),
+});
+
+export type EventTexts = z.infer<typeof eventTextsSchema>;
+
 export function firstErrorMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Datos inválidos.";
 }

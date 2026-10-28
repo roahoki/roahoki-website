@@ -18,6 +18,7 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
     const sql = connectTestDb();
     try {
       await sql`delete from birthday_event_albums`;
+      await sql`delete from birthday_event_texts`;
       await sql`delete from birthday_guests`;
     } finally {
       await sql.end();
@@ -201,6 +202,30 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
     });
   });
 
+  describe("birthday_event_texts", () => {
+    it("guarda los datos como lista y rechaza otra forma", async () => {
+      const sql = connectTestDb();
+      try {
+        await sql`insert into birthday_event_texts (event_slug, question, details)
+          values ('party', '¿vas?', '[{"label":"a","value":"b"}]'::jsonb)`;
+        await expect(
+          sql`insert into birthday_event_texts (event_slug, question, details)
+            values ('run', '¿vas?', '{"label":"a"}'::jsonb)`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_event_texts_details_array",
+        });
+        await expect(
+          sql`insert into birthday_event_texts (event_slug, question, details)
+            values ('asado', '¿vas?', '[]'::jsonb)`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_event_texts_event_slug_check",
+        });
+      } finally {
+        await sql.end();
+      }
+    });
+  });
+
   describe("RLS", () => {
     it("no deja leer ni escribir nada con la anon key", async () => {
       await insertGuest();
@@ -208,6 +233,7 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
         "birthday_guests",
         "birthday_rsvps",
         "birthday_event_albums",
+        "birthday_event_texts",
       ]) {
         const rows = await asRole(
           "anon",

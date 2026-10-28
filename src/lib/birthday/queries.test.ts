@@ -51,6 +51,7 @@ describe.skipIf(!hasTestDatabase)("queries del cumpleaños", () => {
     const sql = connectTestDb();
     try {
       await sql`delete from birthday_event_albums`;
+      await sql`delete from birthday_event_texts`;
       await sql`delete from birthday_guests`;
     } finally {
       await sql.end();
@@ -236,6 +237,23 @@ describe.skipIf(!hasTestDatabase)("queries del cumpleaños", () => {
       });
       await queries.setAlbum("party", null);
       expect(await queries.albums()).toEqual({});
+    });
+  });
+
+  describe("textos de los planes", () => {
+    it("guarda, reemplaza y vuelve a los originales", async () => {
+      expect(await queries.eventTexts()).toEqual({});
+      const texts = {
+        question: "¿vas?",
+        details: [{ label: "¿me puedo quedar?", value: "sí" }],
+      };
+      await queries.setEventTexts("party", texts);
+      await queries.setEventTexts("party", { ...texts, question: "¿vienes?" });
+      expect(await queries.eventTexts()).toEqual({
+        party: { ...texts, question: "¿vienes?" },
+      });
+      await queries.setEventTexts("party", null);
+      expect(await queries.eventTexts()).toEqual({});
     });
   });
 });

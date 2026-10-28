@@ -1,0 +1,736 @@
+{
+  "id": "df276663-55ff-449d-95f8-96428da4195e",
+  "prevId": "0ec42135-6bfa-450f-a303-a344ae4d1eca",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.birthday_event_albums": {
+      "name": "birthday_event_albums",
+      "schema": "",
+      "columns": {
+        "event_slug": {
+          "name": "event_slug",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "service role full access to birthday event albums": {
+          "name": "service role full access to birthday event albums",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "birthday_event_albums_event_slug_check": {
+          "name": "birthday_event_albums_event_slug_check",
+          "value": "event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])"
+        },
+        "birthday_event_albums_url_https": {
+          "name": "birthday_event_albums_url_https",
+          "value": "url LIKE 'https://%'"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.birthday_event_texts": {
+      "name": "birthday_event_texts",
+      "schema": "",
+      "columns": {
+        "event_slug": {
+          "name": "event_slug",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "question": {
+          "name": "question",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "details": {
+          "name": "details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "service role full access to birthday event texts": {
+          "name": "service role full access to birthday event texts",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "birthday_event_texts_event_slug_check": {
+          "name": "birthday_event_texts_event_slug_check",
+          "value": "event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])"
+        },
+        "birthday_event_texts_details_array": {
+          "name": "birthday_event_texts_details_array",
+          "value": "jsonb_typeof(details) = 'array'"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.birthday_guests": {
+      "name": "birthday_guests",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "personal_message": {
+          "name": "personal_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invited_events": {
+          "name": "invited_events",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{run,party,hike}'::text[]"
+        },
+        "roki": {
+          "name": "roki",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scratched_at": {
+          "name": "scratched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "first_seen_at": {
+          "name": "first_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "birthday_guests_token_key": {
+          "name": "birthday_guests_token_key",
+          "columns": [
+            {
+              "expression": "token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "service role full access to birthday guests": {
+          "name": "service role full access to birthday guests",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "birthday_guests_name_not_empty": {
+          "name": "birthday_guests_name_not_empty",
+          "value": "length(trim(name)) > 0"
+        },
+        "birthday_guests_token_format": {
+          "name": "birthday_guests_token_format",
+          "value": "token ~ '^[0-9A-Za-z]{12}$'"
+        },
+        "birthday_guests_invited_events_check": {
+          "name": "birthday_guests_invited_events_check",
+          "value": "invited_events <@ ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text] AND cardinality(invited_events) > 0"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.birthday_rsvps": {
+      "name": "birthday_rsvps",
+      "schema": "",
+      "columns": {
+        "guest_id": {
+          "name": "guest_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_slug": {
+          "name": "event_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "birthday_rsvps_event_slug_idx": {
+          "name": "birthday_rsvps_event_slug_idx",
+          "columns": [
+            {
+              "expression": "event_slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "birthday_rsvps_guest_id_birthday_guests_id_fk": {
+          "name": "birthday_rsvps_guest_id_birthday_guests_id_fk",
+          "tableFrom": "birthday_rsvps",
+          "tableTo": "birthday_guests",
+          "columnsFrom": ["guest_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "birthday_rsvps_guest_id_event_slug_pk": {
+          "name": "birthday_rsvps_guest_id_event_slug_pk",
+          "columns": ["guest_id", "event_slug"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "service role full access to birthday rsvps": {
+          "name": "service role full access to birthday rsvps",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "birthday_rsvps_event_slug_check": {
+          "name": "birthday_rsvps_event_slug_check",
+          "value": "event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])"
+        },
+        "birthday_rsvps_status_check": {
+          "name": "birthday_rsvps_status_check",
+          "value": "status = ANY (ARRAY['going'::text, 'not_going'::text])"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.exercise_counter_events": {
+      "name": "exercise_counter_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "exercise": {
+          "name": "exercise",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delta": {
+          "name": "delta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "exercise_counter_events_created_at_idx": {
+          "name": "exercise_counter_events_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "service role full access to exercise counter events": {
+          "name": "service role full access to exercise counter events",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "exercise_counter_events_exercise_check": {
+          "name": "exercise_counter_events_exercise_check",
+          "value": "exercise = ANY (ARRAY['pull_ups'::text, 'push_ups'::text, 'squats'::text, 'dips'::text, 'handstand_seconds'::text, 'pistol_squats'::text])"
+        },
+        "exercise_counter_events_delta_check": {
+          "name": "exercise_counter_events_delta_check",
+          "value": "delta <> 0 AND abs(delta) <= 1000"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.logbook_entries": {
+      "name": "logbook_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "body_md": {
+          "name": "body_md",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cover_image_url": {
+          "name": "cover_image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'published'"
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "format": {
+          "name": "format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cover_focus": {
+          "name": "cover_focus",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'center'"
+        },
+        "cover_crop_x": {
+          "name": "cover_crop_x",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0.5
+        },
+        "cover_crop_y": {
+          "name": "cover_crop_y",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0.5
+        },
+        "cover_zoom": {
+          "name": "cover_zoom",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "logbook_entries_slug_key": {
+          "name": "logbook_entries_slug_key",
+          "columns": [
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "logbook_entries_number_key": {
+          "name": "logbook_entries_number_key",
+          "columns": [
+            {
+              "expression": "number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "logbook_entries_tags_idx": {
+          "name": "logbook_entries_tags_idx",
+          "columns": [
+            {
+              "expression": "tags",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "logbook_entries_status_published_at_idx": {
+          "name": "logbook_entries_status_published_at_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "published_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "public can read published logbook entries": {
+          "name": "public can read published logbook entries",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["anon"],
+          "using": "status = 'published'"
+        },
+        "service role full access to logbook entries": {
+          "name": "service role full access to logbook entries",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "logbook_entries_status_check": {
+          "name": "logbook_entries_status_check",
+          "value": "status = ANY (ARRAY['draft'::text, 'published'::text])"
+        },
+        "logbook_entries_slug_not_empty": {
+          "name": "logbook_entries_slug_not_empty",
+          "value": "length(slug) > 0"
+        },
+        "logbook_entries_number_positive": {
+          "name": "logbook_entries_number_positive",
+          "value": "number > 0"
+        },
+        "logbook_entries_format_check": {
+          "name": "logbook_entries_format_check",
+          "value": "format IS NULL OR format = ANY (ARRAY['thought'::text, 'update'::text, 'one-liner'::text, 'project'::text, 'how-to'::text])"
+        },
+        "logbook_entries_cover_focus_check": {
+          "name": "logbook_entries_cover_focus_check",
+          "value": "cover_focus = ANY (ARRAY['top'::text, 'center'::text, 'bottom'::text])"
+        },
+        "logbook_entries_cover_crop_check": {
+          "name": "logbook_entries_cover_crop_check",
+          "value": "cover_crop_x BETWEEN 0 AND 1 AND cover_crop_y BETWEEN 0 AND 1 AND cover_zoom BETWEEN 1 AND 4"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.testimonials": {
+      "name": "testimonials",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "linkedin_url": {
+          "name": "linkedin_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "github_username": {
+          "name": "github_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "public can read approved": {
+          "name": "public can read approved",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["anon"],
+          "using": "status = 'approved'"
+        },
+        "public can insert": {
+          "name": "public can insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": ["anon"],
+          "withCheck": "true"
+        },
+        "service role full access": {
+          "name": "service role full access",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["service_role"],
+          "using": "true",
+          "withCheck": "true"
+        }
+      },
+      "checkConstraints": {
+        "testimonials_status_check": {
+          "name": "testimonials_status_check",
+          "value": "status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])"
+        }
+      },
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

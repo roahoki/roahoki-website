@@ -64,6 +64,13 @@
       "when": 1793164655746,
       "tag": "0008_birthday",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793211198350,
+      "tag": "0009_birthday_event_texts",
+      "breakpoints": true
     }
   ]
 }
