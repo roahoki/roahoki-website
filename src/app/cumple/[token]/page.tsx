@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Invitation } from "@/components/birthday/invitation";
 import { PlanCard } from "@/components/birthday/plan-card";
+import { SaveImages } from "@/components/birthday/save-images";
 import { ScratchGate } from "@/components/birthday/scratch-gate";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
 import { Logo } from "@/components/brand/logo";
@@ -90,6 +91,8 @@ export default async function BirthdayGuestPage({ params }: Params) {
               />
             ))}
           </section>
+
+          <SaveImages token={token} />
         </main>
 
         <footer className="mx-auto max-w-[480px] px-4 pt-4 pb-12">
