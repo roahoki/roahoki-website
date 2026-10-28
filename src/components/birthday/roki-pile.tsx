@@ -18,6 +18,11 @@ import { RokiFigure } from "./roki-figure";
  *
  * Tocar un roki sin arrastrarlo lo hace saltar; si es el propio, abre la hoja
  * para redibujarlo.
+ *
+ * El dedo se maneja acá y no con los eventos de `Mouse` de matter.js: esos
+ * cancelan todo toque sobre la caja y la página no se podía mover con el dedo
+ * encima de la pila. Ahora solo cada roki lleva `touch-action: none`; un toque
+ * en el espacio vacío hace scroll como en cualquier parte.
  */
 
 export type RokiPileHandle = {
@@ -25,17 +30,17 @@ export type RokiPileHandle = {
   shake: () => void;
 };
 
-const HEIGHT = 380;
-
 export const RokiPile = forwardRef<
   RokiPileHandle,
   {
     attendees: Attendee[];
     meId: string;
     color: string;
+    /** Alto de la caja: lo fija `WhoIsGoing` para que no cambie entre vistas. */
+    height: number;
     onTapMine: () => void;
   }
->(function RokiPile({ attendees, meId, color, onTapMine }, ref) {
+>(function RokiPile({ attendees, meId, color, height, onTapMine }, ref) {
   const box = useRef<HTMLDivElement>(null);
   const items = useRef<(HTMLDivElement | null)[]>([]);
   const shakeRef = useRef<() => void>(() => {});
@@ -70,9 +75,9 @@ export const RokiPile = forwardRef<
       const engine = Engine.create({ gravity: { y: 1.1 } });
       const wall = { isStatic: true, render: { visible: false } };
       Composite.add(engine.world, [
-        Bodies.rectangle(width / 2, HEIGHT + 30, width * 3, 60, wall),
-        Bodies.rectangle(-30, HEIGHT / 2, 60, HEIGHT * 4, wall),
-        Bodies.rectangle(width + 30, HEIGHT / 2, 60, HEIGHT * 4, wall),
+        Bodies.rectangle(width / 2, height + 30, width * 3, 60, wall),
+        Bodies.rectangle(-30, height / 2, 60, height * 4, wall),
+        Bodies.rectangle(width + 30, height / 2, 60, height * 4, wall),
       ]);
 
       // Un busto: rectángulo con las esquinas de arriba redondeadas como la
@@ -93,13 +98,10 @@ export const RokiPile = forwardRef<
       );
       Composite.add(engine.world, bodies);
 
-      const mouse = Mouse.create(container);
-      // Matter escucha la rueda del mouse y bloquea el scroll de la página.
-      const wheel = (mouse as unknown as { mousewheel: EventListener })
-        .mousewheel;
-      container.removeEventListener("wheel", wheel);
-      container.removeEventListener("mousewheel", wheel);
-      container.removeEventListener("DOMMouseScroll", wheel);
+      // Sobre un elemento suelto, fuera de la página: `Mouse` engancha sus
+      // listeners táctiles al elemento que recibe y no hay forma de sacarlos.
+      // La posición y el botón los escriben los eventos de puntero de abajo.
+      const mouse = Mouse.create(document.createElement("div"));
       const drag = MouseConstraint.create(engine, {
         mouse,
         constraint: { stiffness: 0.2, damping: 0.1 },
@@ -163,8 +165,50 @@ export const RokiPile = forwardRef<
       };
       frame = requestAnimationFrame(tick);
 
+      const at = (event: PointerEvent) => {
+        const rect = container.getBoundingClientRect();
+        const point = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        };
+        mouse.position.x = mouse.absolute.x = point.x;
+        mouse.position.y = mouse.absolute.y = point.y;
+        return point;
+      };
+      let pointer: number | null = null;
+      const down = (event: PointerEvent) => {
+        // Solo un toque sobre un roki lo agarra; el resto es scroll.
+        if (
+          pointer !== null ||
+          !(event.target as Element).closest("[data-roki]")
+        )
+          return;
+        pointer = event.pointerId;
+        container.setPointerCapture(event.pointerId);
+        const point = at(event);
+        mouse.mousedownPosition.x = point.x;
+        mouse.mousedownPosition.y = point.y;
+        mouse.button = 0;
+      };
+      const move = (event: PointerEvent) => {
+        if (event.pointerId === pointer) at(event);
+      };
+      const up = (event: PointerEvent) => {
+        if (event.pointerId !== pointer) return;
+        at(event);
+        pointer = null;
+        mouse.button = -1;
+      };
+      container.addEventListener("pointerdown", down);
+      container.addEventListener("pointermove", move);
+      container.addEventListener("pointerup", up);
+      container.addEventListener("pointercancel", up);
+
       cleanup = () => {
-        Mouse.clearSourceEvents(mouse);
+        container.removeEventListener("pointerdown", down);
+        container.removeEventListener("pointermove", move);
+        container.removeEventListener("pointerup", up);
+        container.removeEventListener("pointercancel", up);
         Composite.clear(engine.world, false);
         Engine.clear(engine);
       };
@@ -176,13 +220,13 @@ export const RokiPile = forwardRef<
       cleanup();
       shakeRef.current = () => {};
     };
-  }, [ids, size, meId]);
+  }, [ids, size, meId, height]);
 
   return (
     <div
       ref={box}
-      className="relative w-full touch-none overflow-hidden select-none"
-      style={{ height: HEIGHT }}
+      className="relative w-full overflow-hidden select-none"
+      style={{ height }}
     >
       {attendees.map((attendee, index) => (
         <div
@@ -190,7 +234,8 @@ export const RokiPile = forwardRef<
           ref={(el) => {
             items.current[index] = el;
           }}
-          className="pointer-events-none absolute top-0 left-0 flex items-end justify-center"
+          data-roki
+          className="absolute top-0 left-0 flex touch-none items-end justify-center"
           // Ocultos hasta el primer cuadro de física: sin esto se verían todos
           // amontonados en la esquina mientras carga el motor.
           style={{ width: size, height: size, visibility: "hidden" }}
