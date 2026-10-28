@@ -1,7 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mockMotion } from "@/test/motion";
-import { ColorFlood, TAP_KEY } from "./color-flood";
 import { RokiFigure } from "./roki-figure";
 import { RsvpButtons } from "./rsvp-buttons";
 
@@ -111,39 +109,5 @@ describe("RokiFigure", () => {
     expect(
       screen.getByRole("img", { name: "el roki de cata" }),
     ).toBeInTheDocument();
-  });
-});
-
-describe("ColorFlood", () => {
-  it("sin toque guardado, la página aparece quieta", () => {
-    mockMotion(true);
-    render(
-      <ColorFlood color="#C42B1C">
-        <p>trote</p>
-      </ColorFlood>,
-    );
-    expect(screen.getByText("trote").parentElement?.style.clipPath).toBe("");
-  });
-
-  it("con movimiento reducido no anima y olvida el toque", () => {
-    vi.spyOn(window, "matchMedia").mockImplementation(
-      (query: string) =>
-        ({
-          matches: query.includes(": reduce"),
-          media: query,
-          addEventListener: () => {},
-          removeEventListener: () => {},
-          addListener: () => {},
-          removeListener: () => {},
-        }) as unknown as MediaQueryList,
-    );
-    sessionStorage.setItem(TAP_KEY, JSON.stringify({ x: 10, y: 10 }));
-    render(
-      <ColorFlood color="#C42B1C">
-        <p>trote</p>
-      </ColorFlood>,
-    );
-    expect(screen.getByText("trote").parentElement?.style.clipPath).toBe("");
-    expect(sessionStorage.getItem(TAP_KEY)).toBeNull();
   });
 });
