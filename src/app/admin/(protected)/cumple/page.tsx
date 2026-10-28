@@ -10,7 +10,11 @@ import {
   summarize,
   visitLabel,
 } from "@/lib/birthday/panel";
-import { type GuestWithRsvps, listGuests } from "@/lib/birthday/queries";
+import {
+  type GuestWithRsvps,
+  listGuests,
+  pendingQuestionCounts,
+} from "@/lib/birthday/queries";
 import { formatTimeAgo } from "@/lib/logbook/format";
 
 /**
@@ -26,7 +30,10 @@ import { formatTimeAgo } from "@/lib/logbook/format";
 export const dynamic = "force-dynamic";
 
 export default async function AdminBirthdayPage() {
-  const guests = await listGuests();
+  const [guests, questions] = await Promise.all([
+    listGuests(),
+    pendingQuestionCounts(),
+  ]);
   const summaries = summarize(guests);
   const { pending, done } = splitByPending(guests);
 
@@ -55,6 +62,13 @@ export default async function AdminBirthdayPage() {
                   <span className="text-card-meta">
                     {summary.pending} sin responder · {summary.notGoing} no
                   </span>
+                  {(questions[plan.slug] ?? 0) > 0 && (
+                    <span className="mt-1 self-start rounded-full bg-paper px-2 py-0.5 text-card-meta text-ink">
+                      {questions[plan.slug] === 1
+                        ? "1 duda por responder"
+                        : `${questions[plan.slug]} dudas por responder`}
+                    </span>
+                  )}
                 </Link>
               </li>
             );

@@ -526,3 +526,55 @@ export const birthdayEventTexts = pgTable(
 ).enableRLS();
 
 export type BirthdayEventTexts = typeof birthdayEventTexts.$inferSelect;
+
+/**
+ * Las dudas de cada plan ("¿me puedo quedar a dormir?"). Las hace un invitado
+ * desde su página o las publica Joaquín desde el panel como duda frecuente
+ * (`guest_id` nulo). Un invitado ve las que tienen respuesta y las suyas que
+ * esperan una; las pendientes de otros no se muestran.
+ */
+export const birthdayQuestions = pgTable(
+  "birthday_questions",
+  {
+    id: uuid().primaryKey().defaultRandom().notNull(),
+    eventSlug: text("event_slug", { enum: EVENT_SLUGS }).notNull(),
+    // Si se borra al invitado, sus preguntas se van con él.
+    guestId: uuid("guest_id").references(() => birthdayGuests.id, {
+      onDelete: "cascade",
+    }),
+    question: text().notNull(),
+    answer: text(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    answeredAt: timestamp("answered_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+  },
+  (table) => [
+    check(
+      "birthday_questions_event_slug_check",
+      sql`event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])`,
+    ),
+    check(
+      "birthday_questions_question_length",
+      sql`char_length(question) BETWEEN 1 AND 300`,
+    ),
+    // Una duda frecuente de Joaquín nace respondida.
+    check(
+      "birthday_questions_faq_answered",
+      sql`guest_id IS NOT NULL OR answer IS NOT NULL`,
+    ),
+    index("birthday_questions_event_slug_idx").on(table.eventSlug),
+    pgPolicy("service role full access to birthday questions", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type BirthdayQuestion = typeof birthdayQuestions.$inferSelect;

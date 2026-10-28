@@ -1,10 +1,22 @@
-import { and, asc, eq, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   type BirthdayGuest,
   birthdayEventAlbums,
   birthdayEventTexts,
   birthdayGuests,
+  birthdayQuestions,
   birthdayRsvps,
   type RsvpStatus,
 } from "@/db/schema";
@@ -390,4 +402,182 @@ export async function setEventTexts(
       target: birthdayEventTexts.eventSlug,
       set: { ...texts, updatedAt },
     });
+}
+
+// ---------------------------------------------------------------------------
+// Dudas
+
+/** Cuántas dudas sin responder puede tener un invitado en un mismo plan. */
+export const MAX_PENDING_QUESTIONS = 3;
+
+/** Una duda tal como la ve un invitado. */
+export type GuestQuestion = {
+  id: string;
+  question: string;
+  answer: string | null;
+  /** Si la hizo él: así ve las suyas que esperan respuesta. */
+  mine: boolean;
+};
+
+/**
+ * Las dudas que ve un invitado en sus planes: las respondidas, de cualquiera,
+ * y las suyas aunque no tengan respuesta. Primero las respondidas, en el orden
+ * en que se preguntaron.
+ */
+export async function questionsForGuest(
+  guestId: string,
+  events: readonly EventSlug[],
+): Promise<Partial<Record<EventSlug, GuestQuestion[]>>> {
+  if (events.length === 0) return {};
+  const rows = await getDb()
+    .select({
+      id: birthdayQuestions.id,
+      eventSlug: birthdayQuestions.eventSlug,
+      question: birthdayQuestions.question,
+      answer: birthdayQuestions.answer,
+      guestId: birthdayQuestions.guestId,
+    })
+    .from(birthdayQuestions)
+    .where(
+      and(
+        inArray(birthdayQuestions.eventSlug, [...events]),
+        or(
+          isNotNull(birthdayQuestions.answer),
+          eq(birthdayQuestions.guestId, guestId),
+        ),
+      ),
+    )
+    .orderBy(
+      sql`${birthdayQuestions.answer} IS NULL`,
+      asc(birthdayQuestions.createdAt),
+    );
+
+  const byEvent: Partial<Record<EventSlug, GuestQuestion[]>> = {};
+  for (const row of rows) {
+    const list = byEvent[row.eventSlug] ?? [];
+    list.push({
+      id: row.id,
+      question: row.question,
+      answer: row.answer,
+      mine: row.guestId === guestId,
+    });
+    byEvent[row.eventSlug] = list;
+  }
+  return byEvent;
+}
+
+export type AskQuestionResult =
+  | { status: "saved"; question: GuestQuestion }
+  | { status: "too_many" };
+
+/**
+ * Guarda la duda de un invitado. Con `MAX_PENDING_QUESTIONS` esperando en el
+ * mismo plan no deja sumar otra: es el único freno contra un link que se
+ * comparte o un dedo que no para.
+ */
+export async function askQuestion(
+  guestId: string,
+  event: EventSlug,
+  question: string,
+): Promise<AskQuestionResult> {
+  const db = getDb();
+  const [{ pending }] = await db
+    .select({ pending: count() })
+    .from(birthdayQuestions)
+    .where(
+      and(
+        eq(birthdayQuestions.guestId, guestId),
+        eq(birthdayQuestions.eventSlug, event),
+        isNull(birthdayQuestions.answer),
+      ),
+    );
+  if (pending >= MAX_PENDING_QUESTIONS) return { status: "too_many" };
+
+  const [row] = await db
+    .insert(birthdayQuestions)
+    .values({ guestId, eventSlug: event, question })
+    .returning({ id: birthdayQuestions.id });
+  return {
+    status: "saved",
+    question: { id: row.id, question, answer: null, mine: true },
+  };
+}
+
+/** Una duda vista desde el panel, con quién la hizo. */
+export type AdminQuestion = {
+  id: string;
+  question: string;
+  answer: string | null;
+  /** `null` si es una duda frecuente que publicó Joaquín. */
+  guestName: string | null;
+  createdAt: string;
+};
+
+/** Las dudas de un plan para el panel: primero las que esperan respuesta. */
+export async function questionsOf(event: EventSlug): Promise<AdminQuestion[]> {
+  return getDb()
+    .select({
+      id: birthdayQuestions.id,
+      question: birthdayQuestions.question,
+      answer: birthdayQuestions.answer,
+      guestName: birthdayGuests.name,
+      createdAt: birthdayQuestions.createdAt,
+    })
+    .from(birthdayQuestions)
+    .leftJoin(birthdayGuests, eq(birthdayGuests.id, birthdayQuestions.guestId))
+    .where(eq(birthdayQuestions.eventSlug, event))
+    .orderBy(
+      sql`${birthdayQuestions.answer} IS NOT NULL`,
+      asc(birthdayQuestions.createdAt),
+    );
+}
+
+/** Cuántas dudas esperan respuesta en cada plan, para el inicio del panel. */
+export async function pendingQuestionCounts(): Promise<
+  Partial<Record<EventSlug, number>>
+> {
+  const rows = await getDb()
+    .select({ eventSlug: birthdayQuestions.eventSlug, pending: count() })
+    .from(birthdayQuestions)
+    .where(isNull(birthdayQuestions.answer))
+    .groupBy(birthdayQuestions.eventSlug);
+  return Object.fromEntries(rows.map((row) => [row.eventSlug, row.pending]));
+}
+
+/** Publica una duda frecuente, ya respondida. */
+export async function createFaq(
+  event: EventSlug,
+  question: string,
+  answer: string,
+  now: Date = new Date(),
+): Promise<void> {
+  await getDb().insert(birthdayQuestions).values({
+    eventSlug: event,
+    question,
+    answer,
+    answeredAt: now.toISOString(),
+  });
+}
+
+/** Responde (o corrige la respuesta de) una duda. `false` si no existe. */
+export async function answerQuestion(
+  id: string,
+  answer: string,
+  now: Date = new Date(),
+): Promise<boolean> {
+  const rows = await getDb()
+    .update(birthdayQuestions)
+    .set({ answer, answeredAt: now.toISOString() })
+    .where(eq(birthdayQuestions.id, id))
+    .returning({ id: birthdayQuestions.id });
+  return rows.length > 0;
+}
+
+/** Borra una duda. `false` si no existe. */
+export async function deleteQuestion(id: string): Promise<boolean> {
+  const rows = await getDb()
+    .delete(birthdayQuestions)
+    .where(eq(birthdayQuestions.id, id))
+    .returning({ id: birthdayQuestions.id });
+  return rows.length > 0;
 }

@@ -39,6 +39,25 @@ export type RsvpInput = z.infer<typeof rsvpInputSchema>;
 
 export const scratchInputSchema = z.object({ token });
 
+const questionText = z
+  .string({ invalid_type_error: "Escribe tu duda." })
+  .trim()
+  .min(3, "Escribe tu duda.")
+  .max(300, "La duda es muy larga (máximo 300).");
+
+const answerText = z
+  .string({ invalid_type_error: "Falta la respuesta." })
+  .trim()
+  .min(1, "Falta la respuesta.")
+  .max(1000, "La respuesta es muy larga (máximo 1000).");
+
+/** Una duda que deja un invitado en un plan. */
+export const questionInputSchema = z.object({
+  token,
+  event: eventSlug,
+  question: questionText,
+});
+
 /** Una coordenada del lienzo, normalizada de 0 a 1. */
 const coordinate = z.number().finite().min(0).max(1);
 
@@ -152,6 +171,16 @@ export const eventTextsInputSchema = z.object({
 });
 
 export type EventTexts = z.infer<typeof eventTextsSchema>;
+
+/** Una duda frecuente que publica Joaquín, ya respondida. */
+export const faqInputSchema = z.object({
+  event: eventSlug,
+  question: questionText,
+  answer: answerText,
+});
+
+/** La respuesta (o una respuesta corregida) a una duda. */
+export const answerInputSchema = z.object({ answer: answerText });
 
 export function firstErrorMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Datos inválidos.";
