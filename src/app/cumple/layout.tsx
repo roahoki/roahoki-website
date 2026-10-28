@@ -33,7 +33,10 @@ export default function BirthdayLayout({
 }) {
   return (
     <html lang="es" className={bricolage.variable}>
-      <body className="min-h-screen bg-paper font-brand text-ink antialiased selection:bg-leaf selection:text-paper">
+      {/* `overflow-x-clip`: la pila de la invitación se sale por los lados
+          y se corta en el borde de la pantalla, sin scroll lateral. `clip` y
+          no `hidden` para no romper la semana pegada arriba. */}
+      <body className="min-h-screen overflow-x-clip bg-paper font-brand text-ink antialiased selection:bg-leaf selection:text-paper">
         {children}
       </body>
     </html>

@@ -37,11 +37,14 @@ export default async function Image({
         color: INK,
       }}
     >
-      {/* La pila de la invitación, a la derecha y cortada por abajo. */}
+      {/* La pila de la invitación, a la derecha y cortada solo por los bordes
+          de la imagen. El `viewBox` arranca en -60 porque el roki morado de
+          abajo a la izquierda se sale 43 unidades de la invitación; con 0 se
+          cortaba por una línea vertical en medio de la imagen. */}
       <div
         style={{ position: "absolute", right: -20, bottom: 0, display: "flex" }}
       >
-        <InvitationPile viewBox="0 834 1080 1086" width={608} height={612} />
+        <InvitationPile viewBox="-60 834 1140 1086" width={642} height={612} />
       </div>
       <div
         style={{

@@ -48,6 +48,36 @@ describe("ScratchGate", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("tapada recorta la tarjeta; destapada deja salir la pila por los lados", () => {
+    const gate = (scratched: boolean) => (
+      <ScratchGate token={TOKEN} scratched={scratched} card={<p>tarjeta</p>}>
+        <p>el resto</p>
+      </ScratchGate>
+    );
+    const frame = () =>
+      (screen.getByText("tarjeta").parentElement as HTMLElement).style.clipPath;
+
+    const covered = render(gate(false));
+    expect(frame()).toContain("round 16px");
+    covered.unmount();
+
+    render(gate(true));
+    expect(frame()).toContain("-20%");
+  });
+
+  it("raspar de nuevo queda al final, después del resto de la página", () => {
+    render(
+      <ScratchGate token={TOKEN} scratched card={<p>tarjeta</p>}>
+        <p>el resto</p>
+      </ScratchGate>,
+    );
+    const rest = screen.getByText("el resto");
+    const again = screen.getByRole("button", { name: "raspar de nuevo" });
+    expect(
+      rest.compareDocumentPosition(again) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("raspar de nuevo la vuelve a tapar sin tocar la base", async () => {
     vi.useFakeTimers();
     const fetchMock = vi.fn();
