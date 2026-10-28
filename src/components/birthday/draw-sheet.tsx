@@ -18,12 +18,23 @@ import {
  * paso)"). Sube sobre el color del plan la primera vez que alguien dice voy, o
  * cuando toca su propio roki para redibujarlo.
  *
- * El calco es roki en gris, o el dibujo anterior al redibujar. Mientras se
+ * El calco es roki en gris. Al redibujar se puede cambiar por el dibujo
+ * anterior, o sacarlo para dibujar a mano alzada: quien redibuja a veces quiere
+ * partir de su versión y a veces volver a la forma de roki. Mientras se
  * dibuja se busca el ojo (`detectEye`) y, si aparece, se avisa: así se aprende
  * que un ojo cerrado hace que el roki parpadee, sin tener que explicarlo antes.
  */
 
 const CALCO = "#BFC3BB";
+
+/** Qué queda de calco bajo el lienzo. */
+type Guide = "roki" | "previous" | "none";
+
+const GUIDES: { value: Guide; label: string }[] = [
+  { value: "roki", label: "roki" },
+  { value: "previous", label: "tu dibujo" },
+  { value: "none", label: "nada" },
+];
 /** Grosor del trazo como fracción del lienzo; el mismo que usa `RokiFigure`. */
 const STROKE = 0.034;
 
@@ -48,6 +59,7 @@ export function DrawSheet({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [strokes, setStrokes] = useState<RokiStroke[]>([]);
   const [color, setColor] = useState<RokiColor>(ROKI_COLORS[0]);
+  const [guide, setGuide] = useState<Guide>("roki");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const current = useRef<RokiPoint[] | null>(null);
@@ -72,9 +84,9 @@ export function DrawSheet({
       // El calco.
       ctx.strokeStyle = CALCO;
       ctx.lineWidth = size * STROKE * 0.8;
-      if (previous) {
+      if (guide === "previous" && previous) {
         for (const stroke of previous.strokes) line(ctx, stroke.points, size);
-      } else {
+      } else if (guide !== "none") {
         const scale = (size * 0.8) / MARK_VIEWBOX.height;
         ctx.save();
         ctx.translate(size * 0.12, size * 0.12);
@@ -96,7 +108,7 @@ export function DrawSheet({
         line(ctx, live, size);
       }
     },
-    [strokes, previous, color],
+    [strokes, previous, color, guide],
   );
 
   useEffect(() => {
@@ -168,7 +180,33 @@ export function DrawSheet({
               manera.
             </p>
 
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl border-[1.5px] border-ink">
+            <fieldset className="flex items-center gap-2">
+              <legend className="sr-only">calco</legend>
+              <span className="text-card-meta text-faded" aria-hidden>
+                calco
+              </span>
+              {GUIDES.filter(
+                (option) => option.value !== "previous" || previous,
+              ).map((option) => (
+                <label
+                  key={option.value}
+                  className="cursor-pointer rounded-full border-[1.5px] border-ink px-3 py-1 text-card-meta has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:outline-2"
+                >
+                  <input
+                    type="radio"
+                    name="calco"
+                    className="sr-only"
+                    checked={guide === option.value}
+                    onChange={() => setGuide(option.value)}
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </fieldset>
+
+            {/* `shrink-0`: en una pantalla baja el flex lo aplastaba y el lienzo,
+                que se pinta cuadrado, se veía estirado. */}
+            <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-xl border-[1.5px] border-ink">
               <canvas
                 ref={canvasRef}
                 aria-label="lienzo para dibujar tu roki"
