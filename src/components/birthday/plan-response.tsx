@@ -6,6 +6,7 @@ import type { RsvpStatus } from "@/db/schema";
 import type { EventSlug } from "@/lib/birthday/events";
 import type { Attendee } from "@/lib/birthday/queries";
 import type { Roki } from "@/lib/birthday/roki";
+import { ClimbSlide } from "./climb-slide";
 import { DrawSheet } from "./draw-sheet";
 import { RsvpButtons } from "./rsvp-buttons";
 import { WhoIsGoing } from "./who-is-going";
@@ -36,21 +37,26 @@ export function PlanResponse({
 }) {
   const router = useRouter();
   const [drawing, setDrawing] = useState(false);
+  // En el Manquehue no hay botones: se dice voy subiendo a la cumbre.
+  const climbs = plan.slug === "hike";
+  const askForRoki = () => {
+    if (!me.roki) setDrawing(true);
+  };
 
   return (
     <>
       {!passed && (
         <section className="flex flex-col gap-3">
           <h2 className="text-card-title">{plan.question}</h2>
-          <RsvpButtons
-            token={token}
-            event={plan.slug}
-            color={plan.color}
-            initial={status}
-            onGoing={() => {
-              if (!me.roki) setDrawing(true);
-            }}
-          />
+          {!climbs && (
+            <RsvpButtons
+              token={token}
+              event={plan.slug}
+              color={plan.color}
+              initial={status}
+              onGoing={askForRoki}
+            />
+          )}
         </section>
       )}
 
@@ -59,6 +65,23 @@ export function PlanResponse({
         meId={me.id}
         color={plan.color}
         onTapMine={() => setDrawing(true)}
+        lead={
+          climbs && !passed
+            ? {
+                title: "la cumbre",
+                content: (
+                  <ClimbSlide
+                    token={token}
+                    event={plan.slug}
+                    color={plan.color}
+                    initial={status}
+                    roki={me.roki}
+                    onGoing={askForRoki}
+                  />
+                ),
+              }
+            : undefined
+        }
       />
 
       <DrawSheet

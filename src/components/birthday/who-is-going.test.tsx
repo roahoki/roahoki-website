@@ -92,4 +92,26 @@ describe("WhoIsGoing", () => {
     fireEvent.click(screen.getByRole("button", { name: "dibujar tu roki" }));
     expect(onTapMine).toHaveBeenCalled();
   });
+
+  it("suma una lámina al principio, como la cumbre del Manquehue", () => {
+    mockMotion(false);
+    render(
+      <WhoIsGoing
+        attendees={ATTENDEES}
+        meId="me"
+        color="#3F2D5C"
+        onTapMine={vi.fn()}
+        lead={{ title: "la cumbre", content: <p>el cerro</p> }}
+      />,
+    );
+    // Parte en la cumbre aunque el movimiento esté reducido.
+    expect(
+      screen.getByRole("heading", { name: "la cumbre" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("el cerro")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "ver montoncito" }));
+    expect(
+      screen.getByRole("heading", { name: "montoncito" }),
+    ).toBeInTheDocument();
+  });
 });
