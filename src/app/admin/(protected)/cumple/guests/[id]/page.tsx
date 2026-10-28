@@ -51,7 +51,7 @@ export default async function BirthdayGuestPage({
             name={guest.name}
             message={message}
             whatsapp={whatsapp}
-            url={url}
+            preview={`/cumple/${guest.token}/opengraph-image`}
           />
         ) : (
           <Header guest={guest} />
@@ -194,17 +194,30 @@ function NewGuestCard({
   name,
   message,
   whatsapp,
+  preview,
 }: {
   name: string;
   message: string;
   whatsapp: string;
-  url: string;
+  /** La imagen que arma WhatsApp al pegar el link (`opengraph-image.tsx`). */
+  preview: string;
 }) {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-[2rem] leading-tight font-bold tracking-[-0.015em]">
         listo, {name} ya tiene su link :)
       </h1>
+      <div className="flex flex-col gap-2">
+        <span className="text-entry-meta text-faded">así le va a llegar</span>
+        {/* biome-ignore lint/performance/noImgElement: es una imagen generada por la propia app; next/image no aporta nada acá */}
+        <img
+          src={preview}
+          alt={`La vista previa de la invitación de ${name}`}
+          width={1200}
+          height={630}
+          className="h-auto w-full rounded-xl border-[1.5px] border-rule"
+        />
+      </div>
       <div className="flex flex-col gap-2">
         <span className="text-entry-meta text-faded">
           el mensaje (lo puedes cambiar en WhatsApp)
