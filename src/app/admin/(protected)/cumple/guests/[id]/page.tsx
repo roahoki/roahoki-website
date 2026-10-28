@@ -5,7 +5,7 @@ import { BackBar } from "@/components/birthday/admin/back-bar";
 import { ConfirmButton } from "@/components/birthday/admin/confirm-button";
 import { CopyButton } from "@/components/birthday/admin/copy-button";
 import { GuestPlans } from "@/components/birthday/admin/guest-plans";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { RokiFigure } from "@/components/birthday/roki-figure";
 import type { BirthdayGuest } from "@/db/schema";
 import { formatDay } from "@/lib/birthday/format";
 import { idSchema } from "@/lib/birthday/http";
@@ -177,8 +177,12 @@ function Header({ guest }: { guest: BirthdayGuest }) {
   return (
     <div className="flex items-center gap-4">
       <span className="flex size-[84px] shrink-0 items-end justify-center overflow-hidden rounded-2xl border-[1.5px] border-rule text-ink">
-        {/* TODO: dibujar su roki cuando exista el render de trazos (PR 6). */}
-        <LogoMark size={64} className="translate-y-2" />
+        <RokiFigure
+          roki={guest.roki}
+          color="var(--ink)"
+          size={guest.roki ? 80 : 64}
+          label={guest.roki ? `el roki de ${guest.name}` : undefined}
+        />
       </span>
       <div className="flex flex-col gap-1">
         <h1 className="text-[2.5rem] leading-none font-bold tracking-[-0.015em]">

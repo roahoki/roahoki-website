@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ColorFlood } from "@/components/birthday/color-flood";
-import { RokiFigure } from "@/components/birthday/roki-figure";
-import { RsvpButtons } from "@/components/birthday/rsvp-buttons";
+import { PlanResponse } from "@/components/birthday/plan-response";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
 import { eventByPath, hasPassed } from "@/lib/birthday/events";
 import { formatDayTime, formatTime } from "@/lib/birthday/format";
@@ -82,7 +81,7 @@ export default async function BirthdayEventPage({ params }: Params) {
           ))}
         </dl>
 
-        {passed ? (
+        {passed && (
           <section className="flex flex-col gap-3">
             <h2 className="text-card-title">
               ya pasó{status === "going" ? " · fuiste :)" : ""}
@@ -104,56 +103,21 @@ export default async function BirthdayEventPage({ params }: Params) {
               </p>
             )}
           </section>
-        ) : (
-          <section className="flex flex-col gap-3">
-            <h2 className="text-card-title">{plan.question}</h2>
-            <RsvpButtons
-              token={token}
-              event={plan.slug}
-              color={plan.color}
-              initial={status}
-            />
-          </section>
         )}
 
-        <section
-          aria-labelledby="quienes-van"
-          className="rounded-2xl bg-paper px-4 pt-3.5 pb-5 text-ink"
-        >
-          <h2 id="quienes-van" className="text-card-title-sm">
-            quiénes van
-          </h2>
-          <p className="text-entry-meta text-faded">
-            {attendees.length === 0
-              ? "todavía nadie, ¿partes tú?"
-              : attendees.length === 1
-                ? "va 1"
-                : `van ${attendees.length}`}
-          </p>
-          {attendees.length > 0 && (
-            <ul className="mt-4 grid grid-cols-4 gap-x-2 gap-y-4">
-              {attendees.map((attendee) => {
-                const me = attendee.id === guest.id;
-                return (
-                  <li
-                    key={attendee.id}
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <RokiFigure
-                      roki={attendee.roki}
-                      color={plan.color}
-                      size={64}
-                      label={me ? "tu roki" : `el roki de ${attendee.name}`}
-                    />
-                    <span className="max-w-full truncate text-card-meta">
-                      {me ? "tú" : attendee.name}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+        <PlanResponse
+          token={token}
+          plan={{
+            slug: plan.slug,
+            title: plan.title,
+            color: plan.color,
+            question: plan.question,
+          }}
+          status={status}
+          passed={passed}
+          attendees={attendees}
+          me={{ id: guest.id, roki: guest.roki }}
+        />
 
         {!passed && (
           <a

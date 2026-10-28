@@ -56,6 +56,14 @@ export function RokiFigure({
           // biome-ignore lint/suspicious/noArrayIndexKey: lista fija
           key={index}
           data-eye={index === roki.eye ? "" : undefined}
+          // El ojo parpadea (ver `.roki-eye` en globals.css), cada roki a su
+          // ritmo para que la pila no pestañee al unísono.
+          className={index === roki.eye ? "roki-eye" : undefined}
+          style={
+            index === roki.eye
+              ? { animationDelay: `${blinkDelay(roki)}s` }
+              : undefined
+          }
           stroke={stroke.color}
           points={stroke.points
             .map(([x, y]) => `${x * 100},${y * 100}`)
@@ -64,6 +72,17 @@ export function RokiFigure({
       ))}
     </Figure>
   );
+}
+
+/**
+ * Un desfase estable para el parpadeo, sacado del propio dibujo: el mismo roki
+ * parpadea siempre igual y dos rokis distintos casi nunca a la vez.
+ */
+function blinkDelay(roki: Roki): number {
+  const seed = roki.strokes
+    .flatMap((stroke) => stroke.points.slice(0, 3).flat())
+    .reduce((sum, value) => sum + value * 1000, 0);
+  return -(Math.round(seed) % 50) / 10;
 }
 
 /**
