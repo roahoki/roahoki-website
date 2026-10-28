@@ -6,6 +6,7 @@ const linkClass =
   "text-action text-leaf underline-offset-4 hover:underline focus-visible:underline";
 
 const SECTIONS = [
+  { label: "cumple", href: "/admin/cumple" },
   { label: "stats", href: "/admin/stats" },
   { label: "testimonios", href: "/admin/testimonials" },
   { label: "ver sitio", href: "/" },
