@@ -1,13 +1,11 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Vibrate } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { Attendee } from "@/lib/birthday/queries";
 import { MOTION_OK } from "@/lib/motion/tokens";
 import { RokiFigure } from "./roki-figure";
 import { RokiPile, type RokiPileHandle } from "./roki-pile";
-
-const SLIDES = ["montoncito", "foto de curso"] as const;
 
 /**
  * Quiénes van, como carrusel de dos láminas (Figma: invitado v3, trote): el
@@ -24,19 +22,24 @@ export function WhoIsGoing({
   meId,
   color,
   onTapMine,
+  lead,
 }: {
   attendees: Attendee[];
   meId: string;
   color: string;
   onTapMine: () => void;
+  lead?: { title: string; content: ReactNode };
 }) {
+  const slides = [...(lead ? [lead.title] : []), "montoncito", "foto de curso"];
+  const pileAt = lead ? 1 : 0;
   const [slide, setSlide] = useState(0);
   const pile = useRef<RokiPileHandle>(null);
   const swipe = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!window.matchMedia(MOTION_OK).matches) setSlide(1);
-  }, []);
+    // La cumbre no se mueve sola; el montoncito sí.
+    if (!lead && !window.matchMedia(MOTION_OK).matches) setSlide(1);
+  }, [lead]);
 
   const count =
     attendees.length === 0
@@ -47,7 +50,8 @@ export function WhoIsGoing({
   const mine = attendees.some((attendee) => attendee.id === meId);
 
   const go = (to: number) =>
-    setSlide(Math.max(0, Math.min(SLIDES.length - 1, to)));
+    setSlide(Math.max(0, Math.min(slides.length - 1, to)));
+  const isLead = Boolean(lead) && slide === 0;
   const swipeHandlers = {
     onPointerDown: (event: React.PointerEvent) => {
       swipe.current = event.clientX;
@@ -72,11 +76,11 @@ export function WhoIsGoing({
         >
           <div>
             <h2 id="quienes-van" className="text-card-title-sm">
-              {SLIDES[slide]}
+              {slides[slide]}
             </h2>
-            <p className="text-entry-meta text-faded">{count}</p>
+            {!isLead && <p className="text-entry-meta text-faded">{count}</p>}
           </div>
-          {slide === 0 && attendees.length > 0 && (
+          {slide === pileAt && attendees.length > 0 && (
             <button
               type="button"
               onClick={() => pile.current?.shake()}
@@ -89,8 +93,11 @@ export function WhoIsGoing({
           )}
         </div>
 
-        {attendees.length > 0 &&
-          (slide === 0 ? (
+        {isLead && lead?.content}
+
+        {!isLead &&
+          attendees.length > 0 &&
+          (slide === pileAt ? (
             <RokiPile
               ref={pile}
               attendees={attendees}
@@ -145,13 +152,13 @@ export function WhoIsGoing({
             </ul>
           ))}
 
-        {mine && (
+        {mine && !isLead && (
           <p className="px-4 pb-4 text-card-meta text-faded">
             toca tu roki para{" "}
             {attendees.find((a) => a.id === meId)?.roki
               ? "redibujarlo"
               : "dibujarlo"}
-            {slide === 0 ? ", arrastra a los demás" : ""}
+            {slide === pileAt ? ", arrastra a los demás" : ""}
           </p>
         )}
       </div>
@@ -166,12 +173,12 @@ export function WhoIsGoing({
           onClick={() => go(slide - 1)}
           disabled={slide === 0}
           className={`${arrow} border-[1.5px] border-paper`}
-          aria-label={`ver ${SLIDES[0]}`}
+          aria-label={`ver ${slides[Math.max(0, slide - 1)]}`}
         >
           <ArrowLeft className="size-[22px]" aria-hidden />
         </button>
         <span className="flex items-center gap-2" aria-hidden>
-          {SLIDES.map((name, index) => (
+          {slides.map((name, index) => (
             <span
               key={name}
               className={`rounded-full ${index === slide ? "size-2.5 bg-paper" : "size-2 border-[1.5px] border-paper"}`}
@@ -181,10 +188,10 @@ export function WhoIsGoing({
         <button
           type="button"
           onClick={() => go(slide + 1)}
-          disabled={slide === SLIDES.length - 1}
+          disabled={slide === slides.length - 1}
           className={`${arrow} bg-paper`}
           style={{ color }}
-          aria-label={`ver ${SLIDES[1]}`}
+          aria-label={`ver ${slides[Math.min(slides.length - 1, slide + 1)]}`}
         >
           <ArrowRight className="size-[22px]" aria-hidden />
         </button>
