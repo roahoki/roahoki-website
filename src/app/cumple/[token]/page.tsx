@@ -7,6 +7,7 @@ import { SaveImages } from "@/components/birthday/save-images";
 import { ScratchGate } from "@/components/birthday/scratch-gate";
 import { ScrollBackdrop } from "@/components/birthday/scroll-backdrop";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
+import { WeekStrip } from "@/components/birthday/week-strip";
 import { eventsFor } from "@/lib/birthday/events";
 import {
   albums,
@@ -15,6 +16,7 @@ import {
   rsvpsOf,
 } from "@/lib/birthday/queries";
 import { isToken } from "@/lib/birthday/token";
+import { birthdayWeek } from "@/lib/birthday/week";
 import { palette } from "@/lib/brand/palette";
 import { WHATSAPP_URL } from "@/lib/profile";
 
@@ -59,6 +61,11 @@ export default async function BirthdayGuestPage({ params }: Params) {
     albums(),
     ...plans.map((plan) => attendeesOf(plan.slug)),
   ]);
+  const week = birthdayWeek(plans).map((day) => ({
+    letter: day.letter,
+    date: day.date,
+    plans: day.plans.map(({ path, title, color }) => ({ path, title, color })),
+  }));
   const pending = plans.filter((plan) => !rsvps[plan.slug]).length;
 
   return (
@@ -80,6 +87,8 @@ export default async function BirthdayGuestPage({ params }: Params) {
           </section>
 
           <ScrollBackdrop />
+          {/* Pegada arriba hasta el final de la página: es el índice. */}
+          <WeekStrip days={week} />
 
           <section aria-labelledby="tus-planes" className="flex flex-col">
             <h2 id="tus-planes" className="sr-only">
