@@ -6,7 +6,6 @@ import { PlanCard } from "@/components/birthday/plan-card";
 import { SaveImages } from "@/components/birthday/save-images";
 import { ScratchGate } from "@/components/birthday/scratch-gate";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
-import { Logo } from "@/components/brand/logo";
 import { eventsFor } from "@/lib/birthday/events";
 import { getGuestByToken, rsvpsOf } from "@/lib/birthday/queries";
 import { isToken } from "@/lib/birthday/token";
@@ -50,18 +49,12 @@ export default async function BirthdayGuestPage({ params }: Params) {
   return (
     <>
       <VisitBeacon token={token} />
-      <ScratchGate
-        token={token}
-        scratched={Boolean(guest.scratchedAt)}
-        card={<Invitation />}
-      >
-        <header className="mx-auto max-w-[480px] px-4 py-[18px]">
-          <Logo size={20} />
-        </header>
-
-        <main className="mx-auto flex max-w-[480px] flex-col gap-10 px-4 pb-8">
-          <Invitation />
-
+      <main className="mx-auto flex max-w-[480px] flex-col gap-10 px-4 pt-4 pb-12">
+        <ScratchGate
+          token={token}
+          scratched={Boolean(guest.scratchedAt)}
+          card={<Invitation />}
+        >
           <section className="flex flex-col gap-3">
             <h1 className="text-card-title">hola, {guest.name} :)</h1>
             {guest.personalMessage && (
@@ -93,18 +86,18 @@ export default async function BirthdayGuestPage({ params }: Params) {
           </section>
 
           <SaveImages token={token} />
-        </main>
 
-        <footer className="mx-auto max-w-[480px] px-4 pt-4 pb-12">
-          <a
-            href={WHATSAPP_URL}
-            className="inline-flex items-center gap-2 text-body text-leaf"
-          >
-            <MessageCircle className="size-5" aria-hidden />
-            ¿dudas? escríbeme
-          </a>
-        </footer>
-      </ScratchGate>
+          <footer>
+            <a
+              href={WHATSAPP_URL}
+              className="inline-flex items-center gap-2 text-body text-leaf"
+            >
+              <MessageCircle className="size-5" aria-hidden />
+              ¿dudas? escríbeme
+            </a>
+          </footer>
+        </ScratchGate>
+      </main>
     </>
   );
 }

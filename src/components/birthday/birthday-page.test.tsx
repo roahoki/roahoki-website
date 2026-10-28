@@ -61,14 +61,44 @@ describe("ScratchGate", () => {
     vi.unstubAllGlobals();
   });
 
-  it("si ya raspó, entra directo a la página", () => {
+  it("si ya raspó, entra directo a la página con la tarjeta arriba", () => {
     render(
       <ScratchGate token={TOKEN} scratched card={<p>tarjeta</p>}>
         <p>el resto</p>
       </ScratchGate>,
     );
     expect(screen.getByText("el resto")).toBeInTheDocument();
-    expect(screen.queryByText("tarjeta")).not.toBeInTheDocument();
+    // La misma tarjeta, sin raspe encima: no se cambia por otra al destapar.
+    expect(screen.getByText("tarjeta")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("img", { name: /Raspa acá/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("raspar de nuevo la vuelve a tapar sin tocar la base", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("scrollTo", vi.fn());
+
+    render(
+      <ScratchGate token={TOKEN} scratched card={<p>tarjeta</p>}>
+        <p>el resto</p>
+      </ScratchGate>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "raspar de nuevo" }));
+    expect(screen.queryByText("el resto")).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Raspa acá/ })).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "destapar la invitación" }),
+    );
+    await act(async () => {
+      vi.advanceTimersByTime(700);
+    });
+    expect(screen.getByText("el resto")).toBeInTheDocument();
+    // Ya estaba raspada: no se vuelve a guardar.
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("si no, muestra solo la tarjeta y se puede destapar sin raspar", async () => {
