@@ -5,7 +5,7 @@ vez de un Excel compartido, cada invitado recibe un link personal a
 `roahoki.com/cumple/<token>`, raspa su invitación, ve sus planes, dibuja su roki y
 confirma. Joaquín sigue la asistencia y da soporte desde `/admin/cumple`.
 
-Cada fila de las tablas es **una PR atómica**. El flujo y las convenciones están
+Cada fila de las tablas es **una PR atómica**. Van encadenadas: cada una sale de la anterior y se mergean en orden. El flujo y las convenciones están
 en [`../CLAUDE.md`](../CLAUDE.md); el stack, en [`STACK.md`](STACK.md).
 
 ## Qué es y qué no
@@ -97,10 +97,10 @@ inglés (`birthday`).
 | # | Rama | Contenido |
 | --- | --- | --- |
 | 1 | `docs/birthday-roadmap` | Este roadmap |
-| 2 | `feat/birthday-schema` | Catálogo de planes en código, las tres tablas con RLS, queries y esquemas zod |
-| 3 | `feat/birthday-admin` | `/admin/cumple`: inicio con puntitos por plan, vista por plan, ficha del invitado, nuevo invitado, link listo con el mensaje de WhatsApp, regenerar link, álbum |
-| 4 | `feat/birthday-page` | `/cumple/[token]`: layout propio, raspa, invitación, saludo, lineup con las tarjetas de plan, link inválido, `noindex` y la vista previa con el nombre |
-| 5 | `feat/birthday-rsvp` | `/cumple/[token]/[event]`: el color que llena la pantalla, datos, voy o no voy con UI optimista, quiénes van como foto de curso con rokis genéricos, `.ics`, "ya pasó" con el álbum |
+| 2 (#64) | `feat/birthday-schema` | Catálogo de planes en código, las tres tablas con RLS, queries y esquemas zod |
+| 3 (#65) | `feat/birthday-admin` | `/admin/cumple`: inicio con puntitos por plan, vista por plan, ficha del invitado, nuevo invitado, link listo con el mensaje de WhatsApp, regenerar link, álbum |
+| 4 (#66) | `feat/birthday-page` | `/cumple/[token]`: layout propio, raspa, invitación, saludo, lineup con las tarjetas de plan, link inválido, `noindex` y la vista previa con el nombre. Agrega Bricolage en TTF, que la vista previa necesita |
+| 5 (#67) | `feat/birthday-rsvp` | `/cumple/[token]/[event]`: el color que llena la pantalla, datos, voy o no voy con UI optimista, quiénes van como foto de curso con rokis genéricos, `.ics`, "ya pasó" con el álbum |
 
 > Con la PR 5 mergeada los links se pueden mandar. Lo que sigue aparece en la
 > página de cada invitado a medida que se mergea, sin volver a mandar nada.
@@ -109,10 +109,10 @@ inglés (`birthday`).
 
 | # | Rama | Contenido |
 | --- | --- | --- |
-| 6 | `feat/birthday-roki-drawing` | Dibuja tu roki en un paso, reconocimiento del ojo, parpadeo, redibujar y "dibújalo después" |
-| 7 | `feat/birthday-pile` | El montoncito con física, el carrusel con flechas y puntos, terremoto. Agrega `matter.js` |
-| 8 | `feat/birthday-manquehue-climb` | La cumbre: arrastrar el roki cerro arriba para confirmar, con "confirmar sin subir" |
-| 9 | `feat/birthday-save-images` | Invitación y cronograma 9:16 con `next/og`, la hoja de guardar en fotos y compartir. Agrega Bricolage en TTF |
+| 6 (#68) | `feat/birthday-roki-drawing` | Dibuja tu roki en un paso, reconocimiento del ojo, parpadeo, redibujar y "dibújalo después" |
+| 7 (#69) | `feat/birthday-pile` | El montoncito con física, el carrusel con flechas y puntos, terremoto. Agrega `matter.js` |
+| 8 (#70) | `feat/birthday-manquehue-climb` | La cumbre: arrastrar el roki cerro arriba para confirmar, con "confirmar sin subir" |
+| 9 (#71) | `feat/birthday-save-images` | Invitación y cronograma 9:16 con `next/og` y la hoja de guardar en fotos |
 
 Queda para `BACKLOG.md`: el dorsal del trote, un pase de cumbre del Manquehue y
 mostrar las fotos de cada plan dentro de la página.
