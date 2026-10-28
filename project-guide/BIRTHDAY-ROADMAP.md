@@ -138,6 +138,7 @@ día después, si hace falta.
 | 15 | `feat/birthday-week-calendar` | La semana del 2 al 8 de noviembre, pegada arriba: un punto por plan en su color, marca el plan que se ve y tocar un día baja a ese plan. Se va el `.ics` |
 | 16 | `feat/birthday-editable-details` | Los textos de cada plan (pregunta, subtítulos y contenido) se editan desde `/admin/cumple`; los subtítulos más grandes |
 | 17 | `feat/birthday-questions` | Dudas por plan: el invitado pregunta, se publica cuando Joaquín responde, y Joaquín puede agregar dudas frecuentes desde el panel |
+| 18 | `fix/birthday-invitation-bleed` | La pila de la invitación se sale hasta el borde de la pantalla en vez de cortarse a 16 px; la vista previa de WhatsApp sin el roki morado cortado; "raspar de nuevo" al final de la página |
 
 ### Decisiones del bloque
 

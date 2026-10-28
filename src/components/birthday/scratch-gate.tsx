@@ -21,11 +21,22 @@ import { MARK_PATHS, MARK_VIEWBOX } from "@/components/brand/paths";
  * saltaba.
  *
  * Se raspa una sola vez: la fecha queda en la base (`scratched_at`), así que al
- * volver se entra directo. "raspar de nuevo" vuelve a tapar la invitación solo
- * en esta pantalla, para mostrársela a alguien. Para quien no puede arrastrar
+ * volver se entra directo. "raspar de nuevo", medio escondido al final de la
+ * página, vuelve a tapar la invitación solo en esta pantalla, para mostrársela
+ * a alguien.
+ *
+ * Tapada, la tarjeta se recorta redondeada. Al destaparla, el recorte se abre
+ * hacia los lados y la pila de rokis se sale hasta el borde de la pantalla
+ * (la página corta lo que pase de ahí); arriba y abajo sigue cortando la
+ * tarjeta. Para quien no puede arrastrar
  * (teclado, lector de pantalla) hay un botón que destapa sin raspar, visible al
  * enfocarlo.
  */
+
+/** El recorte de la tarjeta tapada y destapada (ver arriba). */
+const CLIP_COVERED = "inset(0% 0% 0% 0% round 16px)";
+// 20 % del ancho por lado: el roki que más se sale lo hace en un 18 %.
+const CLIP_OPEN = "inset(0% -20% 0% -20% round 0px)";
 
 /** Cuánto hay que raspar para dar la invitación por destapada. */
 const DONE_RATIO = 0.45;
@@ -83,31 +94,22 @@ export function ScratchGate({
 
   return (
     <>
-      <div className="flex flex-col gap-2">
-        <div className="relative">
-          {card}
-          {!revealed && (
-            <>
-              <ScratchCanvas key={round} onDone={reveal} fading={fading} />
-              <button
-                type="button"
-                onClick={reveal}
-                className="sr-only focus:not-sr-only focus:absolute focus:bottom-4 focus:left-1/2 focus:-translate-x-1/2 focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-action focus:text-paper"
-              >
-                destapar la invitación
-              </button>
-            </>
-          )}
-        </div>
-        {revealed && (
-          <button
-            type="button"
-            onClick={coverAgain}
-            className="inline-flex items-center gap-1.5 self-end px-1 py-2 text-card-meta text-faded"
-          >
-            <RotateCcw className="size-4" aria-hidden />
-            raspar de nuevo
-          </button>
+      <div
+        className="relative transition-[clip-path] duration-700 ease-out motion-reduce:transition-none"
+        style={{ clipPath: revealed || fading ? CLIP_OPEN : CLIP_COVERED }}
+      >
+        {card}
+        {!revealed && (
+          <>
+            <ScratchCanvas key={round} onDone={reveal} fading={fading} />
+            <button
+              type="button"
+              onClick={reveal}
+              className="sr-only focus:not-sr-only focus:absolute focus:bottom-4 focus:left-1/2 focus:-translate-x-1/2 focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-action focus:text-paper"
+            >
+              destapar la invitación
+            </button>
+          </>
         )}
       </div>
       {revealed && (
@@ -115,6 +117,15 @@ export function ScratchGate({
           className={`flex flex-col gap-10 ${entering ? "animate-fade-up" : ""}`}
         >
           {children}
+          {/* Medio escondido: está para quien lo busque, no compite con nada. */}
+          <button
+            type="button"
+            onClick={coverAgain}
+            className="inline-flex items-center gap-1 self-center py-2 text-card-meta text-faded opacity-70"
+          >
+            <RotateCcw className="size-3.5" aria-hidden />
+            raspar de nuevo
+          </button>
         </div>
       )}
     </>
@@ -226,7 +237,9 @@ function ScratchCanvas({
       ref={canvasRef}
       aria-label="Raspa acá para destapar tu invitación"
       role="img"
-      className="absolute inset-0 size-full touch-none rounded-2xl font-brand transition-opacity duration-[600ms]"
+      // Un píxel más grande por lado: la pila de abajo ya no se recorta sola y
+      // asomaba en la costura del borde. El recorte de la tarjeta lo deja justo.
+      className="absolute -inset-px size-[calc(100%+2px)] touch-none rounded-2xl font-brand transition-opacity duration-[600ms]"
       style={{ opacity: fading ? 0 : 1 }}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
