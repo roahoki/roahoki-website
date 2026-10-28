@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Invitation } from "@/components/birthday/invitation";
 import { PlanSection } from "@/components/birthday/plan-section";
+import { RokiReminder } from "@/components/birthday/roki-reminder";
 import { SaveImages } from "@/components/birthday/save-images";
 import {
   ScratchAgainButton,
@@ -11,7 +12,7 @@ import {
 import { ScrollBackdrop } from "@/components/birthday/scroll-backdrop";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
 import { WeekStrip } from "@/components/birthday/week-strip";
-import { eventsFor, withTexts } from "@/lib/birthday/events";
+import { eventsFor, hasPassed, withTexts } from "@/lib/birthday/events";
 import {
   albums,
   attendeesOf,
@@ -77,7 +78,10 @@ export default async function BirthdayGuestPage({ params }: Params) {
     date: day.date,
     plans: day.plans.map(({ path, title, color }) => ({ path, title, color })),
   }));
-  const pending = plans.filter((plan) => !rsvps[plan.slug]).length;
+  // Sin responder y que todavía se pueden responder: los que ya pasaron no.
+  const pending = plans
+    .filter((plan) => !rsvps[plan.slug] && !hasPassed(plan))
+    .map(({ path, title }) => ({ path, title }));
 
   return (
     <>
@@ -98,6 +102,7 @@ export default async function BirthdayGuestPage({ params }: Params) {
           </section>
 
           <ScrollBackdrop />
+          <RokiReminder pending={pending} />
           {/* Pegada arriba hasta el final de la página: es el índice. */}
           <WeekStrip days={week} />
 
@@ -105,13 +110,6 @@ export default async function BirthdayGuestPage({ params }: Params) {
             <h2 id="tus-planes" className="sr-only">
               tus planes
             </h2>
-            <p className="mb-4 rounded-lg border-[1.5px] border-leaf px-3.5 py-3 text-entry-meta text-leaf">
-              {pending === 0
-                ? "ya respondiste todo, gracias :)"
-                : pending === 1
-                  ? "te falta 1 por confirmar"
-                  : `te faltan ${pending} por confirmar`}
-            </p>
             {/* Sin espacio entre planes: el color pasa de uno al otro sin
                 que asome el papel en medio. */}
             {plans.map((plan, index) => (
@@ -131,7 +129,10 @@ export default async function BirthdayGuestPage({ params }: Params) {
           {/* Una hoja papel propia, de borde a borde y hasta el final: el fondo
               de la pantalla sigue del color del último plan, y el texto de
               acá se lee igual. */}
-          <div className="relative isolate -mt-10 flex flex-col gap-10 pt-10 pb-12 text-ink before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:rounded-t-[28px] before:bg-paper">
+          <div
+            data-page-end
+            className="relative isolate -mt-10 flex flex-col gap-10 pt-10 pb-12 text-ink before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:rounded-t-[28px] before:bg-paper"
+          >
             <SaveImages token={token} />
 
             <footer className="flex flex-col gap-6">
