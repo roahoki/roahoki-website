@@ -3,14 +3,18 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgPolicy,
   pgTable,
+  primaryKey,
   real,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { DEFAULT_INVITED_EVENTS, EVENT_SLUGS } from "@/lib/birthday/events";
+import type { Roki } from "@/lib/birthday/roki";
 import { COVER_FOCUSES, ENTRY_FORMATS } from "@/lib/logbook/entry-format";
 import { EXERCISE_SLUGS } from "@/lib/stats/exercises";
 import { anonRole, serviceRole } from "./roles";
@@ -321,3 +325,160 @@ export const exerciseCounterEvents = pgTable(
 
 export type ExerciseCounterEvent = typeof exerciseCounterEvents.$inferSelect;
 export type NewExerciseCounterEvent = typeof exerciseCounterEvents.$inferInsert;
+
+/**
+ * Los invitados del cumpleaños (`/cumple/<token>`).
+ *
+ * El token **es** la identidad: no hay cuenta, clave ni cookie. Quien tiene el
+ * link es el invitado. Por eso es único, largo y sale de
+ * `src/lib/birthday/token.ts`, y regenerarlo deja muerto el anterior.
+ *
+ * Los planes no viven acá sino en `src/lib/birthday/events.ts`; esta tabla
+ * guarda solo lo que generan las personas.
+ */
+export const birthdayGuests = pgTable(
+  "birthday_guests",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    name: text().notNull(),
+    token: text().notNull(),
+    // El mensaje que Joaquín le escribe a cada uno. Opcional: el saludo
+    // funciona sin él.
+    personalMessage: text("personal_message"),
+    // Para armar el link de WhatsApp desde el panel. Opcional: el link también
+    // se puede copiar a mano.
+    phone: text(),
+    // Qué planes ve. Un plan que no está acá no existe para el invitado: no
+    // aparece ni bloqueado, y la API rechaza responderlo. Reemplaza a los
+    // cupos, que a Joaquín le parecen poco respetuosos.
+    invitedEvents: text("invited_events", { enum: EVENT_SLUGS })
+      .array()
+      .notNull()
+      .default(sql.raw(`'{${DEFAULT_INVITED_EVENTS.join(",")}}'::text[]`)),
+    // Los trazos de su roki (ver `roki.ts`). `null` mientras no dibuje: en la
+    // pila aparece un roki genérico en el color del plan.
+    roki: jsonb().$type<Roki>(),
+    // Cuándo raspó su invitación. En la base y no en `localStorage`, porque el
+    // navegador interno de WhatsApp no siempre conserva el almacenamiento y el
+    // invitado tendría que raspar cada vez.
+    scratchedAt: timestamp("scratched_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    // Para el panel: quién abrió su link y cuándo volvió por última vez.
+    firstSeenAt: timestamp("first_seen_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    lastSeenAt: timestamp("last_seen_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("birthday_guests_token_key").on(table.token),
+    check("birthday_guests_name_not_empty", sql`length(trim(name)) > 0`),
+    // El mismo formato que valida `token.ts`. Un token corto o con otros
+    // caracteres sería más fácil de adivinar.
+    check("birthday_guests_token_format", sql`token ~ '^[0-9A-Za-z]{12}$'`),
+    // Igual que el check de ejercicios: el enum de Drizzle solo existe en
+    // TypeScript y esto lo hace cumplir en la base. Un invitado sin planes no
+    // tiene nada que ver en su página.
+    check(
+      "birthday_guests_invited_events_check",
+      sql`invited_events <@ ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text] AND cardinality(invited_events) > 0`,
+    ),
+    // Nada se lee con la anon key: la página y el panel van por Drizzle desde
+    // el servidor. Sin política para `anon`, la tabla queda cerrada al browser.
+    pgPolicy("service role full access to birthday guests", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type BirthdayGuest = typeof birthdayGuests.$inferSelect;
+export type NewBirthdayGuest = typeof birthdayGuests.$inferInsert;
+
+/**
+ * Las respuestas: una fila por invitado y plan. **Sin fila es sin responder**,
+ * así que "sin responder" no es un estado que haya que guardar ni que pueda
+ * quedar desalineado.
+ */
+export const birthdayRsvps = pgTable(
+  "birthday_rsvps",
+  {
+    guestId: uuid("guest_id")
+      .notNull()
+      .references(() => birthdayGuests.id, { onDelete: "cascade" }),
+    eventSlug: text("event_slug", { enum: EVENT_SLUGS }).notNull(),
+    status: text({ enum: ["going", "not_going"] }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    // Una respuesta por plan: cambiar de opinión actualiza la fila.
+    primaryKey({ columns: [table.guestId, table.eventSlug] }),
+    check(
+      "birthday_rsvps_event_slug_check",
+      sql`event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])`,
+    ),
+    check(
+      "birthday_rsvps_status_check",
+      sql`status = ANY (ARRAY['going'::text, 'not_going'::text])`,
+    ),
+    // La pila de un plan consulta por plan, no por invitado.
+    index("birthday_rsvps_event_slug_idx").on(table.eventSlug),
+    pgPolicy("service role full access to birthday rsvps", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type BirthdayRsvp = typeof birthdayRsvps.$inferSelect;
+export type RsvpStatus = BirthdayRsvp["status"];
+
+/**
+ * El álbum de fotos de cada plan. Lo pega Joaquín desde el panel después del
+ * plan, por eso vive en la base y no en `events.ts`: no debería hacer falta una
+ * PR para compartir fotos.
+ */
+export const birthdayEventAlbums = pgTable(
+  "birthday_event_albums",
+  {
+    eventSlug: text("event_slug", { enum: EVENT_SLUGS }).primaryKey().notNull(),
+    url: text().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  () => [
+    check(
+      "birthday_event_albums_event_slug_check",
+      sql`event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])`,
+    ),
+    // Solo https: el link se muestra como botón en la página de cada invitado,
+    // y un `javascript:` ahí sería un link que ejecuta código.
+    check("birthday_event_albums_url_https", sql`url LIKE 'https://%'`),
+    pgPolicy("service role full access to birthday event albums", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type BirthdayEventAlbum = typeof birthdayEventAlbums.$inferSelect;
