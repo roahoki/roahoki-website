@@ -195,3 +195,16 @@ function nextSantiagoMidnight(instant: Date): number {
   );
   return nextLocalMidnight + OFFSET_MS;
 }
+
+/**
+ * El plan con los textos que Joaquín corrigió desde el panel, si los hay. El
+ * resto (horas, color, ruta) sigue siendo el de código.
+ */
+export function withTexts(
+  event: BirthdayEvent,
+  texts: { question: string; details: readonly EventDetail[] } | undefined,
+): BirthdayEvent {
+  return texts
+    ? { ...event, question: texts.question, details: texts.details }
+    : event;
+}

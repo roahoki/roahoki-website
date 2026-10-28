@@ -18,6 +18,7 @@ const queries = vi.hoisted(() => ({
   saveRoki: vi.fn(),
   setRsvp: vi.fn(),
   setAlbum: vi.fn(),
+  setEventTexts: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-admin", () => ({ requireAdmin }));
@@ -29,6 +30,7 @@ const token = await import("./guests/[id]/token/route");
 const roki = await import("./guests/[id]/roki/route");
 const rsvps = await import("./guests/[id]/rsvps/route");
 const albums = await import("./albums/route");
+const texts = await import("./texts/route");
 
 const ID = "5b9d1a5e-3f6c-4f2b-9a11-2c3d4e5f6a7b";
 const GUEST = { id: ID, name: "cata", token: "Ab3dEf6hIj9L" };
@@ -164,5 +166,51 @@ describe("PUT /api/admin/birthday/albums", () => {
     );
     expect(res.status).toBe(400);
     expect(queries.setAlbum).not.toHaveBeenCalled();
+  });
+});
+
+describe("PUT /api/admin/birthday/texts", () => {
+  it("guarda la pregunta y los datos, recortando espacios", async () => {
+    const res = await texts.PUT(
+      request({
+        event: "party",
+        texts: {
+          question: " ¿vas? ",
+          details: [{ label: "¿me puedo quedar?", value: "sí, trae saco " }],
+        },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(queries.setEventTexts).toHaveBeenCalledWith("party", {
+      question: "¿vas?",
+      details: [{ label: "¿me puedo quedar?", value: "sí, trae saco" }],
+    });
+  });
+
+  it("vuelve a los textos originales con texts: null", async () => {
+    const res = await texts.PUT(request({ event: "party", texts: null }));
+    expect(res.status).toBe(200);
+    expect(queries.setEventTexts).toHaveBeenCalledWith("party", null);
+  });
+
+  it("rechaza un dato sin subtítulo y no guarda", async () => {
+    const res = await texts.PUT(
+      request({
+        event: "party",
+        texts: { question: "¿vas?", details: [{ label: " ", value: "x" }] },
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe("Cada dato necesita un subtítulo.");
+    expect(queries.setEventTexts).not.toHaveBeenCalled();
+  });
+
+  it("sin sesión no guarda", async () => {
+    requireAdmin.mockResolvedValue(
+      Response.json({ error: "No autorizado." }, { status: 401 }),
+    );
+    const res = await texts.PUT(request({ event: "party", texts: null }));
+    expect(res.status).toBe(401);
+    expect(queries.setEventTexts).not.toHaveBeenCalled();
   });
 });

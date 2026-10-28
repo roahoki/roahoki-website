@@ -3,12 +3,13 @@ import { getDb } from "@/db";
 import {
   type BirthdayGuest,
   birthdayEventAlbums,
+  birthdayEventTexts,
   birthdayGuests,
   birthdayRsvps,
   type RsvpStatus,
 } from "@/db/schema";
 import { isUniqueViolation } from "@/lib/db-errors";
-import type { GuestInput } from "@/lib/schemas/birthday";
+import type { EventTexts, GuestInput } from "@/lib/schemas/birthday";
 import type { EventSlug } from "./events";
 import type { Roki } from "./roki";
 import { generateToken } from "./token";
@@ -350,4 +351,43 @@ function isTokenCollision(error: unknown): boolean {
     isUniqueViolation(error, "birthday_guests_token_key") ||
     isUniqueViolation(cause, "birthday_guests_token_key")
   );
+}
+
+// ---------------------------------------------------------------------------
+// Textos de los planes
+
+/** Los textos que Joaquín corrigió desde el panel, por plan. */
+export async function eventTexts(): Promise<
+  Partial<Record<EventSlug, EventTexts>>
+> {
+  const rows = await getDb().select().from(birthdayEventTexts);
+  return Object.fromEntries(
+    rows.map((row) => [
+      row.eventSlug,
+      { question: row.question, details: row.details },
+    ]),
+  );
+}
+
+/** Guarda los textos de un plan, o los borra (`null`) para volver a los de código. */
+export async function setEventTexts(
+  event: EventSlug,
+  texts: EventTexts | null,
+  now: Date = new Date(),
+): Promise<void> {
+  const db = getDb();
+  if (texts === null) {
+    await db
+      .delete(birthdayEventTexts)
+      .where(eq(birthdayEventTexts.eventSlug, event));
+    return;
+  }
+  const updatedAt = now.toISOString();
+  await db
+    .insert(birthdayEventTexts)
+    .values({ eventSlug: event, ...texts, updatedAt })
+    .onConflictDoUpdate({
+      target: birthdayEventTexts.eventSlug,
+      set: { ...texts, updatedAt },
+    });
 }

@@ -8,6 +8,7 @@ import {
   eventsFor,
   hasPassed,
   isEventSlug,
+  withTexts,
 } from "./events";
 
 describe("catálogo de planes", () => {
@@ -96,5 +97,24 @@ describe("hasPassed", () => {
     expect(
       hasPassed(eventBySlug("cocktail"), new Date("2026-10-28T12:00:00Z")),
     ).toBe(false);
+  });
+});
+
+describe("withTexts", () => {
+  it("sin textos corregidos, el plan queda igual", () => {
+    const run = eventBySlug("run");
+    expect(withTexts(run, undefined)).toBe(run);
+  });
+
+  it("reemplaza pregunta y datos, y deja horas y color", () => {
+    const run = eventBySlug("run");
+    const edited = withTexts(run, {
+      question: "¿trotamos?",
+      details: [{ label: "ritmo", value: "suave" }],
+    });
+    expect(edited.question).toBe("¿trotamos?");
+    expect(edited.details).toEqual([{ label: "ritmo", value: "suave" }]);
+    expect(edited.startsAt).toBe(run.startsAt);
+    expect(edited.color).toBe(run.color);
   });
 });

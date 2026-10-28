@@ -13,7 +13,11 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import { DEFAULT_INVITED_EVENTS, EVENT_SLUGS } from "@/lib/birthday/events";
+import {
+  DEFAULT_INVITED_EVENTS,
+  EVENT_SLUGS,
+  type EventDetail,
+} from "@/lib/birthday/events";
 import type { Roki } from "@/lib/birthday/roki";
 import { COVER_FOCUSES, ENTRY_FORMATS } from "@/lib/logbook/entry-format";
 import { EXERCISE_SLUGS } from "@/lib/stats/exercises";
@@ -482,3 +486,43 @@ export const birthdayEventAlbums = pgTable(
 ).enableRLS();
 
 export type BirthdayEventAlbum = typeof birthdayEventAlbums.$inferSelect;
+
+/**
+ * Los textos de un plan que Joaquín corrige desde el panel: la pregunta del
+ * voy / no voy y los datos ("¿dónde nos juntamos?", "nivel"…). Sin fila, el
+ * plan usa los textos de `src/lib/birthday/events.ts`; con fila, estos los
+ * reemplazan enteros.
+ *
+ * Horas, color y ruta siguen en código: de ellos dependen la semana, "ya
+ * pasó" y las imágenes para guardar, y no se cambian a pocos días del plan.
+ */
+export const birthdayEventTexts = pgTable(
+  "birthday_event_texts",
+  {
+    eventSlug: text("event_slug", { enum: EVENT_SLUGS }).primaryKey().notNull(),
+    question: text().notNull(),
+    details: jsonb().$type<EventDetail[]>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  () => [
+    check(
+      "birthday_event_texts_event_slug_check",
+      sql`event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])`,
+    ),
+    check(
+      "birthday_event_texts_details_array",
+      sql`jsonb_typeof(details) = 'array'`,
+    ),
+    pgPolicy("service role full access to birthday event texts", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type BirthdayEventTexts = typeof birthdayEventTexts.$inferSelect;

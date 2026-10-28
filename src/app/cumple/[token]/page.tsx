@@ -8,10 +8,11 @@ import { ScratchGate } from "@/components/birthday/scratch-gate";
 import { ScrollBackdrop } from "@/components/birthday/scroll-backdrop";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
 import { WeekStrip } from "@/components/birthday/week-strip";
-import { eventsFor } from "@/lib/birthday/events";
+import { eventsFor, withTexts } from "@/lib/birthday/events";
 import {
   albums,
   attendeesOf,
+  eventTexts,
   getGuestByToken,
   rsvpsOf,
 } from "@/lib/birthday/queries";
@@ -55,12 +56,15 @@ export default async function BirthdayGuestPage({ params }: Params) {
   const guest = await guestFor(token);
   if (!guest) notFound();
 
-  const plans = eventsFor(guest.invitedEvents);
-  const [rsvps, albumUrls, ...attendees] = await Promise.all([
+  const invited = eventsFor(guest.invitedEvents);
+  const [rsvps, albumUrls, texts, ...attendees] = await Promise.all([
     rsvpsOf(guest.id),
     albums(),
-    ...plans.map((plan) => attendeesOf(plan.slug)),
+    eventTexts(),
+    ...invited.map((plan) => attendeesOf(plan.slug)),
   ]);
+  // Los textos corregidos desde el panel reemplazan a los de código.
+  const plans = invited.map((plan) => withTexts(plan, texts[plan.slug]));
   const week = birthdayWeek(plans).map((day) => ({
     letter: day.letter,
     date: day.date,
