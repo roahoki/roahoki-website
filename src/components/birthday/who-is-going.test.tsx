@@ -114,4 +114,45 @@ describe("WhoIsGoing", () => {
       screen.getByRole("heading", { name: "montoncito" }),
     ).toBeInTheDocument();
   });
+
+  it("sin nadie todavía, guarda el lugar de los rokis en ambas vistas", () => {
+    mockMotion(true);
+    render(
+      <WhoIsGoing
+        attendees={[]}
+        meId="me"
+        color="#C42B1C"
+        onTapMine={vi.fn()}
+      />,
+    );
+    // Uno por vista, y la que no se ve queda inerte.
+    const empty = screen.getAllByText(
+      "acá van cayendo los rokis de quienes van",
+    );
+    expect(empty).toHaveLength(2);
+    expect(empty[0].closest("[inert]")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "ver foto de curso" }));
+    expect(empty[1].closest("[inert]")).toBeNull();
+    expect(empty[0].closest("[inert]")).not.toBeNull();
+  });
+
+  it("la vista que no se ve sigue ocupando su lugar, oculta", () => {
+    mockMotion(true);
+    const { container } = render(
+      <WhoIsGoing
+        attendees={ATTENDEES}
+        meId="me"
+        color="#C42B1C"
+        onTapMine={vi.fn()}
+        lead={{ title: "la cumbre", content: <p>el cerro</p> }}
+      />,
+    );
+    // Las tres vistas están en el DOM; solo una se ve. Así el recuadro mide lo
+    // que la más alta y no salta al cambiar.
+    const layers = container.querySelectorAll("[inert]");
+    expect(layers).toHaveLength(2);
+    for (const layer of layers) expect(layer.className).toContain("invisible");
+    expect(container.querySelector("ul")).not.toBeNull();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
 });
