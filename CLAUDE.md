@@ -12,6 +12,7 @@ decisiones de arquitectura.
 | [`project-guide/STACK.md`](project-guide/STACK.md) | Cómo funciona el stack y por qué está armado así |
 | [`project-guide/PROJECT.md`](project-guide/PROJECT.md) | Decisiones técnicas vigentes |
 | [`project-guide/LOGBOOK-ROADMAP.md`](project-guide/LOGBOOK-ROADMAP.md) | La tarea grande en curso, desglosada en PRs |
+| [`project-guide/BIRTHDAY-ROADMAP.md`](project-guide/BIRTHDAY-ROADMAP.md) | El cumpleaños en `/cumple`, desglosado en PRs |
 | [`project-guide/TODO.md`](project-guide/TODO.md) | Pendientes del ciclo actual |
 | [`project-guide/BACKLOG.md`](project-guide/BACKLOG.md) | Ideas sin fecha |
 
