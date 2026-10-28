@@ -1,5 +1,6 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import {
   type ReactNode,
   useCallback,
@@ -12,11 +13,18 @@ import { MARK_PATHS, MARK_VIEWBOX } from "@/components/brand/paths";
 /**
  * La entrada a la página: la invitación tapada con un raspe de rokis (Figma:
  * "cumple v3 · raspa"). Mientras no se raspa, en pantalla está solo la tarjeta;
- * el resto de la página aparece al destaparla.
+ * el resto de la página aparece debajo al destaparla.
+ *
+ * La tarjeta es la misma antes y después de raspar, en el mismo lugar y con el
+ * mismo ancho: el raspe se desvanece encima y la tarjeta no se mueve. Antes se
+ * cambiaba una tarjeta centrada por otra arriba y más ancha, y la pantalla
+ * saltaba.
  *
  * Se raspa una sola vez: la fecha queda en la base (`scratched_at`), así que al
- * volver se entra directo. Para quien no puede arrastrar (teclado, lector de
- * pantalla) hay un botón que destapa sin raspar, visible al enfocarlo.
+ * volver se entra directo. "raspar de nuevo" vuelve a tapar la invitación solo
+ * en esta pantalla, para mostrársela a alguien. Para quien no puede arrastrar
+ * (teclado, lector de pantalla) hay un botón que destapa sin raspar, visible al
+ * enfocarlo.
  */
 
 /** Cuánto hay que raspar para dar la invitación por destapada. */
@@ -39,38 +47,77 @@ export function ScratchGate({
 }) {
   const [revealed, setRevealed] = useState(scratched);
   const [fading, setFading] = useState(false);
+  // Cambia con cada "raspar de nuevo" para montar un raspe nuevo, entero.
+  const [round, setRound] = useState(0);
+  // Recién destapada, el resto entra subiendo; al volver otro día, quieto.
+  const [entering, setEntering] = useState(false);
+  const saved = useRef(scratched);
 
   const reveal = useCallback(() => {
     if (fading) return;
     setFading(true);
-    fetch("/api/birthday/scratch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-      keepalive: true,
-    }).catch(() => {
-      // Si no se guardó, la próxima vez le toca raspar de nuevo. No es grave.
-    });
+    if (!saved.current) {
+      saved.current = true;
+      fetch("/api/birthday/scratch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+        keepalive: true,
+      }).catch(() => {
+        // Si no se guardó, la próxima vez le toca raspar de nuevo. No es grave.
+      });
+    }
     // El raspe se desvanece y recién ahí aparece el resto.
-    setTimeout(() => setRevealed(true), 650);
+    setTimeout(() => {
+      setRevealed(true);
+      setEntering(true);
+      setFading(false);
+    }, 650);
   }, [fading, token]);
 
-  if (revealed) return <>{children}</>;
+  const coverAgain = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setRound((value) => value + 1);
+    setRevealed(false);
+  };
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4 py-8">
-      <div className="relative w-full max-w-[420px]">
-        {card}
-        <ScratchCanvas onDone={reveal} fading={fading} />
-        <button
-          type="button"
-          onClick={reveal}
-          className="sr-only focus:not-sr-only focus:absolute focus:bottom-4 focus:left-1/2 focus:-translate-x-1/2 focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-action focus:text-paper"
-        >
-          destapar la invitación
-        </button>
+    <>
+      <div className="flex flex-col gap-2">
+        <div className="relative">
+          {card}
+          {!revealed && (
+            <>
+              <ScratchCanvas key={round} onDone={reveal} fading={fading} />
+              <button
+                type="button"
+                onClick={reveal}
+                className="sr-only focus:not-sr-only focus:absolute focus:bottom-4 focus:left-1/2 focus:-translate-x-1/2 focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-action focus:text-paper"
+              >
+                destapar la invitación
+              </button>
+            </>
+          )}
+        </div>
+        {revealed && (
+          <button
+            type="button"
+            onClick={coverAgain}
+            className="inline-flex items-center gap-1.5 self-end px-1 py-2 text-card-meta text-faded"
+          >
+            <RotateCcw className="size-4" aria-hidden />
+            raspar de nuevo
+          </button>
+        )}
       </div>
-    </main>
+      {revealed && (
+        <div
+          className={`flex flex-col gap-10 ${entering ? "animate-fade-up" : ""}`}
+        >
+          {children}
+        </div>
+      )}
+    </>
   );
 }
 
