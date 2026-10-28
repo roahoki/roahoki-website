@@ -7,8 +7,8 @@ import type { EventSlug } from "@/lib/birthday/events";
 import type { Attendee } from "@/lib/birthday/queries";
 import type { Roki } from "@/lib/birthday/roki";
 import { DrawSheet } from "./draw-sheet";
-import { RokiFigure } from "./roki-figure";
 import { RsvpButtons } from "./rsvp-buttons";
+import { WhoIsGoing } from "./who-is-going";
 
 /**
  * Lo que se toca en la página de un plan: el voy / no voy, quiénes van y la
@@ -54,69 +54,12 @@ export function PlanResponse({
         </section>
       )}
 
-      <section
-        aria-labelledby="quienes-van"
-        className="rounded-2xl bg-paper px-4 pt-3.5 pb-5 text-ink"
-      >
-        <h2 id="quienes-van" className="text-card-title-sm">
-          quiénes van
-        </h2>
-        <p className="text-entry-meta text-faded">
-          {attendees.length === 0
-            ? "todavía nadie, ¿partes tú?"
-            : attendees.length === 1
-              ? "va 1"
-              : `van ${attendees.length}`}
-        </p>
-        {attendees.length > 0 && (
-          <ul className="mt-4 grid grid-cols-4 gap-x-2 gap-y-4">
-            {attendees.map((attendee) => {
-              const mine = attendee.id === me.id;
-              const figure = (
-                <>
-                  <RokiFigure
-                    roki={attendee.roki}
-                    color={plan.color}
-                    size={64}
-                    label={mine ? "tu roki" : `el roki de ${attendee.name}`}
-                  />
-                  <span className="max-w-full truncate text-card-meta">
-                    {mine ? "tú" : attendee.name}
-                  </span>
-                </>
-              );
-              return (
-                <li
-                  key={attendee.id}
-                  className="flex flex-col items-center gap-1"
-                >
-                  {mine ? (
-                    <button
-                      type="button"
-                      onClick={() => setDrawing(true)}
-                      className="flex flex-col items-center gap-1"
-                      aria-label={
-                        me.roki ? "redibujar tu roki" : "dibujar tu roki"
-                      }
-                    >
-                      {figure}
-                    </button>
-                  ) : (
-                    figure
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {attendees.some((attendee) => attendee.id === me.id) && (
-          <p className="mt-4 text-card-meta text-faded">
-            {me.roki
-              ? "toca tu roki para redibujarlo"
-              : "toca tu roki para dibujarlo"}
-          </p>
-        )}
-      </section>
+      <WhoIsGoing
+        attendees={attendees}
+        meId={me.id}
+        color={plan.color}
+        onTapMine={() => setDrawing(true)}
+      />
 
       <DrawSheet
         open={drawing}
