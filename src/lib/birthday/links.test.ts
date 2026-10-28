@@ -41,7 +41,7 @@ describe("links del cumpleaños", () => {
 
   it("escribe la invitación y el recordatorio con el link", () => {
     expect(inviteMessage("cata", TOKEN)).toBe(
-      "Cata!! te mandé tu invitación personal, revísala acá :)\nhttps://www.roahoki.com/cumple/Ab3dEf6hIj9L",
+      "Cata! te tengo una invitación, revísala acá :)\nhttps://www.roahoki.com/cumple/Ab3dEf6hIj9L",
     );
     expect(reminderMessage("vale", TOKEN, eventBySlug("hike"))).toContain(
       "te falta confirmar el manquehue",

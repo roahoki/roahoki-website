@@ -56,7 +56,7 @@ function capitalized(name: string): string {
 
 /** El mensaje con que se manda el link la primera vez. */
 export function inviteMessage(name: string, token: string): string {
-  return `${capitalized(name)}!! te mandé tu invitación personal, revísala acá :)\n${guestUrl(token)}`;
+  return `${capitalized(name)}! te tengo una invitación, revísala acá :)\n${guestUrl(token)}`;
 }
 
 /** El recordatorio para quien no ha respondido un plan. */
