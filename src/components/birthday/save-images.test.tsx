@@ -75,6 +75,7 @@ describe("ScheduleImage", () => {
     const { container } = render(
       <ScheduleImage
         name="cata"
+        roki={null}
         plans={[
           { plan: eventBySlug("run"), status: "going" },
           { plan: eventBySlug("party"), status: undefined },
@@ -88,5 +89,38 @@ describe("ScheduleImage", () => {
     expect(screen.getByText("21:00 · en mi casa")).toBeInTheDocument();
     // Una figura por plan confirmado, más la del logo del pie.
     expect(container.querySelectorAll("svg")).toHaveLength(2);
+  });
+
+  it("en los confirmados asoma el roki que dibujó, en papel", () => {
+    const roki = {
+      strokes: [
+        {
+          color: "#C42B1C" as const,
+          points: [
+            [0.2, 0.9],
+            [0.5, 0.2],
+            [0.8, 0.9],
+          ] as [number, number][],
+        },
+      ],
+      eye: null,
+    };
+    const { container } = render(
+      <ScheduleImage
+        name="cata"
+        roki={roki}
+        plans={[
+          { plan: eventBySlug("run"), status: "going" },
+          { plan: eventBySlug("party"), status: "going" },
+          { plan: eventBySlug("hike"), status: undefined },
+        ]}
+      />,
+    );
+    const drawn = container.querySelectorAll('svg[viewBox="0 0 100 100"]');
+    expect(drawn).toHaveLength(2);
+    const path = drawn[0].querySelector("path");
+    expect(path).toHaveAttribute("d", "M20.00 90.00 L50.00 20.00 L80.00 90.00");
+    // Su rojo no se leería sobre el trote: va en papel.
+    expect(drawn[0]).toHaveAttribute("stroke", "#EEECE3");
   });
 });
