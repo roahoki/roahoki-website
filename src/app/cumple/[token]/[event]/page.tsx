@@ -1,134 +1,25 @@
-import { ArrowLeft, CalendarPlus, Images } from "lucide-react";
-import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ColorFlood } from "@/components/birthday/color-flood";
-import { PlanResponse } from "@/components/birthday/plan-response";
-import { VisitBeacon } from "@/components/birthday/visit-beacon";
-import { eventByPath, hasPassed } from "@/lib/birthday/events";
-import { formatDayTime, formatTime } from "@/lib/birthday/format";
-import {
-  albums,
-  attendeesOf,
-  getGuestByToken,
-  rsvpsOf,
-} from "@/lib/birthday/queries";
+import { notFound, redirect } from "next/navigation";
+import { eventByPath } from "@/lib/birthday/events";
+import { getGuestByToken } from "@/lib/birthday/queries";
 import { isToken } from "@/lib/birthday/token";
 
 /**
- * La página de un plan: `/cumple/<token>/<plan>` (Figma: invitado v3, trote).
- * Toda en el color del plan, con los datos, el voy / no voy y quiénes van.
+ * La URL vieja de cada plan (`/cumple/<token>/<plan>`). Los planes ahora viven
+ * todos en la página del invitado; esta ruta queda para los links que ya se
+ * compartieron y lleva al ancla del plan.
  *
- * Un plan al que el invitado no está invitado no existe: 404, igual que un
- * token que no es de nadie.
+ * Un plan al que el invitado no está invitado sigue sin existir: 404, igual
+ * que un token que no es de nadie.
  */
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ token: string; event: string }> };
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const plan = eventByPath((await params).event);
-  return {
-    title: plan ? `${plan.title} · los 25 de joky` : "este link no existe",
-  };
-}
-
-export default async function BirthdayEventPage({ params }: Params) {
+export default async function BirthdayEventRedirect({ params }: Params) {
   const { token, event } = await params;
   const plan = eventByPath(event);
   const guest =
     plan && isToken(token) ? await getGuestByToken(token) : undefined;
   if (!plan || !guest?.invitedEvents.includes(plan.slug)) notFound();
-
-  const [rsvps, attendees, albumUrls] = await Promise.all([
-    rsvpsOf(guest.id),
-    attendeesOf(plan.slug),
-    albums(),
-  ]);
-  const status = rsvps[plan.slug] ?? null;
-  const passed = hasPassed(plan);
-  const album = albumUrls[plan.slug];
-
-  return (
-    <ColorFlood color={plan.color}>
-      <VisitBeacon token={token} />
-      <header className="mx-auto max-w-[480px] px-4 pt-5">
-        <Link
-          href={`/cumple/${token}`}
-          className="inline-flex items-center gap-1.5 text-action"
-        >
-          <ArrowLeft className="size-5" aria-hidden />
-          volver
-        </Link>
-      </header>
-
-      <main className="mx-auto flex max-w-[480px] flex-col gap-8 px-4 pt-7 pb-14">
-        <div>
-          <p className="text-entry-meta">
-            {formatDayTime(plan.startsAt)} a {formatTime(plan.endsAt)}
-          </p>
-          <h1 className="text-[4rem] leading-none font-bold tracking-[-0.02em]">
-            {plan.title}
-          </h1>
-        </div>
-
-        <dl className="flex flex-col gap-4">
-          {plan.details.map((detail) => (
-            <div key={detail.label}>
-              <dt className="text-entry-meta font-bold">{detail.label}</dt>
-              <dd className="text-entry-body">{detail.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        {passed && (
-          <section className="flex flex-col gap-3">
-            <h2 className="text-card-title">
-              ya pasó{status === "going" ? " · fuiste :)" : ""}
-            </h2>
-            {album ? (
-              <a
-                href={album}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center gap-2 self-start rounded-full bg-paper px-4 text-action"
-                style={{ color: plan.color }}
-              >
-                <Images className="size-[18px]" aria-hidden />
-                ver las fotos
-              </a>
-            ) : (
-              <p className="text-entry-body">
-                pronto les compartiré las fotos :)
-              </p>
-            )}
-          </section>
-        )}
-
-        <PlanResponse
-          token={token}
-          plan={{
-            slug: plan.slug,
-            title: plan.title,
-            color: plan.color,
-            question: plan.question,
-          }}
-          status={status}
-          passed={passed}
-          attendees={attendees}
-          me={{ id: guest.id, roki: guest.roki }}
-        />
-
-        {!passed && (
-          <a
-            href={`/cumple/${token}/${plan.path}/calendar.ics`}
-            className="inline-flex h-11 items-center gap-2 self-start rounded-full border-[1.5px] border-paper px-4 text-action"
-          >
-            <CalendarPlus className="size-[18px]" aria-hidden />
-            agregar al calendario
-          </a>
-        )}
-      </main>
-    </ColorFlood>
-  );
+  redirect(`/cumple/${token}#${plan.path}`);
 }

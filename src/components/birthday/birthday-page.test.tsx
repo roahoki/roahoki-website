@@ -1,11 +1,9 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { metadata } from "@/app/cumple/layout";
-import { eventBySlug } from "@/lib/birthday/events";
 import { ogFonts } from "@/lib/birthday/og-fonts";
 import { Invitation } from "./invitation";
 import { INVITATION_ROKIS } from "./invitation-pile";
-import { PlanCard } from "./plan-card";
 import { ScratchGate } from "./scratch-gate";
 
 // `next/font` solo existe dentro del compilador de Next; en Vitest no hay
@@ -27,31 +25,6 @@ describe("la invitación", () => {
 
   it("trae los diez rokis de la invitación A de Figma", () => {
     expect(INVITATION_ROKIS).toHaveLength(10);
-  });
-});
-
-describe("PlanCard", () => {
-  it("lleva a la página del plan dentro del link del invitado", () => {
-    render(
-      <PlanCard token={TOKEN} plan={eventBySlug("run")} status={undefined} />,
-    );
-    expect(screen.getByRole("link")).toHaveAttribute(
-      "href",
-      `/cumple/${TOKEN}/trote`,
-    );
-    expect(screen.getByText("por confirmar")).toBeInTheDocument();
-    expect(screen.getByText("sáb 7 nov · 09:00")).toBeInTheDocument();
-  });
-
-  it("dice si va o no va", () => {
-    const { rerender } = render(
-      <PlanCard token={TOKEN} plan={eventBySlug("run")} status="going" />,
-    );
-    expect(screen.getByText("vas")).toBeInTheDocument();
-    rerender(
-      <PlanCard token={TOKEN} plan={eventBySlug("run")} status="not_going" />,
-    );
-    expect(screen.getByText("no vas")).toBeInTheDocument();
   });
 });
 

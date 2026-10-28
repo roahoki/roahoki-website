@@ -47,7 +47,7 @@ export function PlanResponse({
     <>
       {!passed && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-card-title">{plan.question}</h2>
+          <h3 className="text-card-title">{plan.question}</h3>
           {!climbs && (
             <RsvpButtons
               token={token}

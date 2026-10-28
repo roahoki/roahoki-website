@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Vibrate } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import type { Attendee } from "@/lib/birthday/queries";
 import { MOTION_OK } from "@/lib/motion/tokens";
 import { RokiFigure } from "./roki-figure";
@@ -42,6 +42,8 @@ export function WhoIsGoing({
   const slides = [...(lead ? [lead.title] : []), "montoncito", "foto de curso"];
   const pileAt = lead ? 1 : 0;
   const [slide, setSlide] = useState(0);
+  // Hay un recuadro por plan en la misma página: el id no puede ser fijo.
+  const titleId = useId();
   const pile = useRef<RokiPileHandle>(null);
   const swipe = useRef<number | null>(null);
 
@@ -99,16 +101,16 @@ export function WhoIsGoing({
   const gridAt = pileAt + 1;
 
   return (
-    <section aria-labelledby="quienes-van" className="flex flex-col gap-4">
+    <section aria-labelledby={titleId} className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-2xl bg-paper text-ink">
         <div
           className="flex min-h-14 items-start justify-between px-4 pt-3.5"
           {...swipeHandlers}
         >
           <div>
-            <h2 id="quienes-van" className="text-card-title-sm">
+            <h3 id={titleId} className="text-card-title-sm">
               {slides[slide]}
-            </h2>
+            </h3>
             <p
               className={`text-entry-meta text-faded ${isLead ? "invisible" : ""}`}
               aria-hidden={isLead}
