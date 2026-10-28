@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { mockMotion } from "@/test/motion";
 import { PlanResponse } from "./plan-response";
 
 const refresh = vi.hoisted(() => vi.fn());
@@ -24,8 +25,12 @@ const ROKI = {
   eye: null,
 };
 
+// La física no corre en happy-dom.
+vi.mock("./roki-pile", () => ({ RokiPile: () => null }));
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   vi.clearAllMocks();
 });
 
@@ -86,7 +91,9 @@ describe("PlanResponse", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("tocando su propio roki en la pila lo puede redibujar", () => {
+  it("tocando su propio roki lo puede redibujar", () => {
+    // En la foto de curso, que es la vista sin física.
+    mockMotion(false);
     renderPlan(ROKI, [{ id: "me", name: "cata", roki: ROKI }]);
     fireEvent.click(screen.getByRole("button", { name: "redibujar tu roki" }));
     expect(
@@ -96,6 +103,7 @@ describe("PlanResponse", () => {
   });
 
   it("muestra «tú» en vez de su nombre", () => {
+    mockMotion(false);
     renderPlan(null, [
       { id: "me", name: "cata", roki: null },
       { id: "v", name: "vale", roki: null },
