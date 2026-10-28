@@ -57,6 +57,13 @@
       "when": 1791672909635,
       "tag": "0007_logbook_cover_crop_backfill",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793164655746,
+      "tag": "0008_birthday",
+      "breakpoints": true
     }
   ]
 }
