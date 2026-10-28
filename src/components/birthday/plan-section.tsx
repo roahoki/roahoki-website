@@ -39,7 +39,8 @@ export function PlanSection({
       id={plan.path}
       aria-labelledby={titleId}
       data-backdrop={plan.color}
-      className="flex scroll-mt-4 flex-col gap-8 py-14 text-paper"
+      // `scroll-mt-12`: al saltar al plan, el título queda bajo la semana.
+      className="flex scroll-mt-12 flex-col gap-8 py-14 text-paper"
     >
       <div>
         <p className="text-entry-meta">
