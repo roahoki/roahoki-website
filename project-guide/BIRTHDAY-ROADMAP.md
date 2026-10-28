@@ -50,7 +50,7 @@ Los componentes nuevos de Figma (`cumple/plan-tarjeta`, `cumple/boton`,
 | Identidad | El token del link es el invitado: sin cuenta, clave ni cookie | Funciona en cualquier celular y abre con un toque desde WhatsApp |
 | Privacidad | `noindex`, fuera del sitemap, token de ~60 bits | La página solo existe para quien tiene el link |
 | Invitación por plan | `invited_events` por invitado; por defecto todos menos el cóctel | Joaquín no quiere cupos: un aforo le parece poco respetuoso. Un plan no invitado no existe para ese invitado |
-| Contenido | Planes en código (`src/lib/birthday/`); respuestas en la base | Cambian poco y solo los edita Joaquín, igual que `src/lib/stats/exercises.ts` |
+| Contenido | Planes en código (`src/lib/birthday/`); respuestas en la base | Cambian poco y solo los edita Joaquín, igual que `src/lib/stats/exercises.ts`. Desde la PR 16 los textos de cada plan pasan a la base (ver bloque 3) |
 | Regalos | Sin wishlist en la página | Joaquín comparte ideas de regalo por WhatsApp a quien le pregunte |
 | Color | Un color por plan: cóctel `#173F2A`, carrete `#0E2A47`, trote `#C42B1C`, manquehue `#3F2D5C` | El cumple es una edición hermana unida por roki, con el mismo precedente que roatoni (brand book §5.6) |
 | Roki del invitado | Trazos normalizados en `jsonb`, no imágenes | Se dibuja en cualquier tamaño, pesa poco y el ojo se puede animar |
@@ -82,9 +82,9 @@ token, o cualquiera podría anotarse al cóctel armando la petición a mano.
 | Ruta | Qué es |
 | --- | --- |
 | `/cumple/[token]` | Raspa, invitación, saludo, lineup y para guardar. Raíz propia con su layout |
-| `/cumple/[token]/[event]` | La página del plan: datos, voy o no voy, quiénes van, calendario |
+| `/cumple/[token]/[event]` | La página del plan: datos, voy o no voy, quiénes van, calendario. Desde la PR 14 redirige a su ancla en `/cumple/[token]` |
 | `/cumple/[token]/opengraph-image` | La vista previa del link en WhatsApp, con el nombre del invitado |
-| `/cumple/[token]/[event]/calendar.ics` | El plan para agregar al calendario |
+| `/cumple/[token]/[event]/calendar.ics` | El plan para agregar al calendario. Se va en la PR 15 |
 | `/admin/cumple` | El panel, dentro de `(protected)` |
 
 `/cumple` va en español porque es la URL que se ve en WhatsApp; el código va en
@@ -116,6 +116,38 @@ inglés (`birthday`).
 
 Queda para `BACKLOG.md`: el dorsal del trote, un pase de cumbre del Manquehue y
 mostrar las fotos de cada plan dentro de la página.
+
+## Bloque 3: lo que pidieron los invitados
+
+Con los links ya mandados llegaron diez comentarios: la página del plan cuesta
+dejarla para ir a otro, el `.ics` descarga un archivo que nadie entiende, la
+pantalla salta al cambiar de vista y al terminar de raspar, y faltaba un lugar
+para dudas típicas ("¿me puedo quedar a dormir?").
+
+Este bloque **no pasa primero por Figma**: quedan siete días para el 4 de
+noviembre y Joaquín itera sobre cada PR corriendo en local. Figma se pone al
+día después, si hace falta.
+
+| # | Rama | Contenido |
+| --- | --- | --- |
+| 10 | `docs/birthday-block-3` | Este bloque |
+| 11 | `fix/birthday-who-is-going-layout` | El recuadro de quiénes van con una sola altura para cumbre, montoncito, foto de curso y vacío; el montoncito más bajo y con margen a los lados para hacer scroll |
+| 12 | `fix/birthday-reveal` | Sin header; la invitación en el mismo ancho y lugar antes y después de raspar; "raspar de nuevo" (solo visual, no toca `scratched_at`) |
+| 13 | `feat/birthday-redraw-reference` | Al redibujar, elegir el calco: el dibujo anterior o roki |
+| 14 | `feat/birthday-single-page` | Una sola página: invitación, saludo y todos los planes uno tras otro. El fondo toma el color del plan que se ve. `/cumple/<token>/<plan>` redirige a su ancla |
+| 15 | `feat/birthday-week-calendar` | La semana del 2 al 8 de noviembre, pegada arriba: un punto por plan en su color, marca el plan que se ve y tocar un día baja a ese plan. Se va el `.ics` |
+| 16 | `feat/birthday-editable-details` | Los textos de cada plan (pregunta, subtítulos y contenido) se editan desde `/admin/cumple`; los subtítulos más grandes |
+| 17 | `feat/birthday-questions` | Dudas por plan: el invitado pregunta, se publica cuando Joaquín responde, y Joaquín puede agregar dudas frecuentes desde el panel |
+
+### Decisiones del bloque
+
+| Decisión | Elección | Razón |
+| --- | --- | --- |
+| Navegar entre planes | Bajar, en una sola página | El montoncito, la cumbre y su carrusel ya usan el gesto lateral; deslizar entre planes chocaría con ellos |
+| Índice | La semana pegada arriba reemplaza las tarjetas del lineup | Muestra los días y lleva a cada plan, sin repetir la información |
+| Color | Toda la pantalla toma el color del plan visible y cambia suave | Reemplaza al color que nacía del dedo, que necesitaba cambiar de página |
+| Textos de los planes | En la base, con el contenido de `events.ts` como valor inicial | Joaquín los corrige sin abrir una PR. Horas, colores y slugs siguen en código: de ellos dependen la semana, "ya pasó" y las imágenes |
+| Dudas | Visibles para todos cuando tienen respuesta; quien pregunta ve la suya pendiente | No quedan preguntas sin responder a la vista y no hay que moderar nada aparte |
 
 ## Verificación de punta a punta
 
