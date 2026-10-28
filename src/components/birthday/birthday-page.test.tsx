@@ -1,0 +1,114 @@
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { metadata } from "@/app/cumple/layout";
+import { eventBySlug } from "@/lib/birthday/events";
+import { ogFonts } from "@/lib/birthday/og-fonts";
+import { Invitation } from "./invitation";
+import { INVITATION_ROKIS } from "./invitation-pile";
+import { PlanCard } from "./plan-card";
+import { ScratchGate } from "./scratch-gate";
+
+// `next/font` solo existe dentro del compilador de Next; en Vitest no hay
+// fuente que cargar, y al layout le basta con el nombre de la clase.
+vi.mock("@/lib/fonts", () => ({ bricolage: { variable: "font-bricolage" } }));
+// Los estilos los procesa Tailwind en el build; acá no hacen falta.
+vi.mock("@/app/globals.css", () => ({}));
+
+const TOKEN = "Ab3dEf6hIj9L";
+
+describe("la invitación", () => {
+  it("tacha roahoki y dice la fecha del cumple", () => {
+    render(<Invitation />);
+    expect(screen.getByText("roahoki").tagName).toBe("S");
+    expect(
+      screen.getByText(/mi cumple es el 4 de noviembre/),
+    ).toBeInTheDocument();
+  });
+
+  it("trae los diez rokis de la invitación A de Figma", () => {
+    expect(INVITATION_ROKIS).toHaveLength(10);
+  });
+});
+
+describe("PlanCard", () => {
+  it("lleva a la página del plan dentro del link del invitado", () => {
+    render(
+      <PlanCard token={TOKEN} plan={eventBySlug("run")} status={undefined} />,
+    );
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      `/cumple/${TOKEN}/trote`,
+    );
+    expect(screen.getByText("por confirmar")).toBeInTheDocument();
+    expect(screen.getByText("sáb 7 nov · 09:00")).toBeInTheDocument();
+  });
+
+  it("dice si va o no va", () => {
+    const { rerender } = render(
+      <PlanCard token={TOKEN} plan={eventBySlug("run")} status="going" />,
+    );
+    expect(screen.getByText("vas")).toBeInTheDocument();
+    rerender(
+      <PlanCard token={TOKEN} plan={eventBySlug("run")} status="not_going" />,
+    );
+    expect(screen.getByText("no vas")).toBeInTheDocument();
+  });
+});
+
+describe("ScratchGate", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it("si ya raspó, entra directo a la página", () => {
+    render(
+      <ScratchGate token={TOKEN} scratched card={<p>tarjeta</p>}>
+        <p>el resto</p>
+      </ScratchGate>,
+    );
+    expect(screen.getByText("el resto")).toBeInTheDocument();
+    expect(screen.queryByText("tarjeta")).not.toBeInTheDocument();
+  });
+
+  it("si no, muestra solo la tarjeta y se puede destapar sin raspar", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ScratchGate token={TOKEN} scratched={false} card={<p>tarjeta</p>}>
+        <p>el resto</p>
+      </ScratchGate>,
+    );
+    expect(screen.getByText("tarjeta")).toBeInTheDocument();
+    expect(screen.queryByText("el resto")).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "destapar la invitación" }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/birthday/scratch",
+      expect.objectContaining({ body: JSON.stringify({ token: TOKEN }) }),
+    );
+    await act(async () => {
+      vi.advanceTimersByTime(700);
+    });
+    expect(screen.getByText("el resto")).toBeInTheDocument();
+  });
+});
+
+describe("raíz /cumple", () => {
+  it("no deja indexar nada", () => {
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
+
+  it("encuentra las fuentes de las imágenes", async () => {
+    const fonts = await ogFonts();
+    expect(fonts.map((font) => font.weight)).toEqual([400, 700]);
+    for (const font of fonts)
+      expect(font.data.byteLength).toBeGreaterThan(10_000);
+  });
+});

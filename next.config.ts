@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Las imágenes del cumpleaños leen Bricolage en TTF con `fs` al generarse;
+  // sin esto, el empaquetado de Vercel no incluye las fuentes y la imagen
+  // falla en producción aunque funcione en local.
+  outputFileTracingIncludes: {
+    "/cumple/[token]/**": ["./src/assets/fonts/**"],
+  },
   images: {
     remotePatterns: [
       {
