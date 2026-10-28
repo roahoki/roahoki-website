@@ -1,8 +1,11 @@
+"use client";
+
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import type { RsvpStatus } from "@/db/schema";
 import type { BirthdayEvent } from "@/lib/birthday/events";
 import { formatDayTime } from "@/lib/birthday/format";
+import { TAP_KEY } from "./color-flood";
 
 const STATUS: Record<RsvpStatus | "pending", string> = {
   going: "vas",
@@ -30,6 +33,16 @@ export function PlanCard({
   return (
     <Link
       href={`/cumple/${token}/${plan.path}`}
+      onClick={(event) => {
+        try {
+          sessionStorage.setItem(
+            TAP_KEY,
+            JSON.stringify({ x: event.clientX, y: event.clientY }),
+          );
+        } catch {
+          // Sin almacenamiento la página entra quieta; nada se rompe.
+        }
+      }}
       className="flex flex-col gap-0.5 rounded-[20px] px-5 pt-[18px] pb-[18px] text-paper transition-transform active:scale-[0.98]"
       style={{ backgroundColor: plan.color }}
     >
