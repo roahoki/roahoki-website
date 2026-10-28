@@ -51,6 +51,8 @@ describe("ScrollBackdrop", () => {
     fire([{ target: zone("trote"), isIntersecting: true }]);
     expect(document.body.style.backgroundColor).toBe("#C42B1C");
     expect(theme()).toBe("#C42B1C");
+    // El texto que hereda del body pasa a papel para leerse sobre el plan.
+    expect(document.body.style.color).toBe(palette.paper);
 
     fire([
       { target: zone("trote"), isIntersecting: false },
@@ -63,12 +65,33 @@ describe("ScrollBackdrop", () => {
     mockMotion(true);
     render(<ScrollBackdrop />);
     fire([{ target: zone("trote"), isIntersecting: true }]);
-    // El primer plan quedó bajo la mitad de la pantalla: se volvió a subir.
+    // El primer plan quedó bajo la línea: se volvió a subir.
     vi.spyOn(zone("trote"), "getBoundingClientRect").mockReturnValue({
-      top: window.innerHeight,
+      top: window.innerHeight * 0.9,
     } as DOMRect);
     fire([{ target: zone("trote"), isIntersecting: false }]);
     expect(document.body.style.backgroundColor).toBe(palette.paper);
+    expect(document.body.style.color).toBe(palette.ink);
+  });
+
+  it("cambia apenas el plan asoma por abajo, no en la mitad", () => {
+    mockMotion(true);
+    let options: IntersectionObserverInit | undefined;
+    const Base = globalThis.IntersectionObserver;
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class extends Base {
+        constructor(
+          callback: IntersectionObserverCallback,
+          init?: IntersectionObserverInit,
+        ) {
+          super(callback, init);
+          options = init;
+        }
+      },
+    );
+    render(<ScrollBackdrop />);
+    expect(options?.rootMargin).toBe("-85% 0px -15% 0px");
   });
 
   it("con movimiento reducido cambia sin transición y al salir deja todo como estaba", () => {

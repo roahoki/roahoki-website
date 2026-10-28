@@ -2,8 +2,10 @@
 
 import { RotateCcw } from "lucide-react";
 import {
+  createContext,
   type ReactNode,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -21,9 +23,9 @@ import { MARK_PATHS, MARK_VIEWBOX } from "@/components/brand/paths";
  * saltaba.
  *
  * Se raspa una sola vez: la fecha queda en la base (`scratched_at`), así que al
- * volver se entra directo. "raspar de nuevo", medio escondido al final de la
- * página, vuelve a tapar la invitación solo en esta pantalla, para mostrársela
- * a alguien.
+ * volver se entra directo. "raspar de nuevo" (`ScratchAgainButton`, que la
+ * página pone medio escondido al final) vuelve a tapar la invitación solo en
+ * esta pantalla, para mostrársela a alguien.
  *
  * Tapada, la tarjeta se recorta redondeada. Al destaparla, el recorte se abre
  * hacia los lados y la pila de rokis se sale hasta el borde de la pantalla
@@ -32,6 +34,9 @@ import { MARK_PATHS, MARK_VIEWBOX } from "@/components/brand/paths";
  * (teclado, lector de pantalla) hay un botón que destapa sin raspar, visible al
  * enfocarlo.
  */
+
+/** "raspar de nuevo", para que la página lo ponga donde quiera. */
+const CoverAgainContext = createContext<(() => void) | null>(null);
 
 /** El recorte de la tarjeta tapada y destapada (ver arriba). */
 const CLIP_COVERED = "inset(0% 0% 0% 0% round 16px)";
@@ -113,22 +118,31 @@ export function ScratchGate({
         )}
       </div>
       {revealed && (
-        <div
-          className={`flex flex-col gap-10 ${entering ? "animate-fade-up" : ""}`}
-        >
-          {children}
-          {/* Medio escondido: está para quien lo busque, no compite con nada. */}
-          <button
-            type="button"
-            onClick={coverAgain}
-            className="inline-flex items-center gap-1 self-center py-2 text-card-meta text-faded opacity-70"
+        <CoverAgainContext.Provider value={coverAgain}>
+          <div
+            className={`flex flex-col gap-10 ${entering ? "animate-fade-up" : ""}`}
           >
-            <RotateCcw className="size-3.5" aria-hidden />
-            raspar de nuevo
-          </button>
-        </div>
+            {children}
+          </div>
+        </CoverAgainContext.Provider>
       )}
     </>
+  );
+}
+
+/** Vuelve a tapar la invitación. Va dentro de lo que muestra `ScratchGate`. */
+export function ScratchAgainButton() {
+  const coverAgain = useContext(CoverAgainContext);
+  if (!coverAgain) return null;
+  return (
+    <button
+      type="button"
+      onClick={coverAgain}
+      className="inline-flex items-center gap-1 self-center py-2 text-card-meta text-faded opacity-70"
+    >
+      <RotateCcw className="size-3.5" aria-hidden />
+      raspar de nuevo
+    </button>
   );
 }
 
