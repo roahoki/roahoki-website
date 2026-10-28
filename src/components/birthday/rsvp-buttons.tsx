@@ -16,11 +16,14 @@ export function RsvpButtons({
   event,
   color,
   initial,
+  onGoing,
 }: {
   token: string;
   event: EventSlug;
   color: string;
   initial: RsvpStatus | null;
+  /** Se llama cuando un "voy" quedó guardado (para pedir el dibujo). */
+  onGoing?: () => void;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(initial);
@@ -42,6 +45,7 @@ export function RsvpButtons({
         throw new Error(data?.error);
       }
       router.refresh();
+      if (next === "going") onGoing?.();
     } catch (cause) {
       setStatus(before);
       setError(
