@@ -14,6 +14,7 @@ import {
   attendeesOf,
   eventTexts,
   getGuestByToken,
+  questionsForGuest,
   rsvpsOf,
 } from "@/lib/birthday/queries";
 import { isToken } from "@/lib/birthday/token";
@@ -57,10 +58,14 @@ export default async function BirthdayGuestPage({ params }: Params) {
   if (!guest) notFound();
 
   const invited = eventsFor(guest.invitedEvents);
-  const [rsvps, albumUrls, texts, ...attendees] = await Promise.all([
+  const [rsvps, albumUrls, texts, questions, ...attendees] = await Promise.all([
     rsvpsOf(guest.id),
     albums(),
     eventTexts(),
+    questionsForGuest(
+      guest.id,
+      invited.map((plan) => plan.slug),
+    ),
     ...invited.map((plan) => attendeesOf(plan.slug)),
   ]);
   // Los textos corregidos desde el panel reemplazan a los de código.
@@ -115,6 +120,7 @@ export default async function BirthdayGuestPage({ params }: Params) {
                 status={rsvps[plan.slug] ?? null}
                 attendees={attendees[index]}
                 album={albumUrls[plan.slug]}
+                questions={questions[plan.slug] ?? []}
                 me={{ id: guest.id, roki: guest.roki }}
               />
             ))}

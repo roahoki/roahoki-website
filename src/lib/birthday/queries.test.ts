@@ -52,6 +52,7 @@ describe.skipIf(!hasTestDatabase)("queries del cumpleaños", () => {
     try {
       await sql`delete from birthday_event_albums`;
       await sql`delete from birthday_event_texts`;
+      await sql`delete from birthday_questions`;
       await sql`delete from birthday_guests`;
     } finally {
       await sql.end();
@@ -254,6 +255,75 @@ describe.skipIf(!hasTestDatabase)("queries del cumpleaños", () => {
       });
       await queries.setEventTexts("party", null);
       expect(await queries.eventTexts()).toEqual({});
+    });
+  });
+
+  describe("dudas", () => {
+    it("cada invitado ve las respondidas y las suyas, no las pendientes de otros", async () => {
+      const cata = await guest("cata");
+      const vale = await guest("vale");
+      const mine = await queries.askQuestion(cata.id, "party", "¿dormir?");
+      const other = await queries.askQuestion(vale.id, "party", "¿hielo?");
+      await queries.createFaq("party", "¿a qué hora?", "21:00");
+      if (mine.status !== "saved" || other.status !== "saved")
+        throw new Error("no se guardaron");
+
+      const forCata = await queries.questionsForGuest(cata.id, [
+        "party",
+        "run",
+      ]);
+      expect(forCata.party?.map((q) => [q.question, q.mine])).toEqual([
+        ["¿a qué hora?", false],
+        ["¿dormir?", true],
+      ]);
+      expect(forCata.run).toBeUndefined();
+
+      await queries.answerQuestion(other.question.id, "trae");
+      const after = await queries.questionsForGuest(cata.id, ["party"]);
+      // Respondidas en el orden en que se preguntaron; la pendiente al final.
+      expect(after.party?.map((q) => q.question)).toEqual([
+        "¿hielo?",
+        "¿a qué hora?",
+        "¿dormir?",
+      ]);
+    });
+
+    it("frena al cuarto pendiente del mismo invitado en el mismo plan", async () => {
+      const cata = await guest("cata");
+      for (const text of ["¿uno?", "¿dos?", "¿tres?"]) {
+        expect((await queries.askQuestion(cata.id, "party", text)).status).toBe(
+          "saved",
+        );
+      }
+      expect(
+        (await queries.askQuestion(cata.id, "party", "¿cuatro?")).status,
+      ).toBe("too_many");
+      // En otro plan sí puede.
+      expect(
+        (await queries.askQuestion(cata.id, "run", "¿ritmo?")).status,
+      ).toBe("saved");
+    });
+
+    it("el panel ve todo, primero lo pendiente, y cuenta por plan", async () => {
+      const cata = await guest("cata");
+      await queries.createFaq("party", "¿a qué hora?", "21:00");
+      await queries.askQuestion(cata.id, "party", "¿dormir?");
+      const list = await queries.questionsOf("party");
+      expect(list.map((q) => [q.question, q.guestName])).toEqual([
+        ["¿dormir?", "cata"],
+        ["¿a qué hora?", null],
+      ]);
+      expect(await queries.pendingQuestionCounts()).toEqual({ party: 1 });
+
+      expect(await queries.deleteQuestion(list[0].id)).toBe(true);
+      expect(await queries.pendingQuestionCounts()).toEqual({});
+    });
+
+    it("las dudas de un invitado se van con él", async () => {
+      const cata = await guest("cata");
+      await queries.askQuestion(cata.id, "party", "¿dormir?");
+      await queries.deleteGuest(cata.id);
+      expect(await queries.questionsOf("party")).toEqual([]);
     });
   });
 });

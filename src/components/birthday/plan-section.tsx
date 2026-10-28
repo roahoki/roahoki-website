@@ -2,13 +2,14 @@ import { Images } from "lucide-react";
 import type { RsvpStatus } from "@/db/schema";
 import { type BirthdayEvent, hasPassed } from "@/lib/birthday/events";
 import { formatDayTime, formatTime } from "@/lib/birthday/format";
-import type { Attendee } from "@/lib/birthday/queries";
+import type { Attendee, GuestQuestion } from "@/lib/birthday/queries";
 import type { Roki } from "@/lib/birthday/roki";
+import { PlanQuestions } from "./plan-questions";
 import { PlanResponse } from "./plan-response";
 
 /**
  * Un plan dentro de la página del invitado: datos, voy o no voy, quiénes van
- * y, si ya pasó, el álbum. Antes era una página aparte (`/cumple/<token>/<plan>`)
+ * las dudas y, si ya pasó, el álbum. Antes era una página aparte (`/cumple/<token>/<plan>`)
  * y costaba volver para ir a otro; ahora los planes van uno tras otro y se pasa
  * de uno al siguiente bajando.
  *
@@ -22,6 +23,7 @@ export function PlanSection({
   status,
   attendees,
   album,
+  questions,
   me,
 }: {
   token: string;
@@ -29,6 +31,7 @@ export function PlanSection({
   status: RsvpStatus | null;
   attendees: Attendee[];
   album: string | undefined;
+  questions: GuestQuestion[];
   me: { id: string; roki: Roki | null };
 }) {
   const passed = hasPassed(plan);
@@ -103,6 +106,14 @@ export function PlanSection({
         passed={passed}
         attendees={attendees}
         me={me}
+      />
+
+      <PlanQuestions
+        token={token}
+        event={plan.slug}
+        color={plan.color}
+        passed={passed}
+        initial={questions}
       />
     </section>
   );

@@ -71,6 +71,13 @@
       "when": 1793211198350,
       "tag": "0009_birthday_event_texts",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793211526990,
+      "tag": "0010_birthday_questions",
+      "breakpoints": true
     }
   ]
 }

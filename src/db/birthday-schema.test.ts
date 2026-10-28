@@ -19,6 +19,7 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
     try {
       await sql`delete from birthday_event_albums`;
       await sql`delete from birthday_event_texts`;
+      await sql`delete from birthday_questions`;
       await sql`delete from birthday_guests`;
     } finally {
       await sql.end();
@@ -226,6 +227,30 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
     });
   });
 
+  describe("birthday_questions", () => {
+    it("una duda frecuente (sin invitado) tiene que nacer respondida", async () => {
+      const sql = connectTestDb();
+      try {
+        await sql`insert into birthday_questions (event_slug, question, answer)
+          values ('party', '¿a qué hora?', '21:00')`;
+        await expect(
+          sql`insert into birthday_questions (event_slug, question)
+            values ('party', '¿y esto?')`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_questions_faq_answered",
+        });
+        await expect(
+          sql`insert into birthday_questions (event_slug, question, answer)
+            values ('party', '', 'x')`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_questions_question_length",
+        });
+      } finally {
+        await sql.end();
+      }
+    });
+  });
+
   describe("RLS", () => {
     it("no deja leer ni escribir nada con la anon key", async () => {
       await insertGuest();
@@ -234,6 +259,7 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
         "birthday_rsvps",
         "birthday_event_albums",
         "birthday_event_texts",
+        "birthday_questions",
       ]) {
         const rows = await asRole(
           "anon",

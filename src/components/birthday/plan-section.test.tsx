@@ -21,6 +21,7 @@ function renderPlan(album?: string) {
       status="going"
       attendees={[]}
       album={album}
+      questions={[]}
       me={{ id: "me", roki: null }}
     />,
   );

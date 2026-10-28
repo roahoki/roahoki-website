@@ -5,16 +5,22 @@ import { AlbumForm } from "@/components/birthday/admin/album-form";
 import { BackBar } from "@/components/birthday/admin/back-bar";
 import { CopyButton } from "@/components/birthday/admin/copy-button";
 import { EventTextsForm } from "@/components/birthday/admin/event-texts-form";
+import { QuestionsPanel } from "@/components/birthday/admin/questions-panel";
 import { eventByPath, withTexts } from "@/lib/birthday/events";
 import { formatDayTime } from "@/lib/birthday/format";
 import { reminderMessage, whatsappLink } from "@/lib/birthday/links";
 import { dotState, visitLabel } from "@/lib/birthday/panel";
-import { albums, eventTexts, listGuests } from "@/lib/birthday/queries";
+import {
+  albums,
+  eventTexts,
+  listGuests,
+  questionsOf,
+} from "@/lib/birthday/queries";
 
 /**
  * Un plan visto desde el panel (Figma: panel v1, por plan): a quién recordarle,
- * quién va y quién no, la lista final para copiar, los textos que ven los
- * invitados y el álbum de fotos.
+ * quién va y quién no, las dudas por responder, la lista final para copiar,
+ * los textos que ven los invitados y el álbum de fotos.
  */
 export const dynamic = "force-dynamic";
 
@@ -27,11 +33,13 @@ export default async function AdminBirthdayEventPage({
   const plan = eventByPath(path);
   if (!plan) notFound();
 
-  const [guests, albumUrls, texts] = await Promise.all([
+  const [guests, albumUrls, texts, questions] = await Promise.all([
     listGuests(),
     albums(),
     eventTexts(),
+    questionsOf(plan.slug),
   ]);
+  const unanswered = questions.filter((q) => q.answer === null).length;
   const shown = withTexts(plan, texts[plan.slug]);
   const going = guests.filter((g) => dotState(g, plan.slug) === "going");
   const notGoing = guests.filter((g) => dotState(g, plan.slug) === "not_going");
@@ -106,6 +114,13 @@ export default async function AdminBirthdayEventPage({
             </p>
           </section>
         )}
+
+        <section aria-labelledby="dudas" className="flex flex-col gap-2.5">
+          <h2 id="dudas" className="text-entry-meta text-faded">
+            dudas{unanswered > 0 ? ` (${unanswered} sin responder)` : ""}
+          </h2>
+          <QuestionsPanel event={plan.slug} questions={questions} />
+        </section>
 
         <NameChips
           title="van"
