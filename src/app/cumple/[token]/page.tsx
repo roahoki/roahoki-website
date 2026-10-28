@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { Invitation } from "@/components/birthday/invitation";
 import { PlanSection } from "@/components/birthday/plan-section";
 import { SaveImages } from "@/components/birthday/save-images";
-import { ScratchGate } from "@/components/birthday/scratch-gate";
+import {
+  ScratchAgainButton,
+  ScratchGate,
+} from "@/components/birthday/scratch-gate";
 import { ScrollBackdrop } from "@/components/birthday/scroll-backdrop";
 import { VisitBeacon } from "@/components/birthday/visit-beacon";
 import { WeekStrip } from "@/components/birthday/week-strip";
@@ -19,7 +22,6 @@ import {
 } from "@/lib/birthday/queries";
 import { isToken } from "@/lib/birthday/token";
 import { birthdayWeek } from "@/lib/birthday/week";
-import { palette } from "@/lib/brand/palette";
 import { WHATSAPP_URL } from "@/lib/profile";
 
 /**
@@ -80,7 +82,7 @@ export default async function BirthdayGuestPage({ params }: Params) {
   return (
     <>
       <VisitBeacon token={token} />
-      <main className="mx-auto flex max-w-[480px] flex-col gap-10 px-4 pt-4 pb-12">
+      <main className="mx-auto flex max-w-[480px] flex-col gap-10 px-4 pt-4">
         <ScratchGate
           token={token}
           scratched={Boolean(guest.scratchedAt)}
@@ -126,10 +128,13 @@ export default async function BirthdayGuestPage({ params }: Params) {
             ))}
           </section>
 
-          <div data-backdrop={palette.paper} className="flex flex-col gap-10">
+          {/* Una hoja papel propia, de borde a borde y hasta el final: el fondo
+              de la pantalla sigue del color del último plan, y el texto de
+              acá se lee igual. */}
+          <div className="relative isolate -mt-10 flex flex-col gap-10 pt-10 pb-12 text-ink before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:rounded-t-[28px] before:bg-paper">
             <SaveImages token={token} />
 
-            <footer>
+            <footer className="flex flex-col gap-6">
               <a
                 href={WHATSAPP_URL}
                 className="inline-flex items-center gap-2 text-body text-leaf"
@@ -137,6 +142,7 @@ export default async function BirthdayGuestPage({ params }: Params) {
                 <MessageCircle className="size-5" aria-hidden />
                 ¿dudas? escríbeme
               </a>
+              <ScratchAgainButton />
             </footer>
           </div>
         </ScratchGate>

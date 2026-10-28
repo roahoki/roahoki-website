@@ -4,7 +4,7 @@ import { metadata } from "@/app/cumple/layout";
 import { ogFonts } from "@/lib/birthday/og-fonts";
 import { Invitation } from "./invitation";
 import { INVITATION_ROKIS } from "./invitation-pile";
-import { ScratchGate } from "./scratch-gate";
+import { ScratchAgainButton, ScratchGate } from "./scratch-gate";
 
 // `next/font` solo existe dentro del compilador de Next; en Vitest no hay
 // fuente que cargar, y al layout le basta con el nombre de la clase.
@@ -65,17 +65,11 @@ describe("ScratchGate", () => {
     expect(frame()).toContain("-20%");
   });
 
-  it("raspar de nuevo queda al final, después del resto de la página", () => {
-    render(
-      <ScratchGate token={TOKEN} scratched card={<p>tarjeta</p>}>
-        <p>el resto</p>
-      </ScratchGate>,
-    );
-    const rest = screen.getByText("el resto");
-    const again = screen.getByRole("button", { name: "raspar de nuevo" });
+  it("raspar de nuevo solo existe dentro de la página destapada", () => {
+    render(<ScratchAgainButton />);
     expect(
-      rest.compareDocumentPosition(again) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+      screen.queryByRole("button", { name: "raspar de nuevo" }),
+    ).not.toBeInTheDocument();
   });
 
   it("raspar de nuevo la vuelve a tapar sin tocar la base", async () => {
@@ -87,6 +81,7 @@ describe("ScratchGate", () => {
     render(
       <ScratchGate token={TOKEN} scratched card={<p>tarjeta</p>}>
         <p>el resto</p>
+        <ScratchAgainButton />
       </ScratchGate>,
     );
     fireEvent.click(screen.getByRole("button", { name: "raspar de nuevo" }));
