@@ -68,7 +68,10 @@ describe("QuestionsPanel", () => {
   });
 
   it("borra una duda después de confirmar", async () => {
-    vi.stubGlobal("confirm", vi.fn(() => true));
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
     fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
     render(
       <QuestionsPanel
