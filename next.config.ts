@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // sin esto, el empaquetado de Vercel no incluye las fuentes y la imagen
   // falla en producción aunque funcione en local.
   outputFileTracingIncludes: {
-    "/cumple/[token]/**": ["./src/assets/fonts/**"],
+    "/cumple/**": ["./src/assets/fonts/**"],
   },
   images: {
     remotePatterns: [
