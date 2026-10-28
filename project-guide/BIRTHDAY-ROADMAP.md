@@ -11,8 +11,8 @@ en [`../CLAUDE.md`](../CLAUDE.md); el stack, en [`STACK.md`](STACK.md).
 ## Qué es y qué no
 
 **Es:** una página por invitado, sin cuenta, para ver los planes a los que está
-invitado, confirmar o bajarse, ver quién más va, guardar la invitación y el
-cronograma en la galería y reservar un regalo de la wishlist. Un panel para
+invitado, confirmar o bajarse, ver quién más va y guardar la invitación y el
+cronograma en la galería. Un panel para
 cargar invitados, mandarles su link por WhatsApp y seguir las respuestas.
 
 **No es:** un sistema de eventos reutilizable, ni una página pública. Termina
@@ -50,7 +50,8 @@ Los componentes nuevos de Figma (`cumple/plan-tarjeta`, `cumple/boton`,
 | Identidad | El token del link es el invitado: sin cuenta, clave ni cookie | Funciona en cualquier celular y abre con un toque desde WhatsApp |
 | Privacidad | `noindex`, fuera del sitemap, token de ~60 bits | La página solo existe para quien tiene el link |
 | Invitación por plan | `invited_events` por invitado; por defecto todos menos el cóctel | Joaquín no quiere cupos: un aforo le parece poco respetuoso. Un plan no invitado no existe para ese invitado |
-| Contenido | Planes y wishlist en código (`src/lib/birthday/`); respuestas en la base | Cambian poco y solo los edita Joaquín, igual que `src/lib/stats/exercises.ts` |
+| Contenido | Planes en código (`src/lib/birthday/`); respuestas en la base | Cambian poco y solo los edita Joaquín, igual que `src/lib/stats/exercises.ts` |
+| Regalos | Sin wishlist en la página | Joaquín comparte ideas de regalo por WhatsApp a quien le pregunte |
 | Color | Un color por plan: cóctel `#173F2A`, carrete `#0E2A47`, trote `#C42B1C`, manquehue `#3F2D5C` | El cumple es una edición hermana unida por roki, con el mismo precedente que roatoni (brand book §5.6) |
 | Roki del invitado | Trazos normalizados en `jsonb`, no imágenes | Se dibuja en cualquier tamaño, pesa poco y el ojo se puede animar |
 | Ojo del roki | Se reconoce solo: el trazo chico y cerrado dentro de la cabeza | Dibujo en un paso. Si no aparece, el roki entra igual, sin parpadear |
@@ -62,7 +63,7 @@ Los componentes nuevos de Figma (`cumple/plan-tarjeta`, `cumple/boton`,
 
 ## Modelo de datos
 
-Una migración con `drizzle-kit`, con RLS habilitado en las cuatro tablas y solo la
+Una migración con `drizzle-kit`, con RLS habilitado en las tres tablas y solo la
 política de service role (el patrón de `testimonials`): nada se lee con la anon key.
 
 - `birthday_guests`: `id`, `name`, `token` (único), `personal_message`, `phone`,
@@ -70,7 +71,6 @@ política de service role (el patrón de `testimonials`): nada se lee con la ano
   `scratched_at`, `first_seen_at`, `last_seen_at`, `created_at`.
 - `birthday_rsvps`: `guest_id`, `event_slug`, `status` (`going` | `not_going`),
   `updated_at`. Único por invitado y plan. Sin fila es sin responder.
-- `birthday_gift_claims`: `item_slug` (único: un regalo, un dueño), `guest_id`.
 - `birthday_event_albums`: `event_slug` (único), `url`. Lo pega Joaquín desde el
   panel.
 
@@ -81,7 +81,7 @@ token, o cualquiera podría anotarse al cóctel armando la petición a mano.
 
 | Ruta | Qué es |
 | --- | --- |
-| `/cumple/[token]` | Raspa, invitación, saludo, lineup, para guardar, wishlist. Raíz propia con su layout |
+| `/cumple/[token]` | Raspa, invitación, saludo, lineup y para guardar. Raíz propia con su layout |
 | `/cumple/[token]/[event]` | La página del plan: datos, voy o no voy, quiénes van, calendario |
 | `/cumple/[token]/opengraph-image` | La vista previa del link en WhatsApp, con el nombre del invitado |
 | `/cumple/[token]/[event]/calendar.ics` | El plan para agregar al calendario |
@@ -97,7 +97,7 @@ inglés (`birthday`).
 | # | Rama | Contenido |
 | --- | --- | --- |
 | 1 | `docs/birthday-roadmap` | Este roadmap |
-| 2 | `feat/birthday-schema` | Catálogo de planes y wishlist en código, las cuatro tablas con RLS, queries y esquemas zod |
+| 2 | `feat/birthday-schema` | Catálogo de planes en código, las tres tablas con RLS, queries y esquemas zod |
 | 3 | `feat/birthday-admin` | `/admin/cumple`: inicio con puntitos por plan, vista por plan, ficha del invitado, nuevo invitado, link listo con el mensaje de WhatsApp, regenerar link, álbum |
 | 4 | `feat/birthday-page` | `/cumple/[token]`: layout propio, raspa, invitación, saludo, lineup con las tarjetas de plan, link inválido, `noindex` y la vista previa con el nombre |
 | 5 | `feat/birthday-rsvp` | `/cumple/[token]/[event]`: el color que llena la pantalla, datos, voy o no voy con UI optimista, quiénes van como foto de curso con rokis genéricos, `.ics`, "ya pasó" con el álbum |
@@ -112,8 +112,7 @@ inglés (`birthday`).
 | 6 | `feat/birthday-roki-drawing` | Dibuja tu roki en un paso, reconocimiento del ojo, parpadeo, redibujar y "dibújalo después" |
 | 7 | `feat/birthday-pile` | El montoncito con física, el carrusel con flechas y puntos, terremoto. Agrega `matter.js` |
 | 8 | `feat/birthday-manquehue-climb` | La cumbre: arrastrar el roki cerro arriba para confirmar, con "confirmar sin subir" |
-| 9 | `feat/birthday-wishlist` | Wishlist con foto, hoja de "¿lo regalas tú?", "me arrepentí" y el resumen sin nombres del panel |
-| 10 | `feat/birthday-save-images` | Invitación y cronograma 9:16 con `next/og`, la hoja de guardar en fotos y compartir. Agrega Bricolage en TTF |
+| 9 | `feat/birthday-save-images` | Invitación y cronograma 9:16 con `next/og`, la hoja de guardar en fotos y compartir. Agrega Bricolage en TTF |
 
 Queda para `BACKLOG.md`: el dorsal del trote, un pase de cumbre del Manquehue y
 mostrar las fotos de cada plan dentro de la página.
