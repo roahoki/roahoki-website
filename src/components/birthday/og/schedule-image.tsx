@@ -6,11 +6,13 @@ import {
 import type { RsvpStatus } from "@/db/schema";
 import type { BirthdayEvent } from "@/lib/birthday/events";
 import { formatDay, formatTime } from "@/lib/birthday/format";
+import type { Roki } from "@/lib/birthday/roki";
 
 /**
  * El cronograma como imagen de 1080 × 1920 (Figma: "cumple v3 · cronograma
  * 9:16"): una banda por plan del invitado, en su color y en orden. En los que
- * dijo voy asoma roki, el del logo, desde el borde de abajo.
+ * dijo voy asoma su roki, el que dibujó, desde el borde de abajo; si no dibujó,
+ * el del logo.
  *
  * Trae todos sus planes y no solo los confirmados: es el programa de su
  * semana, y roki marca a cuáles ya dijo que sí.
@@ -47,11 +49,52 @@ function Mark({
   );
 }
 
+/**
+ * El roki que dibujó el invitado, todo en papel: sus colores (tinta, botella,
+ * azul…) no se leerían sobre el color de la banda, y en papel queda de la
+ * misma familia que el roki del logo al que reemplaza. Sin el ojo animado: es
+ * una imagen.
+ *
+ * Trazos como `path` y no `polyline`, que es lo que mejor entiende `next/og`.
+ */
+function DrawnRoki({ roki, size }: { roki: Roki; size: number }) {
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      width={size}
+      height={size}
+      fill="none"
+      stroke={PAPER}
+      strokeWidth={4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {roki.strokes.map((stroke, index) => (
+        <path
+          // Los trazos no se reordenan: el índice es la identidad.
+          // biome-ignore lint/suspicious/noArrayIndexKey: lista fija
+          key={index}
+          d={stroke.points
+            .map(
+              ([x, y], i) =>
+                `${i === 0 ? "M" : "L"}${(x * 100).toFixed(2)} ${(y * 100).toFixed(2)}`,
+            )
+            .join(" ")}
+        />
+      ))}
+    </svg>
+  );
+}
+
 export function ScheduleImage({
   name,
+  roki,
   plans,
 }: {
   name: string;
+  /** El roki que dibujó, o `null` si todavía no. */
+  roki: Roki | null;
   plans: { plan: BirthdayEvent; status: RsvpStatus | undefined }[];
 }) {
   // Las bandas reparten el alto disponible, hasta 440 px cada una.
@@ -113,7 +156,11 @@ export function ScheduleImage({
                   transform: "rotate(12deg)",
                 }}
               >
-                <Mark size={mark} color={PAPER} stroke={14} />
+                {roki ? (
+                  <DrawnRoki roki={roki} size={mark} />
+                ) : (
+                  <Mark size={mark} color={PAPER} stroke={14} />
+                )}
               </div>
             )}
             <div style={{ display: "flex", fontSize: 56, fontWeight: 700 }}>

@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }));
 
   const image = new ImageResponse(
-    <ScheduleImage name={guest.name} plans={plans} />,
+    <ScheduleImage name={guest.name} roki={guest.roki} plans={plans} />,
     {
       ...STORY,
       fonts: await ogFonts(),
