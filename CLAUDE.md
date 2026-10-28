@@ -143,6 +143,10 @@ npm test         # Vitest
   `next/image` falla en runtime. Esa lista es un allowlist de seguridad.
 - **El transaction pooler de Supabase (puerto 6543) exige `prepare: false`** en el
   driver postgres.js. Sin eso las queries fallan de forma confusa.
+- **Ese mismo pooler se cuelga con dos queries simultáneas en una conexión.**
+  `getDb()` las pone en fila (`src/db/query-queue.ts`), así que `Promise.all`
+  funciona; pero **dentro de una transacción solo se usa el `tx`**, nunca
+  `getDb()`, o la query espera a la transacción para siempre.
 - **Video:** Supabase Storage no transcodifica ni hace streaming adaptativo, y un
   MP4 de celular supera el límite de request de Vercel. Para video se usa
   `src/components/youtube-embed.tsx`.

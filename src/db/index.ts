@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { databaseUrl } from "@/lib/env";
+import { queueQueries } from "./query-queue";
 import * as schema from "./schema";
 
 /**
@@ -48,7 +49,9 @@ function createDatabase() {
     globalForDb.connection = connection;
   }
 
-  return drizzle(connection, { schema, casing: "snake_case" });
+  // Una query a la vez por conexión: el transaction pooler se cuelga si recibe
+  // dos juntas. Ver `query-queue.ts`.
+  return drizzle(queueQueries(connection), { schema, casing: "snake_case" });
 }
 
 /**

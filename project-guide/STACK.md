@@ -546,6 +546,17 @@ migración hace.
 soporta prepared statements, y sin ese flag las queries fallan de forma
 confusa.
 
+**Segunda consecuencia: una query a la vez por conexión.** Si una conexión
+recibe una query mientras otra sigue en curso, el transaction pooler de
+Supabase se cuelga y la conexión queda muerta: todas las queries siguientes de
+esa instancia esperan sin fin. Basta un `Promise.all` con dos queries, o que el
+layout y la página consulten a la vez. Pasó en producción el 2026-10-28 con el
+panel del cumpleaños. Por eso `src/db/index.ts` envuelve la conexión con
+`queueQueries` (`src/db/query-queue.ts`), que pone las queries en fila. Se
+puede seguir usando `Promise.all`; lo que no se puede es llamar a `getDb()`
+dentro de una transacción, porque la transacción ocupa la fila hasta terminar
+y esa query la esperaría para siempre. Adentro se usa el `tx`.
+
 ---
 
 ## 7. Diseño de datos
