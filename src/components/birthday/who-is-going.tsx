@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Vibrate } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import type { Attendee } from "@/lib/birthday/queries";
 import { MOTION_OK } from "@/lib/motion/tokens";
+import { ClassPhoto } from "./class-photo";
 import { RokiFigure } from "./roki-figure";
 import { RokiPile, type RokiPileHandle } from "./roki-pile";
 
@@ -158,50 +159,14 @@ export function WhoIsGoing({
             {attendees.length === 0 ? (
               <EmptyPile color={color} />
             ) : (
-              <ul
-                className="grid touch-pan-y grid-cols-4 content-start gap-x-2 gap-y-4 px-4 pt-4 pb-5"
+              <ClassPhoto
+                attendees={attendees}
+                color={color}
+                meId={meId}
+                onTapMine={onTapMine}
+                className="touch-pan-y px-4 pt-4 pb-5"
                 {...swipeHandlers}
-              >
-                {attendees.map((attendee) => {
-                  const me = attendee.id === meId;
-                  const figure = (
-                    <>
-                      <RokiFigure
-                        roki={attendee.roki}
-                        color={color}
-                        size={64}
-                        label={me ? "tu roki" : `el roki de ${attendee.name}`}
-                      />
-                      <span className="max-w-full truncate text-card-meta">
-                        {me ? "tú" : attendee.name}
-                      </span>
-                    </>
-                  );
-                  return (
-                    <li
-                      key={attendee.id}
-                      className="flex flex-col items-center gap-1"
-                    >
-                      {me ? (
-                        <button
-                          type="button"
-                          onClick={onTapMine}
-                          className="flex flex-col items-center gap-1"
-                          aria-label={
-                            attendee.roki
-                              ? "redibujar tu roki"
-                              : "dibujar tu roki"
-                          }
-                        >
-                          {figure}
-                        </button>
-                      ) : (
-                        figure
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+              />
             )}
             <div className="mt-auto">{hint(false)}</div>
           </div>

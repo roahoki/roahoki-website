@@ -8,6 +8,7 @@ import { CopyButton } from "@/components/birthday/admin/copy-button";
 import { EventTextsForm } from "@/components/birthday/admin/event-texts-form";
 import { QuestionsPanel } from "@/components/birthday/admin/questions-panel";
 import { WhatsappRsvpsPanel } from "@/components/birthday/admin/whatsapp-rsvps-panel";
+import { ClassPhoto } from "@/components/birthday/class-photo";
 import { eventByPath, withTexts } from "@/lib/birthday/events";
 import { formatDayTime } from "@/lib/birthday/format";
 import { reminderMessage, whatsappLink } from "@/lib/birthday/links";
@@ -27,7 +28,8 @@ import {
 
 /**
  * Un plan visto desde el panel (Figma: panel v1, por plan): quiénes confirmaron
- * por WhatsApp sin link, a quién recordarle, quién va y quién no, las dudas por responder, la lista final para copiar,
+ * por WhatsApp sin link, a quién recordarle, quién va (como foto de curso, que
+ * es lo más rápido de revisar) y quién no, las dudas por responder, la lista final para copiar,
  * los textos que ven los invitados y el álbum de fotos.
  */
 export const dynamic = "force-dynamic";
@@ -158,11 +160,19 @@ export default async function AdminBirthdayEventPage({
           <QuestionsPanel event={plan.slug} questions={questions} />
         </section>
 
-        <NameChips
-          title={whatsapp.length > 0 ? "van con link" : "van"}
-          names={going.map((g) => g.name)}
-          color={plan.color}
-        />
+        {going.length > 0 && (
+          <section aria-labelledby="van" className="flex flex-col gap-2.5">
+            <h2 id="van" className="text-entry-meta text-faded">
+              {whatsapp.length > 0 ? "van con link" : "van"} ({going.length})
+            </h2>
+            <ClassPhoto
+              attendees={going}
+              color={plan.color}
+              hrefFor={(guest) => `/admin/cumple/guests/${guest.id}`}
+              className="rounded-2xl border-[1.5px] border-rule px-3 pt-4 pb-5"
+            />
+          </section>
+        )}
         <NameChips title="no van" names={notGoing.map((g) => g.name)} />
 
         <section
@@ -215,15 +225,7 @@ export default async function AdminBirthdayEventPage({
   );
 }
 
-function NameChips({
-  title,
-  names,
-  color,
-}: {
-  title: string;
-  names: string[];
-  color?: string;
-}) {
+function NameChips({ title, names }: { title: string; names: string[] }) {
   if (names.length === 0) return null;
   return (
     <section aria-label={title}>
@@ -234,10 +236,7 @@ function NameChips({
         {names.map((name) => (
           <li
             key={name}
-            className={`rounded-full px-3 py-1.5 text-body ${
-              color ? "text-paper" : "border-[1.5px] border-rule text-faded"
-            }`}
-            style={color ? { backgroundColor: color } : undefined}
+            className="rounded-full border-[1.5px] border-rule px-3 py-1.5 text-body text-faded"
           >
             {name}
           </li>
