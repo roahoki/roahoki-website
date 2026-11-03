@@ -73,6 +73,8 @@ política de service role (el patrón de `testimonials`): nada se lee con la ano
   `updated_at`. Único por invitado y plan. Sin fila es sin responder.
 - `birthday_event_albums`: `event_slug` (único), `url`. Lo pega Joaquín desde el
   panel.
+- `birthday_whatsapp_rsvps` (bloque 4): `event_slug`, `name`, `party_size`
+  (1 a 30). Quienes confirman por WhatsApp sin link.
 
 El handler de respuestas rechaza un plan que no esté en `invited_events` del
 token, o cualquiera podría anotarse al cóctel armando la petición a mano.
@@ -149,6 +151,25 @@ día después, si hace falta.
 | Color | Toda la pantalla toma el color del plan visible y cambia suave | Reemplaza al color que nacía del dedo, que necesitaba cambiar de página |
 | Textos de los planes | En la base, con el contenido de `events.ts` como valor inicial | Joaquín los corrige sin abrir una PR. Horas, colores y slugs siguen en código: de ellos dependen la semana, "ya pasó" y las imágenes |
 | Dudas | Visibles para todos cuando tienen respuesta; quien pregunta ve la suya pendiente | No quedan preguntas sin responder a la vista y no hay que moderar nada aparte |
+
+## Bloque 4: la familia del cóctel
+
+La familia que va al cóctel son en su mayoría adultos mayores: raspar, dibujar
+y confirmar en la página les complica más de lo que ayuda. Se les invita con
+una foto por el grupo de WhatsApp, confirman ahí y Joaquín los anota en el panel.
+
+| # | Rama | Contenido |
+| --- | --- | --- |
+| 19 (#86) | `feat/birthday-cocktail-image` | La foto 4:5 del cóctel (`/cumple/coctel.png`) con compartir y descargar en el panel del cóctel |
+| 20 | `feat/birthday-whatsapp-rsvps` | Confirmados por WhatsApp: nombre y cuántos vienen, corregir con − y +, sacar con ×. Suman al "van" del panel. Tabla `birthday_whatsapp_rsvps` (migración 0011) |
+
+### Decisiones del bloque
+
+| Decisión | Elección | Razón |
+| --- | --- | --- |
+| Cómo se anotan | Un grupo con cuántos vienen, sin link | La familia confirma "vamos los 3"; un invitado por persona crearía links que nadie abre |
+| Dónde se ven | Solo en el panel, no en "quiénes van" | No tienen roki ni eligieron aparecer en la página de los amigos |
+| Formato de la foto | 4:5 | WhatsApp la muestra entera en la burbuja; una 9:16 la recorta |
 
 ## Verificación de punta a punta
 

@@ -182,6 +182,31 @@ export const faqInputSchema = z.object({
 /** La respuesta (o una respuesta corregida) a una duda. */
 export const answerInputSchema = z.object({ answer: answerText });
 
+// ---------------------------------------------------------------------------
+// Confirmados por WhatsApp
+
+const partySize = z.coerce
+  .number({ invalid_type_error: "¿Cuántos vienen?" })
+  .int("¿Cuántos vienen?")
+  .min(1, "Vienen al menos uno.")
+  .max(30, "Máximo 30 por grupo.");
+
+/** Un grupo que confirmó por WhatsApp: "tía Carmen", 3 personas. */
+export const whatsappRsvpInputSchema = z.object({
+  event: eventSlug,
+  name: z
+    .string({ invalid_type_error: "Falta el nombre." })
+    .trim()
+    .min(1, "Falta el nombre.")
+    .max(80, "El nombre es muy largo (máximo 80)."),
+  partySize,
+});
+
+export type WhatsappRsvpInput = z.infer<typeof whatsappRsvpInputSchema>;
+
+/** Corregir cuántos vienen en un grupo ya anotado. */
+export const partySizeInputSchema = z.object({ partySize });
+
 export function firstErrorMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Datos inválidos.";
 }

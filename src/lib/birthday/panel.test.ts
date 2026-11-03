@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   dotState,
+  finalList,
   goingLabel,
+  headcount,
   pendingCount,
   splitByPending,
   summarize,
@@ -83,5 +85,23 @@ describe("cuentas del panel", () => {
     expect(goingLabel(1)).toBe("1 va");
     expect(goingLabel(0)).toBe("0 van");
     expect(goingLabel(5)).toBe("5 van");
+  });
+});
+
+describe("confirmados por WhatsApp", () => {
+  const whatsapp = [
+    { name: "tía Carmen", partySize: 3 },
+    { name: "primo Seba", partySize: 1 },
+  ];
+
+  it("cuenta personas, no grupos", () => {
+    expect(headcount(whatsapp)).toBe(4);
+    expect(headcount([])).toBe(0);
+  });
+
+  it("la lista final suma los grupos al final, con cuántos son", () => {
+    expect(finalList(["cata", "pancho"], whatsapp)).toBe(
+      "cata\npancho\ntía Carmen (3)\nprimo Seba",
+    );
   });
 });

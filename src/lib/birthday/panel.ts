@@ -1,6 +1,6 @@
 import type { BirthdayGuest, RsvpStatus } from "@/db/schema";
 import { BIRTHDAY_EVENTS, type EventSlug } from "./events";
-import type { GuestWithRsvps } from "./queries";
+import type { GuestWithRsvps, WhatsappRsvp } from "./queries";
 
 /**
  * Las cuentas del panel, separadas de la vista para poder probarlas.
@@ -65,4 +65,25 @@ export function visitLabel(
 /** "van" o "va": el contador del panel no dice "1 van". */
 export function goingLabel(count: number): string {
   return count === 1 ? "1 va" : `${count} van`;
+}
+
+/** Cuántas personas suman los grupos que confirmaron por WhatsApp. */
+export function headcount(rsvps: Pick<WhatsappRsvp, "partySize">[]): number {
+  return rsvps.reduce((total, rsvp) => total + rsvp.partySize, 0);
+}
+
+/**
+ * La lista final para copiar: quienes van con link y, después, los grupos de
+ * WhatsApp con cuántos son cuando son más de uno ("tía Carmen (3)").
+ */
+export function finalList(
+  goingNames: string[],
+  whatsapp: Pick<WhatsappRsvp, "name" | "partySize">[],
+): string {
+  return [
+    ...goingNames,
+    ...whatsapp.map(({ name, partySize }) =>
+      partySize > 1 ? `${name} (${partySize})` : name,
+    ),
+  ].join("\n");
 }
