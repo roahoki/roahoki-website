@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlbumForm } from "@/components/birthday/admin/album-form";
 import { BackBar } from "@/components/birthday/admin/back-bar";
+import { CocktailPhoto } from "@/components/birthday/admin/cocktail-photo";
 import { CopyButton } from "@/components/birthday/admin/copy-button";
 import { EventTextsForm } from "@/components/birthday/admin/event-texts-form";
 import { QuestionsPanel } from "@/components/birthday/admin/questions-panel";
@@ -74,6 +75,18 @@ export default async function AdminBirthdayEventPage({
       </header>
 
       <main className="mx-auto flex w-full max-w-[680px] flex-1 flex-col gap-7 px-4 pt-5 pb-16 md:px-0">
+        {plan.slug === "cocktail" && (
+          <section
+            aria-labelledby="foto-grupo"
+            className="flex flex-col gap-2.5"
+          >
+            <h2 id="foto-grupo" className="text-entry-meta text-faded">
+              foto para el grupo de la familia
+            </h2>
+            <CocktailPhoto />
+          </section>
+        )}
+
         {pending.length > 0 && (
           <section aria-labelledby="sin-responder">
             <h2 id="sin-responder" className="text-entry-meta text-faded">

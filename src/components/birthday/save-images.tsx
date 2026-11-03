@@ -2,7 +2,8 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { Download, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useShareableImage } from "./use-shareable-image";
 
 /**
  * "guarda la info en tu galería :)" (Figma: invitado v3, para guardar): dos
@@ -11,9 +12,7 @@ import { useEffect, useState } from "react";
  *
  * En el celular, "guardar en fotos" abre el menú de compartir con la imagen,
  * que es la única puerta a la galería desde una página web ("guardar imagen"
- * en iPhone). Safari solo deja abrir ese menú justo después del toque, así que
- * la imagen se descarga al abrir la hoja y el botón comparte al instante. Donde
- * no se puede compartir archivos (el computador), se descarga.
+ * en iPhone). El detalle está en `use-shareable-image.ts`.
  */
 
 type Item = {
@@ -89,46 +88,10 @@ function SaveSheet({
   item: Item | null;
   onClose: () => void;
 }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // La imagen se trae al abrir, para poder compartirla sin esperar al tocar.
-  useEffect(() => {
-    setFile(null);
-    setError(null);
-    if (!item) return;
-    let cancelled = false;
-    fetch(item.src, { cache: "no-store" })
-      .then((res) => res.blob())
-      .then((blob) => {
-        if (!cancelled)
-          setFile(new File([blob], item.file, { type: "image/png" }));
-      })
-      .catch(() => {
-        // Sin la imagen, el botón cae a la descarga directa.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [item]);
-
-  async function save() {
-    if (!item) return;
-    if (file && navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return;
-      } catch (cause) {
-        if (cause instanceof DOMException && cause.name === "AbortError")
-          return;
-        setError(
-          "No se pudo abrir el menú de compartir; prueba con «descargar».",
-        );
-        return;
-      }
-    }
-    download(item);
-  }
+  const { share, download, error } = useShareableImage(
+    item?.src ?? null,
+    item?.file ?? "",
+  );
 
   return (
     <Dialog.Root
@@ -160,7 +123,7 @@ function SaveSheet({
           )}
           <button
             type="button"
-            onClick={save}
+            onClick={share}
             className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-ink text-action text-paper"
           >
             <Download className="size-5" aria-hidden />
@@ -168,7 +131,7 @@ function SaveSheet({
           </button>
           <button
             type="button"
-            onClick={() => item && download(item)}
+            onClick={download}
             className="flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-ink text-action"
           >
             descargar
@@ -185,11 +148,4 @@ function SaveSheet({
       </Dialog.Portal>
     </Dialog.Root>
   );
-}
-
-function download(item: Item) {
-  const link = document.createElement("a");
-  link.href = item.src;
-  link.download = item.file;
-  link.click();
 }
