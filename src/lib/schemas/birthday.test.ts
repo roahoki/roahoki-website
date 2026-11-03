@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   albumInputSchema,
   guestInputSchema,
+  partySizeInputSchema,
   rokiSchema,
   rsvpInputSchema,
+  whatsappRsvpInputSchema,
 } from "./birthday";
 
 const TOKEN = "Ab3dEf6hIj9L";
@@ -156,5 +158,45 @@ describe("albumInputSchema", () => {
       albumInputSchema.safeParse({ event: "party", url: "http://example.com" })
         .success,
     ).toBe(false);
+  });
+});
+
+describe("whatsappRsvpInputSchema", () => {
+  it("acepta un grupo y limpia el nombre", () => {
+    expect(
+      whatsappRsvpInputSchema.parse({
+        event: "cocktail",
+        name: "  tía Carmen ",
+        partySize: "3",
+      }),
+    ).toEqual({ event: "cocktail", name: "tía Carmen", partySize: 3 });
+  });
+
+  it("pide nombre y entre 1 y 30 personas", () => {
+    const base = { event: "cocktail", name: "tía Carmen", partySize: 2 };
+    expect(
+      whatsappRsvpInputSchema.safeParse({ ...base, name: "  " }).success,
+    ).toBe(false);
+    expect(
+      whatsappRsvpInputSchema.safeParse({ ...base, partySize: 0 }).success,
+    ).toBe(false);
+    expect(
+      whatsappRsvpInputSchema.safeParse({ ...base, partySize: 31 }).success,
+    ).toBe(false);
+    expect(
+      whatsappRsvpInputSchema.safeParse({ ...base, partySize: 1.5 }).success,
+    ).toBe(false);
+    expect(
+      whatsappRsvpInputSchema.safeParse({ ...base, event: "picnic" }).success,
+    ).toBe(false);
+  });
+
+  it("corregir cuántos vienen usa la misma regla", () => {
+    expect(partySizeInputSchema.parse({ partySize: 4 })).toEqual({
+      partySize: 4,
+    });
+    expect(partySizeInputSchema.safeParse({ partySize: 0 }).success).toBe(
+      false,
+    );
   });
 });

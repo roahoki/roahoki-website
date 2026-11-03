@@ -14,6 +14,7 @@ import {
   type GuestWithRsvps,
   listGuests,
   pendingQuestionCounts,
+  whatsappHeadcounts,
 } from "@/lib/birthday/queries";
 import { formatTimeAgo } from "@/lib/logbook/format";
 
@@ -30,9 +31,10 @@ import { formatTimeAgo } from "@/lib/logbook/format";
 export const dynamic = "force-dynamic";
 
 export default async function AdminBirthdayPage() {
-  const [guests, questions] = await Promise.all([
+  const [guests, questions, whatsapp] = await Promise.all([
     listGuests(),
     pendingQuestionCounts(),
+    whatsappHeadcounts(),
   ]);
   const summaries = summarize(guests);
   const { pending, done } = splitByPending(guests);
@@ -57,7 +59,7 @@ export default async function AdminBirthdayPage() {
                     <ArrowRight className="size-[18px]" aria-hidden />
                   </span>
                   <span className="text-[2rem] leading-tight font-bold tracking-[-0.015em]">
-                    {goingLabel(summary.going)}
+                    {goingLabel(summary.going + (whatsapp[plan.slug] ?? 0))}
                   </span>
                   <span className="text-card-meta">
                     {summary.pending} sin responder · {summary.notGoing} no

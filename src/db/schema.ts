@@ -578,3 +578,48 @@ export const birthdayQuestions = pgTable(
 ).enableRLS();
 
 export type BirthdayQuestion = typeof birthdayQuestions.$inferSelect;
+
+/**
+ * Quienes confirman a Joaquín por WhatsApp, sin link personal: la familia del
+ * cóctel, que en su mayoría no va a usar la página. Una fila es un grupo
+ * ("tía Carmen", 3 personas) y suma al total del plan en el panel.
+ *
+ * No aparecen en "quiénes van" de la página de los invitados: no tienen roki
+ * ni eligieron mostrarse ahí.
+ */
+export const birthdayWhatsappRsvps = pgTable(
+  "birthday_whatsapp_rsvps",
+  {
+    id: uuid().primaryKey().defaultRandom().notNull(),
+    eventSlug: text("event_slug", { enum: EVENT_SLUGS }).notNull(),
+    name: text().notNull(),
+    partySize: integer("party_size").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    check(
+      "birthday_whatsapp_rsvps_event_slug_check",
+      sql`event_slug = ANY (ARRAY['cocktail'::text, 'run'::text, 'party'::text, 'hike'::text])`,
+    ),
+    check(
+      "birthday_whatsapp_rsvps_name_length",
+      sql`char_length(name) BETWEEN 1 AND 80`,
+    ),
+    check(
+      "birthday_whatsapp_rsvps_party_size_range",
+      sql`party_size BETWEEN 1 AND 30`,
+    ),
+    index("birthday_whatsapp_rsvps_event_slug_idx").on(table.eventSlug),
+    pgPolicy("service role full access to birthday whatsapp rsvps", {
+      as: "permissive",
+      for: "all",
+      to: serviceRole,
+      using: sql`true`,
+      withCheck: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+export type BirthdayWhatsappRsvp = typeof birthdayWhatsappRsvps.$inferSelect;

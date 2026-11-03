@@ -22,6 +22,9 @@ const queries = vi.hoisted(() => ({
   createFaq: vi.fn(),
   answerQuestion: vi.fn(),
   deleteQuestion: vi.fn(),
+  addWhatsappRsvp: vi.fn(),
+  setWhatsappPartySize: vi.fn(),
+  deleteWhatsappRsvp: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-admin", () => ({ requireAdmin }));
@@ -36,6 +39,8 @@ const albums = await import("./albums/route");
 const texts = await import("./texts/route");
 const questions = await import("./questions/route");
 const question = await import("./questions/[id]/route");
+const whatsappRsvps = await import("./whatsapp-rsvps/route");
+const whatsappRsvp = await import("./whatsapp-rsvps/[id]/route");
 
 const ID = "5b9d1a5e-3f6c-4f2b-9a11-2c3d4e5f6a7b";
 const GUEST = { id: ID, name: "cata", token: "Ab3dEf6hIj9L" };
@@ -271,5 +276,64 @@ describe("dudas desde el panel", () => {
     const res = await question.PATCH(request({ answer: "sí" }), params());
     expect(res.status).toBe(401);
     expect(queries.answerQuestion).not.toHaveBeenCalled();
+  });
+});
+
+describe("/api/admin/birthday/whatsapp-rsvps", () => {
+  it("anota un grupo con los datos limpios", async () => {
+    queries.addWhatsappRsvp.mockResolvedValue({
+      id: ID,
+      name: "tía Carmen",
+      partySize: 3,
+    });
+    const res = await whatsappRsvps.POST(
+      request({ event: "cocktail", name: " tía Carmen ", partySize: 3 }),
+    );
+    expect(res.status).toBe(201);
+    expect(queries.addWhatsappRsvp).toHaveBeenCalledWith({
+      event: "cocktail",
+      name: "tía Carmen",
+      partySize: 3,
+    });
+  });
+
+  it("explica en español qué falta", async () => {
+    const res = await whatsappRsvps.POST(
+      request({ event: "cocktail", name: "tía Carmen", partySize: 0 }),
+    );
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toEqual({
+      error: "Vienen al menos uno.",
+    });
+    expect(queries.addWhatsappRsvp).not.toHaveBeenCalled();
+  });
+
+  it("no deja pasar sin sesión", async () => {
+    requireAdmin.mockResolvedValue(new Response(null, { status: 401 }));
+    const res = await whatsappRsvps.POST(
+      request({ event: "cocktail", name: "tía Carmen", partySize: 1 }),
+    );
+    expect(res.status).toBe(401);
+    expect(queries.addWhatsappRsvp).not.toHaveBeenCalled();
+  });
+
+  it("corrige cuántos vienen, y 404 si el grupo ya no está", async () => {
+    queries.setWhatsappPartySize.mockResolvedValue(true);
+    const ok = await whatsappRsvp.PATCH(request({ partySize: 4 }), params());
+    expect(ok.status).toBe(200);
+    expect(queries.setWhatsappPartySize).toHaveBeenCalledWith(ID, 4);
+
+    queries.setWhatsappPartySize.mockResolvedValue(false);
+    const gone = await whatsappRsvp.PATCH(request({ partySize: 4 }), params());
+    expect(gone.status).toBe(404);
+  });
+
+  it("borra un grupo, y rechaza un id que no es uuid", async () => {
+    queries.deleteWhatsappRsvp.mockResolvedValue(true);
+    const ok = await whatsappRsvp.DELETE(request(), params());
+    expect(ok.status).toBe(204);
+
+    const bad = await whatsappRsvp.DELETE(request(), params("nope"));
+    expect(bad.status).toBe(400);
   });
 });

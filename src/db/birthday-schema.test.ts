@@ -20,6 +20,7 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
       await sql`delete from birthday_event_albums`;
       await sql`delete from birthday_event_texts`;
       await sql`delete from birthday_questions`;
+      await sql`delete from birthday_whatsapp_rsvps`;
       await sql`delete from birthday_guests`;
     } finally {
       await sql.end();
@@ -251,6 +252,37 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
     });
   });
 
+  describe("birthday_whatsapp_rsvps", () => {
+    it("un grupo tiene nombre y entre 1 y 30 personas", async () => {
+      const sql = connectTestDb();
+      try {
+        const [row] = await sql`insert into birthday_whatsapp_rsvps
+          (event_slug, name) values ('cocktail', 'tía Carmen') returning *`;
+        expect(row.party_size).toBe(1);
+        await expect(
+          sql`insert into birthday_whatsapp_rsvps (event_slug, name, party_size)
+            values ('cocktail', 'nadie', 0)`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_whatsapp_rsvps_party_size_range",
+        });
+        await expect(
+          sql`insert into birthday_whatsapp_rsvps (event_slug, name)
+            values ('cocktail', '')`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_whatsapp_rsvps_name_length",
+        });
+        await expect(
+          sql`insert into birthday_whatsapp_rsvps (event_slug, name)
+            values ('picnic', 'tía Carmen')`,
+        ).rejects.toMatchObject({
+          constraint_name: "birthday_whatsapp_rsvps_event_slug_check",
+        });
+      } finally {
+        await sql.end();
+      }
+    });
+  });
+
   describe("RLS", () => {
     it("no deja leer ni escribir nada con la anon key", async () => {
       await insertGuest();
@@ -260,6 +292,7 @@ describe.runIf(hasTestDatabase)("esquema del cumpleaños", () => {
         "birthday_event_albums",
         "birthday_event_texts",
         "birthday_questions",
+        "birthday_whatsapp_rsvps",
       ]) {
         const rows = await asRole(
           "anon",

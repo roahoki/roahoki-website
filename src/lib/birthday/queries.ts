@@ -13,15 +13,21 @@ import {
 import { getDb } from "@/db";
 import {
   type BirthdayGuest,
+  type BirthdayWhatsappRsvp,
   birthdayEventAlbums,
   birthdayEventTexts,
   birthdayGuests,
   birthdayQuestions,
   birthdayRsvps,
+  birthdayWhatsappRsvps,
   type RsvpStatus,
 } from "@/db/schema";
 import { isUniqueViolation } from "@/lib/db-errors";
-import type { EventTexts, GuestInput } from "@/lib/schemas/birthday";
+import type {
+  EventTexts,
+  GuestInput,
+  WhatsappRsvpInput,
+} from "@/lib/schemas/birthday";
 import type { EventSlug } from "./events";
 import type { Roki } from "./roki";
 import { generateToken } from "./token";
@@ -579,5 +585,81 @@ export async function deleteQuestion(id: string): Promise<boolean> {
     .delete(birthdayQuestions)
     .where(eq(birthdayQuestions.id, id))
     .returning({ id: birthdayQuestions.id });
+  return rows.length > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Confirmados por WhatsApp
+
+export type WhatsappRsvp = Pick<
+  BirthdayWhatsappRsvp,
+  "id" | "name" | "partySize"
+>;
+
+/** Los grupos anotados en un plan, en el orden en que se anotaron. */
+export async function whatsappRsvpsOf(
+  event: EventSlug,
+): Promise<WhatsappRsvp[]> {
+  return getDb()
+    .select({
+      id: birthdayWhatsappRsvps.id,
+      name: birthdayWhatsappRsvps.name,
+      partySize: birthdayWhatsappRsvps.partySize,
+    })
+    .from(birthdayWhatsappRsvps)
+    .where(eq(birthdayWhatsappRsvps.eventSlug, event))
+    .orderBy(asc(birthdayWhatsappRsvps.createdAt));
+}
+
+/** Cuántas personas confirmaron por WhatsApp en cada plan, para el inicio. */
+export async function whatsappHeadcounts(): Promise<
+  Partial<Record<EventSlug, number>>
+> {
+  const rows = await getDb()
+    .select({
+      event: birthdayWhatsappRsvps.eventSlug,
+      people: sql<number>`sum(${birthdayWhatsappRsvps.partySize})::int`,
+    })
+    .from(birthdayWhatsappRsvps)
+    .groupBy(birthdayWhatsappRsvps.eventSlug);
+  return Object.fromEntries(rows.map((row) => [row.event, row.people]));
+}
+
+export async function addWhatsappRsvp(
+  input: WhatsappRsvpInput,
+): Promise<WhatsappRsvp> {
+  const [created] = await getDb()
+    .insert(birthdayWhatsappRsvps)
+    .values({
+      eventSlug: input.event,
+      name: input.name,
+      partySize: input.partySize,
+    })
+    .returning({
+      id: birthdayWhatsappRsvps.id,
+      name: birthdayWhatsappRsvps.name,
+      partySize: birthdayWhatsappRsvps.partySize,
+    });
+  return created;
+}
+
+/** Corrige cuántos vienen. `false` si el grupo ya no existe. */
+export async function setWhatsappPartySize(
+  id: string,
+  partySize: number,
+): Promise<boolean> {
+  const rows = await getDb()
+    .update(birthdayWhatsappRsvps)
+    .set({ partySize })
+    .where(eq(birthdayWhatsappRsvps.id, id))
+    .returning({ id: birthdayWhatsappRsvps.id });
+  return rows.length > 0;
+}
+
+export async function deleteWhatsappRsvp(id: string): Promise<boolean> {
+  const rows = await getDb()
+    .delete(birthdayWhatsappRsvps)
+    .where(eq(birthdayWhatsappRsvps.id, id))
+    .returning({ id: birthdayWhatsappRsvps.id });
   return rows.length > 0;
 }

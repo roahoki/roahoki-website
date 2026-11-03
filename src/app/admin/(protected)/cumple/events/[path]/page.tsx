@@ -7,20 +7,27 @@ import { CocktailPhoto } from "@/components/birthday/admin/cocktail-photo";
 import { CopyButton } from "@/components/birthday/admin/copy-button";
 import { EventTextsForm } from "@/components/birthday/admin/event-texts-form";
 import { QuestionsPanel } from "@/components/birthday/admin/questions-panel";
+import { WhatsappRsvpsPanel } from "@/components/birthday/admin/whatsapp-rsvps-panel";
 import { eventByPath, withTexts } from "@/lib/birthday/events";
 import { formatDayTime } from "@/lib/birthday/format";
 import { reminderMessage, whatsappLink } from "@/lib/birthday/links";
-import { dotState, visitLabel } from "@/lib/birthday/panel";
+import {
+  dotState,
+  finalList,
+  headcount,
+  visitLabel,
+} from "@/lib/birthday/panel";
 import {
   albums,
   eventTexts,
   listGuests,
   questionsOf,
+  whatsappRsvpsOf,
 } from "@/lib/birthday/queries";
 
 /**
- * Un plan visto desde el panel (Figma: panel v1, por plan): a quién recordarle,
- * quién va y quién no, las dudas por responder, la lista final para copiar,
+ * Un plan visto desde el panel (Figma: panel v1, por plan): quiénes confirmaron
+ * por WhatsApp sin link, a quién recordarle, quién va y quién no, las dudas por responder, la lista final para copiar,
  * los textos que ven los invitados y el álbum de fotos.
  */
 export const dynamic = "force-dynamic";
@@ -34,17 +41,21 @@ export default async function AdminBirthdayEventPage({
   const plan = eventByPath(path);
   if (!plan) notFound();
 
-  const [guests, albumUrls, texts, questions] = await Promise.all([
+  const [guests, albumUrls, texts, questions, whatsapp] = await Promise.all([
     listGuests(),
     albums(),
     eventTexts(),
     questionsOf(plan.slug),
+    whatsappRsvpsOf(plan.slug),
   ]);
   const unanswered = questions.filter((q) => q.answer === null).length;
   const shown = withTexts(plan, texts[plan.slug]);
   const going = guests.filter((g) => dotState(g, plan.slug) === "going");
   const notGoing = guests.filter((g) => dotState(g, plan.slug) === "not_going");
   const pending = guests.filter((g) => dotState(g, plan.slug) === "pending");
+  const whatsappPeople = headcount(whatsapp);
+  // "van" cuenta personas: las de link más los grupos de WhatsApp.
+  const goingPeople = going.length + whatsappPeople;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -61,7 +72,7 @@ export default async function AdminBirthdayEventPage({
         <dl className="mt-2 flex gap-6">
           {(
             [
-              [going.length, going.length === 1 ? "va" : "van"],
+              [goingPeople, goingPeople === 1 ? "va" : "van"],
               [pending.length, "sin responder"],
               [notGoing.length, "no van"],
             ] as const
@@ -86,6 +97,18 @@ export default async function AdminBirthdayEventPage({
             <CocktailPhoto />
           </section>
         )}
+
+        <section
+          aria-labelledby="por-whatsapp"
+          className="flex flex-col gap-2.5"
+        >
+          <h2 id="por-whatsapp" className="text-entry-meta text-faded">
+            confirmados por WhatsApp
+            {whatsappPeople > 0 &&
+              ` (${whatsappPeople === 1 ? "1 persona" : `${whatsappPeople} personas`})`}
+          </h2>
+          <WhatsappRsvpsPanel event={plan.slug} rsvps={whatsapp} />
+        </section>
 
         {pending.length > 0 && (
           <section aria-labelledby="sin-responder">
@@ -136,7 +159,7 @@ export default async function AdminBirthdayEventPage({
         </section>
 
         <NameChips
-          title="van"
+          title={whatsapp.length > 0 ? "van con link" : "van"}
           names={going.map((g) => g.name)}
           color={plan.color}
         />
@@ -151,13 +174,16 @@ export default async function AdminBirthdayEventPage({
           </h2>
           <div>
             <CopyButton
-              text={going.map((g) => g.name).join("\n")}
+              text={finalList(
+                going.map((g) => g.name),
+                whatsapp,
+              )}
               label="copiar lista"
             />
           </div>
           <p className="text-card-meta text-faded">
             Los nombres de quienes van, uno por línea, para el grupo o la
-            reserva.
+            reserva. Los de WhatsApp van al final, con cuántos son.
           </p>
         </section>
 

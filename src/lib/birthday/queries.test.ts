@@ -53,6 +53,7 @@ describe.skipIf(!hasTestDatabase)("queries del cumpleaños", () => {
       await sql`delete from birthday_event_albums`;
       await sql`delete from birthday_event_texts`;
       await sql`delete from birthday_questions`;
+      await sql`delete from birthday_whatsapp_rsvps`;
       await sql`delete from birthday_guests`;
     } finally {
       await sql.end();
@@ -324,6 +325,53 @@ describe.skipIf(!hasTestDatabase)("queries del cumpleaños", () => {
       await queries.askQuestion(cata.id, "party", "¿dormir?");
       await queries.deleteGuest(cata.id);
       expect(await queries.questionsOf("party")).toEqual([]);
+    });
+  });
+
+  describe("confirmados por WhatsApp", () => {
+    it("anota grupos por plan, en orden, y suma personas por plan", async () => {
+      await queries.addWhatsappRsvp({
+        event: "cocktail",
+        name: "tía Carmen",
+        partySize: 3,
+      });
+      await queries.addWhatsappRsvp({
+        event: "cocktail",
+        name: "abuelo Hernán",
+        partySize: 2,
+      });
+      await queries.addWhatsappRsvp({
+        event: "party",
+        name: "primo Seba",
+        partySize: 1,
+      });
+
+      const list = await queries.whatsappRsvpsOf("cocktail");
+      expect(list.map((r) => [r.name, r.partySize])).toEqual([
+        ["tía Carmen", 3],
+        ["abuelo Hernán", 2],
+      ]);
+      expect(await queries.whatsappHeadcounts()).toEqual({
+        cocktail: 5,
+        party: 1,
+      });
+    });
+
+    it("corrige cuántos vienen y borra el grupo", async () => {
+      const carmen = await queries.addWhatsappRsvp({
+        event: "cocktail",
+        name: "tía Carmen",
+        partySize: 3,
+      });
+      expect(await queries.setWhatsappPartySize(carmen.id, 4)).toBe(true);
+      expect((await queries.whatsappRsvpsOf("cocktail"))[0].partySize).toBe(4);
+
+      expect(await queries.deleteWhatsappRsvp(carmen.id)).toBe(true);
+      expect(await queries.whatsappRsvpsOf("cocktail")).toEqual([]);
+      expect(await queries.whatsappHeadcounts()).toEqual({});
+      // Un grupo que ya no existe no se corrige ni se borra dos veces.
+      expect(await queries.setWhatsappPartySize(carmen.id, 2)).toBe(false);
+      expect(await queries.deleteWhatsappRsvp(carmen.id)).toBe(false);
     });
   });
 });
