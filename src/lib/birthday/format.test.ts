@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDay, formatDayTime, formatTime } from "./format";
+import { formatDay, formatDayTime, formatLongDay, formatTime } from "./format";
 
 describe("fechas del cumpleaños", () => {
   it("escribe el día como en el diseño, sin comas ni puntos", () => {
@@ -16,5 +16,11 @@ describe("fechas del cumpleaños", () => {
 
   it("usa la hora de Santiago aunque el instante venga en UTC", () => {
     expect(formatDayTime("2026-11-08T00:30:00Z")).toBe("sáb 7 nov · 21:30");
+  });
+
+  it("escribe la fecha larga sin abreviar ni comas", () => {
+    expect(formatLongDay("2026-11-04T19:00:00-03:00")).toBe(
+      "miércoles 4 de noviembre",
+    );
   });
 });

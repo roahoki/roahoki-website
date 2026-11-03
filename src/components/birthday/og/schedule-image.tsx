@@ -1,12 +1,8 @@
-import {
-  MARK_PATHS,
-  MARK_VIEWBOX,
-  viewBoxAttr,
-} from "@/components/brand/paths";
 import type { RsvpStatus } from "@/db/schema";
 import type { BirthdayEvent } from "@/lib/birthday/events";
 import { formatDay, formatTime } from "@/lib/birthday/format";
 import type { Roki } from "@/lib/birthday/roki";
+import { Mark } from "./mark";
 
 /**
  * El cronograma como imagen de 1080 × 1920 (Figma: "cumple v3 · cronograma
@@ -20,34 +16,6 @@ import type { Roki } from "@/lib/birthday/roki";
 
 const PAPER = "#EEECE3";
 const INK = "#101610";
-
-function Mark({
-  size,
-  color,
-  stroke,
-}: {
-  size: number;
-  color: string;
-  stroke: number;
-}) {
-  return (
-    <svg
-      viewBox={viewBoxAttr(MARK_VIEWBOX)}
-      width={(size * MARK_VIEWBOX.width) / MARK_VIEWBOX.height}
-      height={size}
-      fill="none"
-      stroke={color}
-      strokeWidth={stroke}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {MARK_PATHS.map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
-  );
-}
 
 /**
  * El roki que dibujó el invitado, todo en papel: sus colores (tinta, botella,

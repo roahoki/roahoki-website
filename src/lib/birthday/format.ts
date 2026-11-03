@@ -44,3 +44,19 @@ export function formatDayTime(iso: string): string {
 export function formatTime(iso: string): string {
   return parts(iso).time;
 }
+
+const LONG_DAY = new Intl.DateTimeFormat("es-CL", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  timeZone: "America/Santiago",
+});
+
+/**
+ * "miércoles 4 de noviembre": la fecha sin abreviar, para la foto del cóctel
+ * que va al grupo de la familia. `es-CL` la escribe con coma después del día
+ * de la semana.
+ */
+export function formatLongDay(iso: string): string {
+  return LONG_DAY.format(new Date(iso)).replace(",", "");
+}
